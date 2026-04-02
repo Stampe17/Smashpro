@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SmashPro Hub - Elite Edition V3.5 PWA</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b0e14">
+    <link rel="manifest" href="manifest.json">
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <style>
+        :root { 
+            --primary: #00ff66; --bg: #0b0e14; --sidebar: #12161f; --card: #1c222d; 
+            --text: #f8fafc; --text-dim: #94a3b8; --player-action: #3b82f6; 
+            --locked: #0f172a;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; 
+            margin: 0; padding-bottom: 90px; overflow-x: hidden;
+        }
+        
+        /* BUNDMENU */
+        .tab-bar { 
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 75px;
+            background: var(--sidebar); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid #2d3748; z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .tab-item { 
+            display: flex; flex-direction: column; align-items: center; 
+            color: var(--text-dim); font-size: 10px; cursor: pointer; flex: 1;
+        }
+        .tab-item span { font-size: 20px; margin-bottom: 4px; }
+        .tab-item.active { color: var(--primary); }
+
+        .main-content { padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
+        .hidden { display: none !important; }
+        
+        .kort { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #2d3748; width: 100%; margin-bottom: 15px; }
+        .hero-banner { background: linear-gradient(45deg, #1c222d, #0b0e14); padding: 30px 20px; border-radius: 20px; margin-bottom: 20px; text-align: left; }
+        .hero-banner h1 { font-size: 22px; margin: 0; color: var(--primary); }
+
+        .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .badge-box { aspect-ratio: 1; background: var(--locked); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; color: var(--text-dim); font-size: 9px; }
+        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        .badge-icon { font-size: 16px; margin-bottom: 2px; }
+
+        input, textarea, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin: 8px 0; font-size: 16px; }
+        button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: #000; font-size: 16px; transition: 0.2s; }
+        button:active { transform: scale(0.98); opacity: 0.8; }
+        
+        .stat-box { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid #2d3748; text-align: center; }
+        .stat-val { font-size: 18px; font-weight: bold; color: var(--primary); display: block; }
+        .eval-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+
+        .modal { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid var(--primary); z-index: 2000; max-height: 85vh; overflow-y: auto; transition: 0.3s; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1500; }
+
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+        .dag { background: rgba(255,255,255,0.03); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; font-size: 13px; border: 1px solid transparent; position: relative; }
+        .dag-count { position: absolute; top: 2px; right: 2px; background: var(--primary); color: black; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
+
+        .tab-btn { background: #1e293b; color: white; padding: 12px; flex: 1; border: none; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: black; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
+        .status-none { background: #334155; color: white; }
+        .status-in { background: rgba(0, 255, 102, 0.2); color: var(--primary); }
+        .status-out { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div id="login-skærm" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div class="kort" style="max-width:350px;">
+            <h2 style="text-align:center;">🟢 SmashPro Hub</h2>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pw" placeholder="Kode">
+            <button onclick="logind()">LOG IND</button>
+            <button onclick="opretBruger()" style="background:#3b82f6; color:white; margin-top:10px;">NY BRUGER</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="app-skærm">
+        
+        <div id="side-hjem">
+            <div class="hero-banner">
+                <h1 id="user-welcome">Velkommen</h1>
+                <p style="color:var(--text-dim); margin-top:5px;">Track dine fremskridt i dag.</p>
+            </div>
+            
+            <h4 style="text-align:left; margin-bottom:10px;">Kommende Sessions</h4>
+            <div id="next-sessions-list"></div>
+        </div>
+
+        <div id="side-kalender" class="hidden">
+            <div class="kort">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <button onclick="skiftMaaned(-1)" style="width:45px; background:none; border:1px solid #334155; color:white;">←</button>
+                    <b id="kalender-titel"></b>
+                    <button onclick="skiftMaaned(1)" style="width:45px; background:none; border:1px solid #334155; color:white;">→</button>
+                </div>
+                <div class="grid" id="kalender-grid"></div>
+            </div>
+            <div id="day-sessions" class="hidden">
+                <h4 id="day-sessions-title" style="text-align:left; margin:15px 0 10px;"></h4>
+                <div id="day-sessions-list"></div>
+            </div>
+        </div>
+
+        <div id="side-evaluering" class="hidden">
+            <h2 style="text-align:left;">Evaluering</h2>
+            <p id="eval-target-name" style="color:var(--primary); font-weight:bold; text-align:left; margin-bottom:15px;">Vælg session i kalenderen</p>
+            
+            <div class="eval-stats-row">
+                <div class="stat-box"><small>I DAG</small><span class="stat-val" id="ev-mot-today">-</span></div>
+                <div class="stat-box" style="border-color:var(--primary);"><small>MOT (UGE)</small><span class="stat-val" id="ev-mot-week">-</span></div>
+                <div class="stat-box"><small>MÅNED</small><span class="stat-val" id="ev-mot-month">-</span></div>
+            </div>
+
+            <div id="eval-form" class="kort hidden">
+                <p>1. Motivation: <b id="val-m" style="float:right; color:var(--primary);">5</b></p>
+                <input type="range" id="ev-mot" min="1" max="10" value="5" oninput="document.getElementById('val-m').innerText=this.value">
+                <p>2. Koncentration: <b id="val-c" style="float:right; color:var(--primary);">5</b></p>
+                <input type="range" id="ev-conc" min="1" max="10" value="5" oninput="document.getElementById('val-c').innerText=this.value">
+                <p>3. Friskhed: <b id="val-f" style="float:right; color:var(--primary);">5</b></p>
+                <input type="range" id="ev-frisk" min="1" max="10" value="5" oninput="document.getElementById('val-f').innerText=this.value">
+                <textarea id="ev-notat" rows="3" placeholder="Noter fra træningen..."></textarea>
+                <button onclick="gemEval()" style="background:var(--player-action); color:white;">GEM EVALUERING</button>
+            </div>
+            <div id="eval-historik-liste" style="text-align:left;"></div>
+        </div>
+
+        <div id="side-achievements" class="hidden">
+            <h2 style="text-align:left;">Achievements</h2>
+            <div class="eval-stats-row">
+                <div class="stat-box"><small>SESSIONS</small><span class="stat-val" id="stat-sessions">0</span></div>
+                <div class="stat-box"><small>MINUTTER</small><span class="stat-val" id="stat-minutes">0</span></div>
+                <div class="stat-box"><small>UNLOCKED</small><span class="stat-val" id="stat-unlocked">0/35</span></div>
+            </div>
+            <div class="badge-grid" id="badge-container"></div>
+        </div>
+
+        <div id="side-profil" class="hidden">
+            <div class="kort">
+                <h3>Min Profil</h3>
+                <div id="p-chart" style="width:100%; height:180px;"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:15px; text-align:center;">
+                    <div class="stat-box">Fremmøde<br><b id="p-pct" style="color:var(--primary)">-</b></div>
+                    <div class="stat-box">Frisk 🔋<br><b id="p-avgF" style="color:var(--primary)">-</b></div>
+                    <div class="stat-box">Mot 🔥<br><b id="p-avgM" style="color:var(--primary)">-</b></div>
+                </div>
+            </div>
+            <div class="kort">
+                <h3>Mål</h3>
+                <textarea id="p-goalS" placeholder="Sæson mål"></textarea>
+                <textarea id="p-goal5" placeholder="5-års mål"></textarea>
+                <button onclick="gemMaal()">GEM MÅL</button>
+            </div>
+            <button onclick="firebase.auth().signOut()" style="background:#ef4444; color:white;">Log ud</button>
+        </div>
+
+        <div id="side-traener" class="hidden">
+            <div style="display:flex; border-radius:12px; overflow:hidden; margin-bottom:15px;">
+                <button class="tab-btn active" id="tab-analyse" onclick="switchTrainerTab('analyse')">Hold Analyse</button>
+                <button class="tab-btn" id="tab-database" onclick="switchTrainerTab('database')">Database</button>
+            </div>
+            <div id="traener-analyse-view">
+                <div class="kort"><div id="t-chart" style="width:100%; height:200px;"></div></div>
+                <div id="t-spiller-liste"></div>
+            </div>
+            <div id="traener-database-view" class="hidden">
+                <div class="kort">
+                    <select id="drill-main-cat" onchange="checkDrillSub()">
+                        <option value="Benarbejde">1. Benarbejde</option>
+                        <option value="Teknik">2. Teknik</option>
+                        <option value="Træningsøvelser">3. Træningsøvelser</option>
+                        <option value="Mentale øvelser">4. Mentale øvelser</option>
+                        <option value="Taktiske Øvelser">5. Taktiske Øvelser</option>
+                        <option value="Sjove spil">6. Sjove spil</option>
+                    </select>
+                    <div id="drill-sub-cat-wrapper">
+                        <select id="drill-sub-cat"><option value="Offensiv">Offensiv</option><option value="Defensiv">Defensiv</option></select>
+                    </div>
+                    <input type="text" id="drill-title" placeholder="Øvelsens navn">
+                    <textarea id="drill-text" rows="3" placeholder="Beskrivelse..."></textarea>
+                    <button onclick="saveDrill()">GEM ØVELSE</button>
+                </div>
+                <div id="drill-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="visSide('side-hjem', this)"><span>🏠</span>Dashboard</div>
+        <div class="tab-item" onclick="visSide('side-kalender', this)"><span>📅</span>Plan</div>
+        <div class="tab-item" onclick="visSide('side-evaluering', this)"><span>📊</span>Eval</div>
+        <div class="tab-item" onclick="visSide('side-achievements', this)"><span>🏆</span>Badge</div>
+        <div id="traener-tab" class="tab-item hidden" onclick="visSide('side-traener', this)"><span>📋</span>Træner</div>
+        <div class="tab-item" onclick="visSide('side-profil', this)"><span>👤</span>Profil</div>
+    </div>
+
+    <div id="overlay" class="overlay hidden" onclick="lukModal()"></div>
+    <div id="modal-session" class="modal hidden">
+        <h3 id="ms-title" style="margin:0; color:var(--primary);"></h3>
+        <p id="ms-time" style="color:var(--text-dim); font-size:14px; margin-bottom:15px;"></p>
+        <div style="display:flex; gap:10px;">
+            <button onclick="svar('Kommer')" style="flex:1;">KOMMER</button>
+            <button onclick="svar('Afbud')" style="flex:1; background:#ef4444; color:white;">AFBUD</button>
+        </div>
+        <button id="btn-eval-session" onclick="gaaTilEval()" style="background:var(--player-action); color:white; margin-top:10px;">EVALUER SESSION</button>
+        <button id="ms-slet" onclick="sletTræning()" class="hidden" style="background:none; border:1px solid red; color:red; margin-top:10px;">Slet Session</button>
+        <div id="ms-spiller-liste" style="margin-top:20px; border-top:1px solid #334155; padding-top:15px; text-align:left;"></div>
+        <button onclick="lukModal()" style="background:none; color:var(--text-dim); margin-top:10px;">Luk</button>
+    </div>
+
+    <div id="modal-spiller-detail" class="modal hidden">
+        <h3 id="sd-name" style="color:var(--primary); margin:0;"></h3>
+        <div id="sd-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin:15px 0; font-size:11px; text-align:center;"></div>
+        <div id="sd-chart" style="width:100%; height:180px;"></div>
+        <div id="sd-goals" style="text-align:left; font-size:13px; border-top:1px solid #334155; padding-top:10px;"></div>
+        <button onclick="lukModal()" style="margin-top:15px;">Luk</button>
+    </div>
+
+    <script>
+        const config = {
+            apiKey: "AIzaSyBzDeP_CdzJ7d-Y75edPt3g0OgK5-1_yGk",
+            authDomain: "badmintonapp-6f2c3.firebaseapp.com",
+            databaseURL: "https://badmintonapp-6f2c3-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "badmintonapp-6f2c3",
+            storageBucket: "badmintonapp-6f2c3.firebasestorage.app",
+            messagingSenderId: "681145707894",
+            appId: "1:681145707894:web:259251fc2ff3c89a4b9e57"
+        };
+        firebase.initializeApp(config);
+        const db = firebase.database();
+        let curRole = 'spiller', visDato = new Date(), selT = null, evalTId = null;
+
+        google.charts.load('current', {'packages':['corechart']});
+
+        // Alle 35 Udfordringer fra V3.5
+        const udfordringer = [
+            { id: 1, titel: "First Step", desc: "Træn 1 gang", check: (s) => s.total >= 1 },
+            { id: 2, titel: "High Five", desc: "Træn 5 gange", check: (s) => s.total >= 5 },
+            { id: 3, titel: "Consistent", desc: "Træn 10 gange", check: (s) => s.total >= 10 },
+            { id: 4, titel: "Dedicated", desc: "Træn 15 gange", check: (s) => s.total >= 15 },
+            { id: 5, titel: "Athlete", desc: "Træn 25 gange", check: (s) => s.total >= 25 },
+            { id: 6, titel: "Warrior", desc: "Træn 40 gange", check: (s) => s.total >= 40 },
+            { id: 7, titel: "Elite", desc: "Træn 50 gange", check: (s) => s.total >= 50 },
+            { id: 8, titel: "Master", desc: "Træn 70 gange", check: (s) => s.total >= 70 },
+            { id: 9, titel: "Legend", desc: "Træn 85 gange", check: (s) => s.total >= 85 },
+            { id: 10, titel: "Centurion", desc: "Træn 100 gange", check: (s) => s.total >= 100 },
+            { id: 11, titel: "Warmup", desc: "500 min", check: (s) => s.mins >= 500 },
+            { id: 12, titel: "Hard Work", desc: "1000 min", check: (s) => s.mins >= 1000 },
+            { id: 13, titel: "Power", desc: "1500 min", check: (s) => s.mins >= 1500 },
+            { id: 14, titel: "Grind", desc: "2000 min", check: (s) => s.mins >= 2000 },
+            { id: 15, titel: "Machine", desc: "3000 min", check: (s) => s.mins >= 3000 },
+            { id: 16, titel: "Ironman", desc: "4000 min", check: (s) => s.mins >= 4000 },
+            { id: 17, titel: "Unstoppable", desc: "5000 min", check: (s) => s.mins >= 5000 },
+            { id: 18, titel: "Pro Status", desc: "6500 min", check: (s) => s.mins >= 6500 },
+            { id: 19, titel: "Badminton King", desc: "8000 min", check: (s) => s.mins >= 8000 },
+            { id: 20, titel: "God Mode", desc: "10000 min", check: (s) => s.mins >= 10000 },
+            { id: 21, titel: "Double Up", desc: "2 gange samme dag", check: (s) => s.multiDay },
+            { id: 22, titel: "Week Starter", desc: "2 på en uge", check: (s) => s.maxInWeek >= 2 },
+            { id: 23, titel: "Active Week", desc: "4 på en uge", check: (s) => s.maxInWeek >= 4 },
+            { id: 24, titel: "No Breaks", desc: "6 på en uge", check: (s) => s.maxInWeek >= 6 },
+            { id: 25, titel: "Triple", desc: "3 dage i træk", check: (s) => s.maxStreak >= 3 },
+            { id: 26, titel: "High Five Streak", desc: "5 dage i træk", check: (s) => s.maxStreak >= 5 },
+            { id: 27, titel: "Week Streak", desc: "7 dage i træk", check: (s) => s.maxStreak >= 7 },
+            { id: 28, titel: "Tenacious", desc: "10 dage i træk", check: (s) => s.maxStreak >= 10 },
+            { id: 29, titel: "Two Weeks", desc: "14 dage i træk", check: (s) => s.maxStreak >= 14 },
+            { id: 30, titel: "Feedback", desc: "Eval 3 i træk", check: (s) => s.evalStreak >= 3 },
+            { id: 31, titel: "Reflective", desc: "Eval 6 i træk", check: (s) => s.evalStreak >= 6 },
+            { id: 32, titel: "Analyst", desc: "Eval 10 i træk", check: (s) => s.evalStreak >= 10 },
+            { id: 33, titel: "Fire!", desc: "10 i mot (1 dag)", check: (s) => s.mot10Count >= 1 },
+            { id: 34, titel: "Burning Up", desc: "10 i mot (3 dage)", check: (s) => s.mot10Count >= 3 },
+            { id: 35, titel: "Sun", desc: "10 i mot (10 dage)", check: (s) => s.mot10Count >= 10 }
+        ];
+
+        function visSide(id, btn) {
+            document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id==='side-profil') setTimeout(() => hentProfilData(firebase.auth().currentUser.uid, 'p'), 200);
+            if(id==='side-evaluering') hentEvalueringSide();
+            if(id==='side-achievements') beregnBadgeData();
+            if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); switchTrainerTab('analyse'); }
+            if(id==='side-kalender') tegnKalender();
+            window.scrollTo(0,0);
+        }
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('login-skærm').classList.add('hidden');
+                db.ref('users/' + user.uid).on('value', snap => {
+                    const u = snap.val(); if(!u) return;
+                    curRole = u.role;
+                    document.getElementById('user-welcome').innerText = "Hej " + u.name;
+                    document.getElementById('traener-tab').classList.toggle('hidden', u.role !== 'traener');
+                    opdaterDashboard();
+                });
+            } else document.getElementById('login-skærm').classList.remove('hidden');
+        });
+
+        function opdaterDashboard() {
+            const iDag = new Date().toISOString().split('T')[0];
+            const uid = firebase.auth().currentUser.uid;
+            db.ref('trainings').orderByChild('date').startAt(iDag).limitToFirst(5).on('value', snap => {
+                const list = document.getElementById('next-sessions-list'); list.innerHTML = "";
+                const data = snap.val() || {};
+                Object.keys(data).forEach(tId => {
+                    const t = data[tId];
+                    const card = document.createElement('div'); card.className = 'kort'; card.style.textAlign = 'left';
+                    card.onclick = () => visSessionModal(tId);
+                    card.innerHTML = `<div id="sb-${tId}" class="status-badge status-none">Svar mangler</div><br><small style="color:var(--primary)">${t.date}</small><h3>${t.title}</h3><small>${t.time || '17:00'}</small>`;
+                    list.appendChild(card);
+                    db.ref('attendance/'+tId+'/'+uid).on('value', s => {
+                        const b = document.getElementById('sb-'+tId); if(s.exists()){
+                            b.innerText = s.val().status; b.className = 'status-badge ' + (s.val().status==='Kommer'?'status-in':'status-out');
+                        }
+                    });
+                });
+            });
+        }
+
+        function tegnKalender() {
+            const grid = document.getElementById('kalender-grid'); grid.innerHTML = "";
+            const aar = visDato.getFullYear(), maaned = visDato.getMonth();
+            document.getElementById('kalender-titel').innerText = ["Januar","Februar","Marts","April","Maj","Juni","Juli","August","September","Oktober","November","December"][maaned] + " " + aar;
+            const start = new Date(aar, maaned, 1).getDay();
+            const tomme = start === 0 ? 6 : start - 1;
+            for (let i = 0; i < tomme; i++) grid.appendChild(document.createElement('div'));
+            db.ref('trainings').on('value', snap => {
+                const trs = snap.val() || {};
+                for (let d = 1; d <= new Date(aar, maaned + 1, 0).getDate(); d++) {
+                    const b = document.createElement('div'); b.className = 'dag'; b.innerText = d;
+                    const dStr = `${aar}-${String(maaned + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const synlige = Object.keys(trs).filter(k => trs[k].date === dStr);
+                    if(synlige.length > 0) {
+                        b.style.border = '1px solid var(--primary)';
+                        b.style.background = 'rgba(0,255,102,0.1)';
+                        b.onclick = () => visSessionsForDag(dStr, synlige, trs);
+                    } else b.onclick = () => opretSessionDialog(dStr);
+                    grid.appendChild(b);
+                }
+            });
+        }
+
+        function visSessionsForDag(dato, keys, all) {
+            const l = document.getElementById('day-sessions-list');
+            document.getElementById('day-sessions-title').innerText = dato; l.innerHTML = "";
+            keys.forEach(k => {
+                const t = all[k]; const div = document.createElement('div'); div.className = 'kort';
+                div.innerHTML = `<b>${t.title}</b><br><small>${t.time}</small>`;
+                div.onclick = () => visSessionModal(k);
+                l.appendChild(div);
+            });
+            document.getElementById('day-sessions').classList.remove('hidden');
+        }
+
+        function visSessionModal(id) {
+            selT = id; document.getElementById('overlay').classList.remove('hidden');
+            document.getElementById('modal-session').classList.remove('hidden');
+            db.ref('trainings/'+id).once('value', snap => {
+                const t = snap.val(); document.getElementById('ms-title').innerText = t.title;
+                document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00");
+                document.getElementById('ms-slet').classList.toggle('hidden', curRole!=='traener');
+                hentSvar(id, 'ms-spiller-liste');
+            });
+        }
+
+        function gaaTilEval() { evalTId = selT; document.getElementById('eval-target-name').innerText = "Eval: " + document.getElementById('ms-title').innerText; document.getElementById('eval-form').classList.remove('hidden'); lukModal(); visSide('side-evaluering'); }
+        function lukModal() { document.querySelectorAll('.modal, .overlay').forEach(e => e.classList.add('hidden')); }
+        function skiftMaaned(d) { visDato.setMonth(visDato.getMonth() + d); tegnKalender(); }
+        function logind() { firebase.auth().signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value); }
+        function opretBruger() { const n = prompt("Navn?"); firebase.auth().createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value).then(c => db.ref('users/'+c.user.uid).set({name:n, role:'spiller'})); }
+        function svar(s) { db.ref('users/'+firebase.auth().currentUser.uid).once('value', snap => { db.ref('attendance/'+selT+'/'+firebase.auth().currentUser.uid).set({status:s, name:snap.val().name}); }); }
+        function sletTræning() { if(confirm("Slet session?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
+        function gemMaal() { db.ref('users/'+firebase.auth().currentUser.uid).update({goalSeason:document.getElementById('p-goalS').value, goal5year:document.getElementById('p-goal5').value}).then(()=>alert("Gemt!")); }
+        function gemEval() { db.ref('evaluations/'+firebase.auth().currentUser.uid).push({mot:document.getElementById('ev-mot').value, conc:document.getElementById('ev-conc').value, frisk:document.getElementById('ev-frisk').value, notat:document.getElementById('ev-notat').value, dato:new Date().toISOString().split('T')[0], timestamp:firebase.database.ServerValue.TIMESTAMP, trainingId:evalTId}).then(()=>alert("Eval gemt!")); visSide('side-hjem'); }
+        function opretSessionDialog(dato) { const n = prompt("Navn på session?"); if(n) db.ref('trainings').push({date:dato, title:n, time:"17:00", duration:"90", role:curRole, owner:firebase.auth().currentUser.uid}); }
+        function hentSvar(id, target) { db.ref('attendance/'+id).on('value', snap => { let h = ""; const d = snap.val() || {}; Object.keys(d).forEach(u => h += `<div onclick="overstyr('${id}','${u}','${d[u].status}')">${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`); document.getElementById(target).innerHTML = h; }); }
+        function overstyr(tId, uId, s) { if(curRole==='traener') { const n = s==='Kommer'?'Afbud':'Kommer'; db.ref('attendance/'+tId+'/'+uId+'/status').set(n); }}
+
+        function hentProfilData(uid, prefix) {
+            db.ref('users/'+uid).once('value', s => { const u=s.val(); if(prefix==='p'){document.getElementById('p-goalS').value=u.goalSeason||"";document.getElementById('p-goal5').value=u.goal5year||"";} else {document.getElementById('sd-goals').innerHTML=`<b>Mål:</b> ${u.goalSeason||'-'}`}});
+            db.ref('evaluations/'+uid).limitToLast(10).once('value', snap => {
+                const data = snap.val() || {}; tegnGraf(data, prefix+'-chart');
+                const evs = Object.values(data);
+                if(evs.length > 0) {
+                    let m=0, c=0, f=0; evs.forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
+                    document.getElementById(prefix+'-avgM').innerText = (m/evs.length).toFixed(1);
+                    document.getElementById(prefix+'-avgC').innerText = (c/evs.length).toFixed(1);
+                    if(prefix==='p') document.getElementById('p-avgF').innerText = (f/evs.length).toFixed(1);
+                }
+            });
+            db.ref('trainings').once('value', tSnap => {
+                const total = Object.keys(tSnap.val()||{}).length;
+                db.ref('attendance').once('value', aSnap => {
+                    let p=0; Object.values(aSnap.val()||{}).forEach(t => { if(t[uid] && t[uid].status==='Kommer') p++; });
+                    document.getElementById(prefix+'-pct').innerText = (total>0?Math.round((p/total)*100):0)+"%";
+                });
+            });
+        }
+
+        function tegnGraf(data, el) {
+            const dArray = [['Dato','Mot','Konc']];
+            Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).forEach(e => dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5)]));
+            if(dArray.length <= 1) return;
+            const chart = new google.visualization.LineChart(document.getElementById(el));
+            chart.draw(google.visualization.arrayToDataTable(dArray), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6'], legend:'none', chartArea:{width:'90%', height:'80%'}, vAxis:{minValue:1, maxValue:10}, hAxis:{textStyle:{color:'#fff'}}});
+        }
+
+        function tegnHoldAnalyse() {
+            db.ref('evaluations').once('value', snap => {
+                const all = snap.val() || {}; const daily = {};
+                Object.values(all).forEach(u => Object.values(u).forEach(e => {
+                    if(!daily[e.dato]) daily[e.dato] = {m:0,c:0,count:0};
+                    daily[e.dato].m += parseInt(e.mot); daily[e.dato].c += parseInt(e.conc||5); daily[e.dato].count++;
+                }));
+                const cData = [['Dato','Mot','Konc']];
+                Object.keys(daily).sort().slice(-14).forEach(d => { const s=daily[d]; cData.push([d.substring(5), s.m/s.count, s.c/s.count]); });
+                if(cData.length > 1) {
+                    const chart = new google.visualization.LineChart(document.getElementById('t-chart'));
+                    chart.draw(google.visualization.arrayToDataTable(cData), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6'], legend:'none', vAxis:{minValue:1, maxValue:10}, chartArea:{width:'85%', height:'80%'} });
+                }
+            });
+        }
+
+        function beregnBadgeData() {
+            const uid = firebase.auth().currentUser.uid;
+            db.ref('trainings').once('value', tSnap => {
+                const allT = tSnap.val() || {};
+                db.ref('attendance').once('value', aSnap => {
+                    const allA = aSnap.val() || {};
+                    db.ref('evaluations/'+uid).once('value', eSnap => {
+                        const allE = eSnap.val() || {};
+                        const stats = processStats(uid, allT, allA, allE);
+                        tegnBadges(stats);
+                    });
+                });
+            });
+        }
+
+        function processStats(uid, trainings, attendance, evals) {
+            let total = 0, mins = 0, mot10 = 0, streak = 0, maxS = 0;
+            const dates = [];
+            Object.keys(attendance).forEach(tId => {
+                if(attendance[tId][uid] && attendance[tId][uid].status==='Kommer') {
+                    total++; mins += parseInt(trainings[tId]?.duration || 90);
+                    dates.push(trainings[tId].date);
+                }
+            });
+            const uniqueDates = [...new Set(dates)].sort();
+            uniqueDates.forEach((d, i) => {
+                if(i > 0 && (new Date(d) - new Date(uniqueDates[i-1])) === 86400000) streak++; else streak = 1;
+                if(streak > maxS) maxS = streak;
+            });
+            mot10 = Object.values(evals).filter(e => parseInt(e.mot)===10).length;
+            return { total, mins, maxStreak: maxS, mot10Count: mot10, multiDay: false, maxInWeek: 0, evalStreak: 0 };
+        }
+
+        function tegnBadges(s) {
+            const c = document.getElementById('badge-container'); c.innerHTML = "";
+            let uc = 0;
+            udfordringer.forEach(u => {
+                const win = u.check(s); if(win) uc++;
+                const b = document.createElement('div'); b.className = `badge-box ${win?'unlocked':''}`;
+                b.innerHTML = `<div class="badge-icon">${win?'🏆':'🔒'}</div><b>${u.titel}</b>`;
+                c.appendChild(b);
+            });
+            document.getElementById('stat-sessions').innerText = s.total;
+            document.getElementById('stat-minutes').innerText = s.mins;
+            document.getElementById('stat-unlocked').innerText = uc + "/35";
+        }
+
+        function switchTrainerTab(t) {
+            document.getElementById('traener-analyse-view').classList.toggle('hidden', t!=='analyse');
+            document.getElementById('traener-database-view').classList.toggle('hidden', t!=='database');
+            document.getElementById('tab-analyse').classList.toggle('active', t==='analyse');
+            document.getElementById('tab-database').classList.toggle('active', t==='database');
+        }
+
+        function hentAlleSpillere() {
+            db.ref('users').once('value', snap => {
+                const list = document.getElementById('t-spiller-liste'); list.innerHTML = "";
+                Object.entries(snap.val()||{}).forEach(([id, u]) => {
+                    if(u.role==='traener') return;
+                    const d = document.createElement('div'); d.className = 'kort'; d.style.display='flex'; d.style.justifyContent='space-between';
+                    d.innerHTML = `<span>${u.name}</span><span style="color:var(--primary)">Se Profil ➡️</span>`;
+                    d.onclick = () => { document.getElementById('modal-spiller-detail').classList.remove('hidden'); document.getElementById('overlay').classList.remove('hidden'); document.getElementById('sd-name').innerText = u.name; hentProfilData(id, 'sd'); };
+                    list.appendChild(d);
+                });
+            });
+        }
+
+        function hentEvalueringSide() {
+            db.ref('evaluations/'+firebase.auth().currentUser.uid).on('value', snap => {
+                const evs = Object.values(snap.val()||{}).reverse();
+                const l = document.getElementById('eval-historik-liste'); l.innerHTML = "<h4>Historik</h4>";
+                evs.forEach(e => l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #334155;"><span>${e.dato}</span><b>Mot: ${e.mot}</b></div>`);
+            });
+        }
+        
+        function saveDrill() {
+            const t = document.getElementById('drill-title').value, tx = document.getElementById('drill-text').value;
+            if(t && tx) db.ref('drills').push({main:document.getElementById('drill-main-cat').value, title:t, text:tx}).then(()=>alert("Gemt!"));
+        }
+
+        function checkDrillSub() {
+            const m = document.getElementById('drill-main-cat').value;
+            document.getElementById('drill-sub-cat-wrapper').classList.toggle('hidden', !["Benarbejde","Teknik"].includes(m));
+        }
+    </script>
+</body>
+</html>
