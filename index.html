@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SmashPro Hub - Elite V3.5 FIXED</title>
+    <title>SmashPro Hub - Elite V3.5 FINAL</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -44,8 +44,9 @@
         .hero-banner { background: linear-gradient(45deg, #1c222d, #0b0e14); padding: 30px 20px; border-radius: 20px; margin-bottom: 20px; }
 
         .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .badge-box { aspect-ratio: 1; background: var(--locked); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; color: var(--text-dim); font-size: 8px; }
-        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; }
+        .badge-box { aspect-ratio: 1; background: var(--locked); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; color: var(--text-dim); font-size: 8px; transition: 0.3s; }
+        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        .badge-icon { font-size: 16px; margin-bottom: 2px; }
 
         input, textarea, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin: 8px 0; font-size: 16px; }
         button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 5px; }
@@ -60,7 +61,7 @@
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .dag { background: rgba(255,255,255,0.03); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; position: relative; }
         .dag-count { position: absolute; top: 2px; right: 2px; background: var(--primary); color: black; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
-
+        
         .tab-btn { background: #1e293b; color: white; padding: 12px; flex: 1; border: none; font-weight: bold; }
         .tab-btn.active { background: var(--primary); color: black; }
     </style>
@@ -78,7 +79,6 @@
     </div>
 
     <div class="main-content" id="app-skærm">
-        
         <div id="side-hjem">
             <div class="hero-banner">
                 <h2 id="user-welcome" style="margin:0; color:var(--primary);">Hej!</h2>
@@ -188,10 +188,11 @@
     <div id="modal-session" class="modal hidden">
         <h3 id="ms-title" style="margin:0; color:var(--primary);"></h3>
         <p id="ms-time" style="color:var(--text-dim); font-size:14px; margin-bottom:15px;"></p>
-        <div style="display:flex; gap:10px;">
+        <div id="attendance-btns" style="display:flex; gap:10px;">
             <button onclick="svar('Kommer')" style="flex:1;">KOMMER</button>
             <button onclick="svar('Afbud')" style="flex:1; background:#ef4444; color:white;">AFBUD</button>
         </div>
+        <div id="locked-msg" class="hidden" style="color:#ef4444; font-weight:bold; margin-bottom:10px;">Sessionen er startet - tilmelding lukket.</div>
         <button id="btn-eval-session" onclick="gaaTilEval()" style="background:var(--player-action); color:white; margin-top:10px;">EVALUER SESSION</button>
         <button id="ms-slet" onclick="sletTræning()" class="hidden" style="background:none; border:1px solid red; color:red; margin-top:10px;">SLET SESSION</button>
         <div id="ms-spiller-liste" style="margin-top:15px; text-align:left;"></div>
@@ -283,7 +284,6 @@
                     document.getElementById('traener-tab').classList.toggle('hidden', u.role !== 'traener');
                     opdaterDashboard();
                 });
-                visSide('side-hjem', document.querySelector('.tab-item'));
             } else document.getElementById('login-skærm').classList.remove('hidden');
         });
 
@@ -355,8 +355,16 @@
             selT = id; document.getElementById('overlay').classList.remove('hidden');
             document.getElementById('modal-session').classList.remove('hidden');
             db.ref('trainings/'+id).once('value', snap => {
-                const t = snap.val(); document.getElementById('ms-title').innerText = t.title;
+                const t = snap.val();
+                document.getElementById('ms-title').innerText = t.title;
                 document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00") + " (" + (t.duration||"90") + " min)";
+                
+                // Lås tilmelding hvis træningen er startet (undtagen træner)
+                const startTid = new Date(t.date + "T" + (t.time || "00:00"));
+                const erLaast = new Date() > startTid;
+                document.getElementById('attendance-btns').classList.toggle('hidden', erLaast && curRole !== 'traener');
+                document.getElementById('locked-msg').classList.toggle('hidden', !(erLaast && curRole !== 'traener'));
+                
                 document.getElementById('ms-slet').classList.toggle('hidden', curRole!=='traener');
                 hentSvar(id, 'ms-spiller-liste');
             });
@@ -371,8 +379,18 @@
         function sletTræning() { if(confirm("Slet session?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
         function gemMaal() { db.ref('users/'+firebase.auth().currentUser.uid).update({goalSeason:document.getElementById('p-goalS').value, goal5year:document.getElementById('p-goal5').value}).then(()=>alert("Gemt!")); }
         function gemEval() { db.ref('evaluations/'+firebase.auth().currentUser.uid).push({mot:document.getElementById('ev-mot').value, conc:document.getElementById('ev-conc').value, frisk:document.getElementById('ev-frisk').value, notat:document.getElementById('ev-notat').value, dato:new Date().toISOString().split('T')[0], timestamp:firebase.database.ServerValue.TIMESTAMP, trainingId:evalTId}).then(()=>alert("Eval gemt!")); visSide('side-hjem'); }
-        function hentSvar(id, target) { db.ref('attendance/'+id).on('value', snap => { let h = ""; const d = snap.val() || {}; Object.keys(d).forEach(u => h += `<div>${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`); document.getElementById(target).innerHTML = h; }); }
         
+        function hentSvar(id, target) { 
+            db.ref('attendance/'+id).on('value', snap => { 
+                let h = ""; const d = snap.val() || {}; 
+                Object.keys(d).forEach(u => {
+                    h += `<div onclick="overstyr('${id}','${u}','${d[u].status}')" style="margin-bottom:5px;">${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`;
+                }); 
+                document.getElementById(target).innerHTML = h; 
+            }); 
+        }
+        function overstyr(tId, uId, s) { if(curRole==='traener') { const n = s==='Kommer'?'Afbud':'Kommer'; db.ref('attendance/'+tId+'/'+uId+'/status').set(n); }}
+
         function hentProfilData(uid, prefix) {
             db.ref('users/'+uid).once('value', s => { 
                 const u=s.val(); 
@@ -380,7 +398,7 @@
                     document.getElementById('p-goalS').value=u.goalSeason||"";
                     document.getElementById('p-goal5').value=u.goal5year||"";
                 } else {
-                    document.getElementById('sd-goals').innerHTML=`<p><b>Sæson mål:</b> ${u.goalSeason||'-'}</p><p><b>5-års mål:</b> ${u.goal5year||'-'}</p>`;
+                    document.getElementById('sd-goals').innerHTML=`<p><b>Mål:</b> ${u.goalSeason||'-'}</p><p><b>5-års:</b> ${u.goal5year||'-'}</p>`;
                 }
             });
             db.ref('evaluations/'+uid).on('value', snap => {
@@ -388,10 +406,11 @@
                 const evs = Object.values(data);
                 tegnGraf(data, prefix+'-chart');
                 if(evs.length > 0) {
-                    let m=0, c=0, f=0; evs.slice(-10).forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
-                    document.getElementById(prefix+'-avgM').innerText = (m/evs.slice(-10).length).toFixed(1);
-                    document.getElementById(prefix+'-avgC').innerText = (c/evs.slice(-10).length).toFixed(1);
-                    document.getElementById(prefix+'-avgF').innerText = (f/evs.slice(-10).length).toFixed(1);
+                    let m=0, c=0, f=0; const s10 = evs.slice(-10);
+                    s10.forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
+                    document.getElementById(prefix+'-avgM').innerText = (m/s10.length).toFixed(1);
+                    document.getElementById(prefix+'-avgC').innerText = (c/s10.length).toFixed(1);
+                    document.getElementById(prefix+'-avgF').innerText = (f/s10.length).toFixed(1);
                 }
             });
             db.ref('trainings').once('value', tSnap => {
@@ -443,24 +462,23 @@
                     const allA = aSnap.val() || {};
                     db.ref('evaluations/'+uid).once('value', eSnap => {
                         const allE = eSnap.val() || {};
-                        
-                        let total = 0, mins = 0, mot10 = 0, streak = 0, maxS = 0;
-                        const dates = [];
+                        const completedDates = []; let mins = 0;
                         Object.keys(allA).forEach(tId => {
                             if(allA[tId][uid] && allA[tId][uid].status==='Kommer') {
-                                total++; mins += parseInt(allT[tId]?.duration || 90);
-                                dates.push(allT[tId].date);
+                                completedDates.push(allT[tId].date);
+                                mins += parseInt(allT[tId].duration || 90);
                             }
                         });
-                        const uniqueDates = [...new Set(dates)].sort();
+                        const uniqueDates = [...new Set(completedDates)].sort();
+                        let streak = 0, maxS = 0;
                         uniqueDates.forEach((d, i) => {
                             if(i > 0 && (new Date(d) - new Date(uniqueDates[i-1])) === 86400000) streak++; else streak = 1;
                             if(streak > maxS) maxS = streak;
                         });
-                        mot10 = Object.values(allE).filter(e => parseInt(e.mot)===10).length;
+                        const mot10 = Object.values(allE).filter(e => parseInt(e.mot)===10).length;
 
-                        const stats = { total, mins, maxStreak: maxS, mot10Count: mot10, multiDay: false, maxInWeek: 0, evalStreak: 0 };
-                        document.getElementById('stat-sessions').innerText = total;
+                        const stats = { total: completedDates.length, mins, maxStreak: maxS, mot10Count: mot10, multiDay: false, maxInWeek: 0, evalStreak: 0 };
+                        document.getElementById('stat-sessions').innerText = stats.total;
                         document.getElementById('stat-minutes').innerText = mins;
                         tegnBadges(stats);
                     });
@@ -468,14 +486,15 @@
             });
         }
 
-        function tegnBadges(s) {
-            const c = document.getElementById('badge-container'); c.innerHTML = "";
+        function tegnBadges(stats) {
+            const container = document.getElementById('badge-container'); container.innerHTML = "";
             let uc = 0;
             udfordringer.forEach(u => {
-                const win = u.check(s); if(win) uc++;
-                const b = document.createElement('div'); b.className = `badge-box ${win?'unlocked':''}`;
-                b.innerHTML = `<div class="badge-icon">${win?'🏆':'🔒'}</div><b>${u.titel}</b>`;
-                c.appendChild(b);
+                const win = u.check(stats); if(win) uc++;
+                const box = document.createElement('div');
+                box.className = `badge-box ${win ? 'unlocked' : ''}`;
+                box.innerHTML = `<div class="badge-icon">${win ? '🏆' : '🔒'}</div><b>${u.titel}</b>`;
+                container.appendChild(box);
             });
             document.getElementById('stat-unlocked').innerText = uc + "/35";
         }
@@ -493,7 +512,7 @@
                 Object.entries(snap.val()||{}).forEach(([id, u]) => {
                     if(u.role==='traener') return;
                     const d = document.createElement('div'); d.className = 'kort'; d.style.display='flex'; d.style.justifyContent='space-between';
-                    d.innerHTML = `<span>${u.name}</span><span style="color:var(--primary)">Se Alt ➡️</span>`;
+                    d.innerHTML = `<span>${u.name}</span><span style="color:var(--primary)">Se Data ➡️</span>`;
                     d.onclick = () => { 
                         document.getElementById('modal-spiller-detail').classList.remove('hidden'); 
                         document.getElementById('overlay').classList.remove('hidden'); 
@@ -512,21 +531,17 @@
         }
 
         function hentEvalueringSide() {
-            const uid = firebase.auth().currentUser.uid;
-            db.ref('evaluations/'+uid).on('value', snap => {
-                const data = snap.val() || {};
-                const evs = Object.values(data).reverse();
+            db.ref('evaluations/'+firebase.auth().currentUser.uid).on('value', snap => {
+                const evs = Object.values(snap.val()||{}).reverse();
                 const l = document.getElementById('eval-historik-liste'); l.innerHTML = "<h4>Historik</h4>";
-                
                 let tMot = 0, tMotMonth = 0, countMonth = 0;
                 const iDag = new Date().toISOString().split('T')[0];
                 const denneMaaned = iDag.substring(0, 7);
-
                 evs.forEach(e => {
                     if(e.dato === iDag) document.getElementById('ev-mot-today').innerText = e.mot;
                     if(e.dato.includes(denneMaaned)) { tMotMonth += parseInt(e.mot); countMonth++; }
                     tMot += parseInt(e.mot);
-                    l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #334155;"><span>${e.dato}</span><b>M:${e.mot} K:${e.conc||5} F:${e.frisk}</b></div>`;
+                    l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #334155; font-size:12px;"><span>${e.dato}</span><b>M:${e.mot} K:${e.conc||5} F:${e.frisk}</b></div>`;
                 });
                 document.getElementById('ev-mot-week').innerText = evs.length > 0 ? (tMot / evs.length).toFixed(1) : "-";
                 document.getElementById('ev-mot-month').innerText = countMonth > 0 ? (tMotMonth / countMonth).toFixed(1) : "-";
@@ -535,11 +550,7 @@
         
         function saveDrill() {
             const t = document.getElementById('drill-title').value, tx = document.getElementById('drill-text').value;
-            if(t && tx) db.ref('drills').push({main:document.getElementById('drill-main-cat').value, title:t, text:tx}).then(()=>{
-                alert("Øvelse gemt!");
-                document.getElementById('drill-title').value = "";
-                document.getElementById('drill-text').value = "";
-            });
+            if(t && tx) db.ref('drills').push({main:document.getElementById('drill-main-cat').value, title:t, text:tx}).then(()=>alert("Øvelse gemt!"));
         }
 
         function loadDrills() {
@@ -547,7 +558,7 @@
                 const list = document.getElementById('drill-list'); list.innerHTML = "";
                 const data = snap.val() || {};
                 Object.values(data).forEach(d => {
-                    list.innerHTML += `<div class="kort" style="font-size:13px;"><b>${d.main}: ${d.title}</b><br>${d.text}</div>`;
+                    list.innerHTML += `<div class="kort" style="font-size:13px; text-align:left;"><b>${d.main}: ${d.title}</b><br>${d.text}</div>`;
                 });
             });
         }
