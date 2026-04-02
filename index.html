@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SmashPro Hub - Elite Edition V3.5 PWA</title>
+    <title>SmashPro Hub - Elite V3.5 FIXED</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,17 +27,13 @@
             margin: 0; padding-bottom: 90px; overflow-x: hidden;
         }
         
-        /* BUNDMENU */
         .tab-bar { 
             position: fixed; bottom: 0; left: 0; width: 100%; height: 75px;
             background: var(--sidebar); display: flex; justify-content: space-around;
             align-items: center; border-top: 1px solid #2d3748; z-index: 1000;
             padding-bottom: env(safe-area-inset-bottom);
         }
-        .tab-item { 
-            display: flex; flex-direction: column; align-items: center; 
-            color: var(--text-dim); font-size: 10px; cursor: pointer; flex: 1;
-        }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-dim); font-size: 10px; flex: 1; }
         .tab-item span { font-size: 20px; margin-bottom: 4px; }
         .tab-item.active { color: var(--primary); }
 
@@ -45,43 +41,35 @@
         .hidden { display: none !important; }
         
         .kort { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #2d3748; width: 100%; margin-bottom: 15px; }
-        .hero-banner { background: linear-gradient(45deg, #1c222d, #0b0e14); padding: 30px 20px; border-radius: 20px; margin-bottom: 20px; text-align: left; }
-        .hero-banner h1 { font-size: 22px; margin: 0; color: var(--primary); }
+        .hero-banner { background: linear-gradient(45deg, #1c222d, #0b0e14); padding: 30px 20px; border-radius: 20px; margin-bottom: 20px; }
 
         .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .badge-box { aspect-ratio: 1; background: var(--locked); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; color: var(--text-dim); font-size: 9px; }
-        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-        .badge-icon { font-size: 16px; margin-bottom: 2px; }
+        .badge-box { aspect-ratio: 1; background: var(--locked); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; color: var(--text-dim); font-size: 8px; }
+        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; }
 
         input, textarea, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin: 8px 0; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: #000; font-size: 16px; transition: 0.2s; }
-        button:active { transform: scale(0.98); opacity: 0.8; }
+        button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 5px; }
         
-        .stat-box { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid #2d3748; text-align: center; }
+        .stat-box { background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid #2d3748; text-align: center; }
         .stat-val { font-size: 18px; font-weight: bold; color: var(--primary); display: block; }
-        .eval-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .eval-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
 
-        .modal { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid var(--primary); z-index: 2000; max-height: 85vh; overflow-y: auto; transition: 0.3s; }
+        .modal { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid var(--primary); z-index: 2000; max-height: 90vh; overflow-y: auto; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1500; }
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
-        .dag { background: rgba(255,255,255,0.03); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; font-size: 13px; border: 1px solid transparent; position: relative; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .dag { background: rgba(255,255,255,0.03); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; position: relative; }
         .dag-count { position: absolute; top: 2px; right: 2px; background: var(--primary); color: black; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
 
         .tab-btn { background: #1e293b; color: white; padding: 12px; flex: 1; border: none; font-weight: bold; }
         .tab-btn.active { background: var(--primary); color: black; }
-        
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
-        .status-none { background: #334155; color: white; }
-        .status-in { background: rgba(0, 255, 102, 0.2); color: var(--primary); }
-        .status-out { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     </style>
 </head>
 <body>
 
     <div id="login-skærm" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
         <div class="kort" style="max-width:350px;">
-            <h2 style="text-align:center;">🟢 SmashPro Hub</h2>
+            <h2>🟢 SmashPro</h2>
             <input type="email" id="email" placeholder="E-mail">
             <input type="password" id="pw" placeholder="Kode">
             <button onclick="logind()">LOG IND</button>
@@ -93,17 +81,16 @@
         
         <div id="side-hjem">
             <div class="hero-banner">
-                <h1 id="user-welcome">Velkommen</h1>
-                <p style="color:var(--text-dim); margin-top:5px;">Track dine fremskridt i dag.</p>
+                <h2 id="user-welcome" style="margin:0; color:var(--primary);">Hej!</h2>
+                <p style="color:var(--text-dim); margin:5px 0 0 0;">Klar til dagens træning?</p>
             </div>
-            
-            <h4 style="text-align:left; margin-bottom:10px;">Kommende Sessions</h4>
+            <h4 style="text-align:left; margin-bottom:10px;">Kommende Træninger</h4>
             <div id="next-sessions-list"></div>
         </div>
 
         <div id="side-kalender" class="hidden">
             <div class="kort">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <button onclick="skiftMaaned(-1)" style="width:45px; background:none; border:1px solid #334155; color:white;">←</button>
                     <b id="kalender-titel"></b>
                     <button onclick="skiftMaaned(1)" style="width:45px; background:none; border:1px solid #334155; color:white;">→</button>
@@ -111,7 +98,7 @@
                 <div class="grid" id="kalender-grid"></div>
             </div>
             <div id="day-sessions" class="hidden">
-                <h4 id="day-sessions-title" style="text-align:left; margin:15px 0 10px;"></h4>
+                <h4 id="day-sessions-title" style="text-align:left; margin-bottom:10px;"></h4>
                 <div id="day-sessions-list"></div>
             </div>
         </div>
@@ -119,44 +106,43 @@
         <div id="side-evaluering" class="hidden">
             <h2 style="text-align:left;">Evaluering</h2>
             <p id="eval-target-name" style="color:var(--primary); font-weight:bold; text-align:left; margin-bottom:15px;">Vælg session i kalenderen</p>
-            
             <div class="eval-stats-row">
                 <div class="stat-box"><small>I DAG</small><span class="stat-val" id="ev-mot-today">-</span></div>
-                <div class="stat-box" style="border-color:var(--primary);"><small>MOT (UGE)</small><span class="stat-val" id="ev-mot-week">-</span></div>
+                <div class="stat-box"><small>UGE (GNS)</small><span class="stat-val" id="ev-mot-week">-</span></div>
                 <div class="stat-box"><small>MÅNED</small><span class="stat-val" id="ev-mot-month">-</span></div>
             </div>
-
             <div id="eval-form" class="kort hidden">
-                <p>1. Motivation: <b id="val-m" style="float:right; color:var(--primary);">5</b></p>
+                <p>Motivation: <b id="val-m" style="float:right; color:var(--primary);">5</b></p>
                 <input type="range" id="ev-mot" min="1" max="10" value="5" oninput="document.getElementById('val-m').innerText=this.value">
-                <p>2. Koncentration: <b id="val-c" style="float:right; color:var(--primary);">5</b></p>
+                <p>Koncentration: <b id="val-c" style="float:right; color:var(--primary);">5</b></p>
                 <input type="range" id="ev-conc" min="1" max="10" value="5" oninput="document.getElementById('val-c').innerText=this.value">
-                <p>3. Friskhed: <b id="val-f" style="float:right; color:var(--primary);">5</b></p>
+                <p>Friskhed/Krop: <b id="val-f" style="float:right; color:var(--primary);">5</b></p>
                 <input type="range" id="ev-frisk" min="1" max="10" value="5" oninput="document.getElementById('val-f').innerText=this.value">
-                <textarea id="ev-notat" rows="3" placeholder="Noter fra træningen..."></textarea>
+                <textarea id="ev-notat" rows="3" placeholder="Noter..."></textarea>
                 <button onclick="gemEval()" style="background:var(--player-action); color:white;">GEM EVALUERING</button>
             </div>
-            <div id="eval-historik-liste" style="text-align:left;"></div>
+            <div id="eval-historik-liste"></div>
         </div>
 
         <div id="side-achievements" class="hidden">
-            <h2 style="text-align:left;">Achievements</h2>
+            <h2>Achievements</h2>
             <div class="eval-stats-row">
                 <div class="stat-box"><small>SESSIONS</small><span class="stat-val" id="stat-sessions">0</span></div>
                 <div class="stat-box"><small>MINUTTER</small><span class="stat-val" id="stat-minutes">0</span></div>
-                <div class="stat-box"><small>UNLOCKED</small><span class="stat-val" id="stat-unlocked">0/35</span></div>
+                <div class="stat-box"><small>🏆</small><span class="stat-val" id="stat-unlocked">0/35</span></div>
             </div>
             <div class="badge-grid" id="badge-container"></div>
         </div>
 
         <div id="side-profil" class="hidden">
             <div class="kort">
-                <h3>Min Profil</h3>
-                <div id="p-chart" style="width:100%; height:180px;"></div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:15px; text-align:center;">
-                    <div class="stat-box">Fremmøde<br><b id="p-pct" style="color:var(--primary)">-</b></div>
-                    <div class="stat-box">Frisk 🔋<br><b id="p-avgF" style="color:var(--primary)">-</b></div>
-                    <div class="stat-box">Mot 🔥<br><b id="p-avgM" style="color:var(--primary)">-</b></div>
+                <h3>Min Tilstand</h3>
+                <div id="p-chart" style="width:100%; height:200px;"></div>
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:15px;">
+                    <div class="stat-box"><small>PCT</small><br><b id="p-pct">-</b></div>
+                    <div class="stat-box"><small>MOT</small><br><b id="p-avgM">-</b></div>
+                    <div class="stat-box"><small>KONC</small><br><b id="p-avgC">-</b></div>
+                    <div class="stat-box"><small>KROP</small><br><b id="p-avgF">-</b></div>
                 </div>
             </div>
             <div class="kort">
@@ -170,7 +156,7 @@
 
         <div id="side-traener" class="hidden">
             <div style="display:flex; border-radius:12px; overflow:hidden; margin-bottom:15px;">
-                <button class="tab-btn active" id="tab-analyse" onclick="switchTrainerTab('analyse')">Hold Analyse</button>
+                <button class="tab-btn active" id="tab-analyse" onclick="switchTrainerTab('analyse')">Analyse</button>
                 <button class="tab-btn" id="tab-database" onclick="switchTrainerTab('database')">Database</button>
             </div>
             <div id="traener-analyse-view">
@@ -179,19 +165,9 @@
             </div>
             <div id="traener-database-view" class="hidden">
                 <div class="kort">
-                    <select id="drill-main-cat" onchange="checkDrillSub()">
-                        <option value="Benarbejde">1. Benarbejde</option>
-                        <option value="Teknik">2. Teknik</option>
-                        <option value="Træningsøvelser">3. Træningsøvelser</option>
-                        <option value="Mentale øvelser">4. Mentale øvelser</option>
-                        <option value="Taktiske Øvelser">5. Taktiske Øvelser</option>
-                        <option value="Sjove spil">6. Sjove spil</option>
-                    </select>
-                    <div id="drill-sub-cat-wrapper">
-                        <select id="drill-sub-cat"><option value="Offensiv">Offensiv</option><option value="Defensiv">Defensiv</option></select>
-                    </div>
+                    <select id="drill-main-cat"><option value="Benarbejde">Benarbejde</option><option value="Teknik">Teknik</option><option value="Træningsøvelser">Træningsøvelser</option></select>
                     <input type="text" id="drill-title" placeholder="Øvelsens navn">
-                    <textarea id="drill-text" rows="3" placeholder="Beskrivelse..."></textarea>
+                    <textarea id="drill-text" placeholder="Beskrivelse..."></textarea>
                     <button onclick="saveDrill()">GEM ØVELSE</button>
                 </div>
                 <div id="drill-list"></div>
@@ -217,16 +193,16 @@
             <button onclick="svar('Afbud')" style="flex:1; background:#ef4444; color:white;">AFBUD</button>
         </div>
         <button id="btn-eval-session" onclick="gaaTilEval()" style="background:var(--player-action); color:white; margin-top:10px;">EVALUER SESSION</button>
-        <button id="ms-slet" onclick="sletTræning()" class="hidden" style="background:none; border:1px solid red; color:red; margin-top:10px;">Slet Session</button>
-        <div id="ms-spiller-liste" style="margin-top:20px; border-top:1px solid #334155; padding-top:15px; text-align:left;"></div>
-        <button onclick="lukModal()" style="background:none; color:var(--text-dim); margin-top:10px;">Luk</button>
+        <button id="ms-slet" onclick="sletTræning()" class="hidden" style="background:none; border:1px solid red; color:red; margin-top:10px;">SLET SESSION</button>
+        <div id="ms-spiller-liste" style="margin-top:15px; text-align:left;"></div>
+        <button onclick="lukModal()" style="background:none; color:var(--text-dim); margin-top:15px;">Luk</button>
     </div>
 
     <div id="modal-spiller-detail" class="modal hidden">
         <h3 id="sd-name" style="color:var(--primary); margin:0;"></h3>
         <div id="sd-stats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin:15px 0; font-size:11px; text-align:center;"></div>
-        <div id="sd-chart" style="width:100%; height:180px;"></div>
-        <div id="sd-goals" style="text-align:left; font-size:13px; border-top:1px solid #334155; padding-top:10px;"></div>
+        <div id="sd-chart" style="width:100%; height:200px;"></div>
+        <div id="sd-goals" style="text-align:left; font-size:13px; margin-top:10px;"></div>
         <button onclick="lukModal()" style="margin-top:15px;">Luk</button>
     </div>
 
@@ -246,7 +222,6 @@
 
         google.charts.load('current', {'packages':['corechart']});
 
-        // Alle 35 Udfordringer fra V3.5
         const udfordringer = [
             { id: 1, titel: "First Step", desc: "Træn 1 gang", check: (s) => s.total >= 1 },
             { id: 2, titel: "High Five", desc: "Træn 5 gange", check: (s) => s.total >= 5 },
@@ -293,7 +268,7 @@
             if(id==='side-profil') setTimeout(() => hentProfilData(firebase.auth().currentUser.uid, 'p'), 200);
             if(id==='side-evaluering') hentEvalueringSide();
             if(id==='side-achievements') beregnBadgeData();
-            if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); switchTrainerTab('analyse'); }
+            if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); loadDrills(); }
             if(id==='side-kalender') tegnKalender();
             window.scrollTo(0,0);
         }
@@ -304,30 +279,27 @@
                 db.ref('users/' + user.uid).on('value', snap => {
                     const u = snap.val(); if(!u) return;
                     curRole = u.role;
-                    document.getElementById('user-welcome').innerText = "Hej " + u.name;
+                    document.getElementById('user-welcome').innerText = "Hej " + u.name + "!";
                     document.getElementById('traener-tab').classList.toggle('hidden', u.role !== 'traener');
                     opdaterDashboard();
                 });
+                visSide('side-hjem', document.querySelector('.tab-item'));
             } else document.getElementById('login-skærm').classList.remove('hidden');
         });
 
         function opdaterDashboard() {
             const iDag = new Date().toISOString().split('T')[0];
-            const uid = firebase.auth().currentUser.uid;
             db.ref('trainings').orderByChild('date').startAt(iDag).limitToFirst(5).on('value', snap => {
                 const list = document.getElementById('next-sessions-list'); list.innerHTML = "";
                 const data = snap.val() || {};
                 Object.keys(data).forEach(tId => {
                     const t = data[tId];
+                    const d = new Date(t.date);
+                    const ugeDag = ["Søn","Man","Tir","Ons","Tor","Fre","Lør"][d.getDay()];
                     const card = document.createElement('div'); card.className = 'kort'; card.style.textAlign = 'left';
                     card.onclick = () => visSessionModal(tId);
-                    card.innerHTML = `<div id="sb-${tId}" class="status-badge status-none">Svar mangler</div><br><small style="color:var(--primary)">${t.date}</small><h3>${t.title}</h3><small>${t.time || '17:00'}</small>`;
+                    card.innerHTML = `<small style="color:var(--primary)">${ugeDag} ${t.date}</small><h3>${t.title}</h3><small>Kl. ${t.time || '17:00'} (${t.duration || '90'} min)</small>`;
                     list.appendChild(card);
-                    db.ref('attendance/'+tId+'/'+uid).on('value', s => {
-                        const b = document.getElementById('sb-'+tId); if(s.exists()){
-                            b.innerText = s.val().status; b.className = 'status-badge ' + (s.val().status==='Kommer'?'status-in':'status-out');
-                        }
-                    });
                 });
             });
         }
@@ -348,6 +320,10 @@
                     if(synlige.length > 0) {
                         b.style.border = '1px solid var(--primary)';
                         b.style.background = 'rgba(0,255,102,0.1)';
+                        if(synlige.length > 1) {
+                            const c = document.createElement('span'); c.className = 'dag-count'; c.innerText = synlige.length;
+                            b.appendChild(c);
+                        }
                         b.onclick = () => visSessionsForDag(dStr, synlige, trs);
                     } else b.onclick = () => opretSessionDialog(dStr);
                     grid.appendChild(b);
@@ -355,12 +331,20 @@
             });
         }
 
+        function opretSessionDialog(dato) {
+            const n = prompt("Navn på session?");
+            if(!n) return;
+            const t = prompt("Tidspunkt? (f.eks. 17:00)", "17:00");
+            const d = prompt("Varighed i minutter?", "90");
+            db.ref('trainings').push({date:dato, title:n, time:t, duration:d, role:curRole, owner:firebase.auth().currentUser.uid});
+        }
+
         function visSessionsForDag(dato, keys, all) {
             const l = document.getElementById('day-sessions-list');
-            document.getElementById('day-sessions-title').innerText = dato; l.innerHTML = "";
+            document.getElementById('day-sessions-title').innerText = "Sessions d. " + dato; l.innerHTML = "";
             keys.forEach(k => {
                 const t = all[k]; const div = document.createElement('div'); div.className = 'kort';
-                div.innerHTML = `<b>${t.title}</b><br><small>${t.time}</small>`;
+                div.innerHTML = `<b>${t.title}</b><br><small>Kl. ${t.time} (${t.duration} min)</small>`;
                 div.onclick = () => visSessionModal(k);
                 l.appendChild(div);
             });
@@ -372,7 +356,7 @@
             document.getElementById('modal-session').classList.remove('hidden');
             db.ref('trainings/'+id).once('value', snap => {
                 const t = snap.val(); document.getElementById('ms-title').innerText = t.title;
-                document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00");
+                document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00") + " (" + (t.duration||"90") + " min)";
                 document.getElementById('ms-slet').classList.toggle('hidden', curRole!=='traener');
                 hentSvar(id, 'ms-spiller-liste');
             });
@@ -387,51 +371,66 @@
         function sletTræning() { if(confirm("Slet session?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
         function gemMaal() { db.ref('users/'+firebase.auth().currentUser.uid).update({goalSeason:document.getElementById('p-goalS').value, goal5year:document.getElementById('p-goal5').value}).then(()=>alert("Gemt!")); }
         function gemEval() { db.ref('evaluations/'+firebase.auth().currentUser.uid).push({mot:document.getElementById('ev-mot').value, conc:document.getElementById('ev-conc').value, frisk:document.getElementById('ev-frisk').value, notat:document.getElementById('ev-notat').value, dato:new Date().toISOString().split('T')[0], timestamp:firebase.database.ServerValue.TIMESTAMP, trainingId:evalTId}).then(()=>alert("Eval gemt!")); visSide('side-hjem'); }
-        function opretSessionDialog(dato) { const n = prompt("Navn på session?"); if(n) db.ref('trainings').push({date:dato, title:n, time:"17:00", duration:"90", role:curRole, owner:firebase.auth().currentUser.uid}); }
-        function hentSvar(id, target) { db.ref('attendance/'+id).on('value', snap => { let h = ""; const d = snap.val() || {}; Object.keys(d).forEach(u => h += `<div onclick="overstyr('${id}','${u}','${d[u].status}')">${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`); document.getElementById(target).innerHTML = h; }); }
-        function overstyr(tId, uId, s) { if(curRole==='traener') { const n = s==='Kommer'?'Afbud':'Kommer'; db.ref('attendance/'+tId+'/'+uId+'/status').set(n); }}
-
+        function hentSvar(id, target) { db.ref('attendance/'+id).on('value', snap => { let h = ""; const d = snap.val() || {}; Object.keys(d).forEach(u => h += `<div>${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`); document.getElementById(target).innerHTML = h; }); }
+        
         function hentProfilData(uid, prefix) {
-            db.ref('users/'+uid).once('value', s => { const u=s.val(); if(prefix==='p'){document.getElementById('p-goalS').value=u.goalSeason||"";document.getElementById('p-goal5').value=u.goal5year||"";} else {document.getElementById('sd-goals').innerHTML=`<b>Mål:</b> ${u.goalSeason||'-'}`}});
-            db.ref('evaluations/'+uid).limitToLast(10).once('value', snap => {
-                const data = snap.val() || {}; tegnGraf(data, prefix+'-chart');
+            db.ref('users/'+uid).once('value', s => { 
+                const u=s.val(); 
+                if(prefix==='p'){
+                    document.getElementById('p-goalS').value=u.goalSeason||"";
+                    document.getElementById('p-goal5').value=u.goal5year||"";
+                } else {
+                    document.getElementById('sd-goals').innerHTML=`<p><b>Sæson mål:</b> ${u.goalSeason||'-'}</p><p><b>5-års mål:</b> ${u.goal5year||'-'}</p>`;
+                }
+            });
+            db.ref('evaluations/'+uid).on('value', snap => {
+                const data = snap.val() || {}; 
                 const evs = Object.values(data);
+                tegnGraf(data, prefix+'-chart');
                 if(evs.length > 0) {
-                    let m=0, c=0, f=0; evs.forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
-                    document.getElementById(prefix+'-avgM').innerText = (m/evs.length).toFixed(1);
-                    document.getElementById(prefix+'-avgC').innerText = (c/evs.length).toFixed(1);
-                    if(prefix==='p') document.getElementById('p-avgF').innerText = (f/evs.length).toFixed(1);
+                    let m=0, c=0, f=0; evs.slice(-10).forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
+                    document.getElementById(prefix+'-avgM').innerText = (m/evs.slice(-10).length).toFixed(1);
+                    document.getElementById(prefix+'-avgC').innerText = (c/evs.slice(-10).length).toFixed(1);
+                    document.getElementById(prefix+'-avgF').innerText = (f/evs.slice(-10).length).toFixed(1);
                 }
             });
             db.ref('trainings').once('value', tSnap => {
                 const total = Object.keys(tSnap.val()||{}).length;
                 db.ref('attendance').once('value', aSnap => {
-                    let p=0; Object.values(aSnap.val()||{}).forEach(t => { if(t[uid] && t[uid].status==='Kommer') p++; });
+                    let p=0; const att = aSnap.val() || {};
+                    Object.values(att).forEach(t => { if(t[uid] && t[uid].status==='Kommer') p++; });
                     document.getElementById(prefix+'-pct').innerText = (total>0?Math.round((p/total)*100):0)+"%";
                 });
             });
         }
 
         function tegnGraf(data, el) {
-            const dArray = [['Dato','Mot','Konc']];
-            Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).forEach(e => dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5)]));
+            const dArray = [['Dato','Mot','Konc','Krop']];
+            Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).slice(-10).forEach(e => {
+                dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5), parseInt(e.frisk)]);
+            });
             if(dArray.length <= 1) return;
             const chart = new google.visualization.LineChart(document.getElementById(el));
-            chart.draw(google.visualization.arrayToDataTable(dArray), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6'], legend:'none', chartArea:{width:'90%', height:'80%'}, vAxis:{minValue:1, maxValue:10}, hAxis:{textStyle:{color:'#fff'}}});
+            chart.draw(google.visualization.arrayToDataTable(dArray), { 
+                backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', 
+                chartArea:{width:'90%', height:'70%'}, vAxis:{minValue:1, maxValue:10, gridlines:{color:'#334155'}}
+            });
         }
 
         function tegnHoldAnalyse() {
             db.ref('evaluations').once('value', snap => {
                 const all = snap.val() || {}; const daily = {};
                 Object.values(all).forEach(u => Object.values(u).forEach(e => {
-                    if(!daily[e.dato]) daily[e.dato] = {m:0,c:0,count:0};
-                    daily[e.dato].m += parseInt(e.mot); daily[e.dato].c += parseInt(e.conc||5); daily[e.dato].count++;
+                    if(!daily[e.dato]) daily[e.dato] = {m:0,c:0,f:0,count:0};
+                    daily[e.dato].m += parseInt(e.mot); daily[e.dato].c += parseInt(e.conc||5); daily[e.dato].f += parseInt(e.frisk); daily[e.dato].count++;
                 }));
-                const cData = [['Dato','Mot','Konc']];
-                Object.keys(daily).sort().slice(-14).forEach(d => { const s=daily[d]; cData.push([d.substring(5), s.m/s.count, s.c/s.count]); });
+                const cData = [['Dato','Mot','Konc','Krop']];
+                Object.keys(daily).sort().slice(-10).forEach(d => { 
+                    const s=daily[d]; cData.push([d.substring(5), s.m/s.count, s.c/s.count, s.f/s.count]); 
+                });
                 if(cData.length > 1) {
                     const chart = new google.visualization.LineChart(document.getElementById('t-chart'));
-                    chart.draw(google.visualization.arrayToDataTable(cData), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6'], legend:'none', vAxis:{minValue:1, maxValue:10}, chartArea:{width:'85%', height:'80%'} });
+                    chart.draw(google.visualization.arrayToDataTable(cData), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', vAxis:{minValue:1, maxValue:10}, chartArea:{width:'85%', height:'80%'} });
                 }
             });
         }
@@ -444,29 +443,29 @@
                     const allA = aSnap.val() || {};
                     db.ref('evaluations/'+uid).once('value', eSnap => {
                         const allE = eSnap.val() || {};
-                        const stats = processStats(uid, allT, allA, allE);
+                        
+                        let total = 0, mins = 0, mot10 = 0, streak = 0, maxS = 0;
+                        const dates = [];
+                        Object.keys(allA).forEach(tId => {
+                            if(allA[tId][uid] && allA[tId][uid].status==='Kommer') {
+                                total++; mins += parseInt(allT[tId]?.duration || 90);
+                                dates.push(allT[tId].date);
+                            }
+                        });
+                        const uniqueDates = [...new Set(dates)].sort();
+                        uniqueDates.forEach((d, i) => {
+                            if(i > 0 && (new Date(d) - new Date(uniqueDates[i-1])) === 86400000) streak++; else streak = 1;
+                            if(streak > maxS) maxS = streak;
+                        });
+                        mot10 = Object.values(allE).filter(e => parseInt(e.mot)===10).length;
+
+                        const stats = { total, mins, maxStreak: maxS, mot10Count: mot10, multiDay: false, maxInWeek: 0, evalStreak: 0 };
+                        document.getElementById('stat-sessions').innerText = total;
+                        document.getElementById('stat-minutes').innerText = mins;
                         tegnBadges(stats);
                     });
                 });
             });
-        }
-
-        function processStats(uid, trainings, attendance, evals) {
-            let total = 0, mins = 0, mot10 = 0, streak = 0, maxS = 0;
-            const dates = [];
-            Object.keys(attendance).forEach(tId => {
-                if(attendance[tId][uid] && attendance[tId][uid].status==='Kommer') {
-                    total++; mins += parseInt(trainings[tId]?.duration || 90);
-                    dates.push(trainings[tId].date);
-                }
-            });
-            const uniqueDates = [...new Set(dates)].sort();
-            uniqueDates.forEach((d, i) => {
-                if(i > 0 && (new Date(d) - new Date(uniqueDates[i-1])) === 86400000) streak++; else streak = 1;
-                if(streak > maxS) maxS = streak;
-            });
-            mot10 = Object.values(evals).filter(e => parseInt(e.mot)===10).length;
-            return { total, mins, maxStreak: maxS, mot10Count: mot10, multiDay: false, maxInWeek: 0, evalStreak: 0 };
         }
 
         function tegnBadges(s) {
@@ -478,8 +477,6 @@
                 b.innerHTML = `<div class="badge-icon">${win?'🏆':'🔒'}</div><b>${u.titel}</b>`;
                 c.appendChild(b);
             });
-            document.getElementById('stat-sessions').innerText = s.total;
-            document.getElementById('stat-minutes').innerText = s.mins;
             document.getElementById('stat-unlocked').innerText = uc + "/35";
         }
 
@@ -496,29 +493,63 @@
                 Object.entries(snap.val()||{}).forEach(([id, u]) => {
                     if(u.role==='traener') return;
                     const d = document.createElement('div'); d.className = 'kort'; d.style.display='flex'; d.style.justifyContent='space-between';
-                    d.innerHTML = `<span>${u.name}</span><span style="color:var(--primary)">Se Profil ➡️</span>`;
-                    d.onclick = () => { document.getElementById('modal-spiller-detail').classList.remove('hidden'); document.getElementById('overlay').classList.remove('hidden'); document.getElementById('sd-name').innerText = u.name; hentProfilData(id, 'sd'); };
+                    d.innerHTML = `<span>${u.name}</span><span style="color:var(--primary)">Se Alt ➡️</span>`;
+                    d.onclick = () => { 
+                        document.getElementById('modal-spiller-detail').classList.remove('hidden'); 
+                        document.getElementById('overlay').classList.remove('hidden'); 
+                        document.getElementById('sd-name').innerText = u.name; 
+                        document.getElementById('sd-stats').innerHTML = `
+                            <div class="stat-box"><small>PCT</small><br><b id="sd-pct">-</b></div>
+                            <div class="stat-box"><small>MOT</small><br><b id="sd-avgM">-</b></div>
+                            <div class="stat-box"><small>KONC</small><br><b id="sd-avgC">-</b></div>
+                            <div class="stat-box"><small>KROP</small><br><b id="sd-avgF">-</b></div>
+                        `;
+                        hentProfilData(id, 'sd'); 
+                    };
                     list.appendChild(d);
                 });
             });
         }
 
         function hentEvalueringSide() {
-            db.ref('evaluations/'+firebase.auth().currentUser.uid).on('value', snap => {
-                const evs = Object.values(snap.val()||{}).reverse();
+            const uid = firebase.auth().currentUser.uid;
+            db.ref('evaluations/'+uid).on('value', snap => {
+                const data = snap.val() || {};
+                const evs = Object.values(data).reverse();
                 const l = document.getElementById('eval-historik-liste'); l.innerHTML = "<h4>Historik</h4>";
-                evs.forEach(e => l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #334155;"><span>${e.dato}</span><b>Mot: ${e.mot}</b></div>`);
+                
+                let tMot = 0, tMotMonth = 0, countMonth = 0;
+                const iDag = new Date().toISOString().split('T')[0];
+                const denneMaaned = iDag.substring(0, 7);
+
+                evs.forEach(e => {
+                    if(e.dato === iDag) document.getElementById('ev-mot-today').innerText = e.mot;
+                    if(e.dato.includes(denneMaaned)) { tMotMonth += parseInt(e.mot); countMonth++; }
+                    tMot += parseInt(e.mot);
+                    l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #334155;"><span>${e.dato}</span><b>M:${e.mot} K:${e.conc||5} F:${e.frisk}</b></div>`;
+                });
+                document.getElementById('ev-mot-week').innerText = evs.length > 0 ? (tMot / evs.length).toFixed(1) : "-";
+                document.getElementById('ev-mot-month').innerText = countMonth > 0 ? (tMotMonth / countMonth).toFixed(1) : "-";
             });
         }
         
         function saveDrill() {
             const t = document.getElementById('drill-title').value, tx = document.getElementById('drill-text').value;
-            if(t && tx) db.ref('drills').push({main:document.getElementById('drill-main-cat').value, title:t, text:tx}).then(()=>alert("Gemt!"));
+            if(t && tx) db.ref('drills').push({main:document.getElementById('drill-main-cat').value, title:t, text:tx}).then(()=>{
+                alert("Øvelse gemt!");
+                document.getElementById('drill-title').value = "";
+                document.getElementById('drill-text').value = "";
+            });
         }
 
-        function checkDrillSub() {
-            const m = document.getElementById('drill-main-cat').value;
-            document.getElementById('drill-sub-cat-wrapper').classList.toggle('hidden', !["Benarbejde","Teknik"].includes(m));
+        function loadDrills() {
+            db.ref('drills').on('value', snap => {
+                const list = document.getElementById('drill-list'); list.innerHTML = "";
+                const data = snap.val() || {};
+                Object.values(data).forEach(d => {
+                    list.innerHTML += `<div class="kort" style="font-size:13px;"><b>${d.main}: ${d.title}</b><br>${d.text}</div>`;
+                });
+            });
         }
     </script>
 </body>
