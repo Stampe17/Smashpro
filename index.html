@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SmashPro Hub - Elite V3.5 FINAL</title>
+    <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,7 +24,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; 
-            margin: 0; padding-bottom: 90px; overflow-x: hidden;
+            margin: 0; padding-bottom: 95px; overflow-x: hidden;
         }
         
         .tab-bar { 
@@ -33,7 +33,7 @@
             align-items: center; border-top: 1px solid #2d3748; z-index: 1000;
             padding-bottom: env(safe-area-inset-bottom);
         }
-        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-dim); font-size: 10px; flex: 1; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-dim); font-size: 10px; flex: 1; cursor: pointer; }
         .tab-item span { font-size: 20px; margin-bottom: 4px; }
         .tab-item.active { color: var(--primary); }
 
@@ -41,36 +41,89 @@
         .hidden { display: none !important; }
         
         .kort { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #2d3748; width: 100%; margin-bottom: 15px; }
-        .hero-banner { background: linear-gradient(45deg, #1c222d, #0b0e14); padding: 30px 20px; border-radius: 20px; margin-bottom: 20px; }
-
-        .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .badge-box { aspect-ratio: 1; background: var(--locked); border-radius: 12px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; color: var(--text-dim); font-size: 8px; transition: 0.3s; }
-        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-        .badge-icon { font-size: 16px; margin-bottom: 2px; }
-
-        input, textarea, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin: 8px 0; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 5px; }
         
-        .stat-box { background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid #2d3748; text-align: center; }
-        .stat-val { font-size: 18px; font-weight: bold; color: var(--primary); display: block; }
-        .eval-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        /* Kalender Layout Fixed */
+        .kalender-header-grid { 
+            display: grid; 
+            grid-template-columns: 35px repeat(7, 1fr); 
+            gap: 5px; 
+            text-align: center; 
+            margin-bottom: 8px; 
+            font-size: 11px; 
+            color: var(--primary); 
+            font-weight: bold; 
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: 35px repeat(7, 1fr); 
+            gap: 5px; 
+        }
+        
+        .dag { 
+            background: rgba(255,255,255,0.03); 
+            aspect-ratio: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            position: relative; 
+            cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.05); 
+        }
+        .uge-nr { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 10px; 
+            color: var(--text-dim); 
+            font-weight: bold; 
+            background: rgba(255,255,255,0.02); 
+            border-radius: 6px; 
+        }
+        
+        .dag-count { 
+            position: absolute; 
+            top: -5px; 
+            right: -5px; 
+            background: var(--primary); 
+            color: black; 
+            font-size: 9px; 
+            width: 18px; 
+            height: 18px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            font-weight: bold; 
+            border: 2px solid var(--card);
+            z-index: 10;
+        }
 
+        /* Chips & Badges */
+        .chip { background: #1e293b; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; white-space: nowrap; border: 1px solid #334155; cursor: pointer; }
+        .chip.active { background: var(--player-action); border-color: var(--player-action); font-weight: bold; }
+        .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .badge-box { background: var(--locked); border-radius: 15px; border: 1px solid #2d3748; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px 5px; color: var(--text-dim); min-height: 90px; }
+        .badge-box.unlocked { background: rgba(59, 130, 246, 0.2); border-color: var(--player-action); color: white; }
+        .badge-icon { font-size: 24px; margin-bottom: 5px; }
+        
+        input, textarea, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin: 8px 0; font-size: 16px; }
+        button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 5px; cursor: pointer; color: black; }
+        .stat-box { background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid #2d3748; text-align: center; }
         .modal { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); padding: 25px; border-radius: 25px 25px 0 0; border-top: 2px solid var(--primary); z-index: 2000; max-height: 90vh; overflow-y: auto; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1500; }
-
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .dag { background: rgba(255,255,255,0.03); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; position: relative; }
-        .dag-count { position: absolute; top: 2px; right: 2px; background: var(--primary); color: black; font-size: 8px; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
-        
-        .tab-btn { background: #1e293b; color: white; padding: 12px; flex: 1; border: none; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: black; }
+        video { width: 100%; border-radius: 10px; border: 2px solid #333; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: left; font-size: 14px;}
+        th, td { padding: 12px; border-bottom: 1px solid #333; }
+        .pro-player { background: rgba(33, 150, 243, 0.1); }
     </style>
 </head>
 <body>
 
     <div id="login-skærm" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
         <div class="kort" style="max-width:350px;">
-            <h2>🟢 SmashPro</h2>
+            <h2 style="text-align:center;">🟢 SmashPro Elite</h2>
             <input type="email" id="email" placeholder="E-mail">
             <input type="password" id="pw" placeholder="Kode">
             <button onclick="logind()">LOG IND</button>
@@ -79,10 +132,11 @@
     </div>
 
     <div class="main-content" id="app-skærm">
+        
         <div id="side-hjem">
-            <div class="hero-banner">
+            <div class="kort" style="background: linear-gradient(45deg, #1c222d, #0b0e14);">
                 <h2 id="user-welcome" style="margin:0; color:var(--primary);">Hej!</h2>
-                <p style="color:var(--text-dim); margin:5px 0 0 0;">Klar til dagens træning?</p>
+                <p style="color:var(--text-dim); margin:5px 0 0 0;">Klar til dagens smash?</p>
             </div>
             <h4 style="text-align:left; margin-bottom:10px;">Kommende Træninger</h4>
             <div id="next-sessions-list"></div>
@@ -95,41 +149,67 @@
                     <b id="kalender-titel"></b>
                     <button onclick="skiftMaaned(1)" style="width:45px; background:none; border:1px solid #334155; color:white;">→</button>
                 </div>
+                <div class="kalender-header-grid">
+                    <div>Uge</div><div>Man</div><div>Tir</div><div>Ons</div><div>Tor</div><div>Fre</div><div>Lør</div><div>Søn</div>
+                </div>
                 <div class="grid" id="kalender-grid"></div>
             </div>
             <div id="day-sessions" class="hidden">
                 <h4 id="day-sessions-title" style="text-align:left; margin-bottom:10px;"></h4>
                 <div id="day-sessions-list"></div>
+                <button onclick="opretSessionDialog(valgtDatoGlob)" style="background:var(--player-action); color:white;">+ TILFØJ SESSION</button>
+            </div>
+        </div>
+
+        <div id="side-speed" class="hidden">
+            <div class="kort">
+                <h2 style="margin:0;">⚡ Speed Analyzer</h2>
+                <input type="file" id="videoInput" accept="video/*">
+                <video id="v" controls playsinline></video>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button onclick="setStart()" style="background:#4caf50; color:white; flex:1;">1. HIT</button>
+                    <button onclick="setEnd()" style="background:#f44336; color:white; flex:1;">2. LAND</button>
+                </div>
+                <div style="margin-top:10px; text-align:left;">
+                    <label style="font-size:12px;">Afstand (meter):</label>
+                    <input type="number" id="dist" value="6.7" step="0.1">
+                </div>
+                <button onclick="calculateSpeed()" style="background:#2196f3; color:white; width:100%; margin-top:10px;">BEREGN & GEM PB</button>
+                <div id="result-speed" class="hidden" style="margin-top:20px; padding:15px; background:#2a2a2a; border-radius:10px; text-align:center;">
+                    <div id="speedDisplay" style="font-size:40px; color:var(--primary); font-weight:bold;">0 km/t</div>
+                    <p id="pb-msg" style="color:var(--primary); font-size:12px; font-weight:bold;"></p>
+                </div>
+            </div>
+            <div class="kort">
+                <h3>🏆 Leaderboard</h3>
+                <table id="leaderboardBody">
+                    <thead><tr><th>#</th><th>Spiller</th><th style="text-align:right;">Max</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
 
         <div id="side-evaluering" class="hidden">
-            <h2 style="text-align:left;">Evaluering</h2>
-            <p id="eval-target-name" style="color:var(--primary); font-weight:bold; text-align:left; margin-bottom:15px;">Vælg session i kalenderen</p>
-            <div class="eval-stats-row">
-                <div class="stat-box"><small>I DAG</small><span class="stat-val" id="ev-mot-today">-</span></div>
-                <div class="stat-box"><small>UGE (GNS)</small><span class="stat-val" id="ev-mot-week">-</span></div>
-                <div class="stat-box"><small>MÅNED</small><span class="stat-val" id="ev-mot-month">-</span></div>
-            </div>
-            <div id="eval-form" class="kort hidden">
+            <h2>Evaluering</h2>
+            <p id="eval-target-name" style="color:var(--primary); font-weight:bold;"></p>
+            <div id="eval-form" class="kort">
                 <p>Motivation: <b id="val-m" style="float:right; color:var(--primary);">5</b></p>
                 <input type="range" id="ev-mot" min="1" max="10" value="5" oninput="document.getElementById('val-m').innerText=this.value">
                 <p>Koncentration: <b id="val-c" style="float:right; color:var(--primary);">5</b></p>
                 <input type="range" id="ev-conc" min="1" max="10" value="5" oninput="document.getElementById('val-c').innerText=this.value">
                 <p>Friskhed/Krop: <b id="val-f" style="float:right; color:var(--primary);">5</b></p>
                 <input type="range" id="ev-frisk" min="1" max="10" value="5" oninput="document.getElementById('val-f').innerText=this.value">
-                <textarea id="ev-notat" rows="3" placeholder="Noter..."></textarea>
+                <textarea id="ev-notat" rows="3" placeholder="Noter fra træningen..."></textarea>
                 <button onclick="gemEval()" style="background:var(--player-action); color:white;">GEM EVALUERING</button>
             </div>
-            <div id="eval-historik-liste"></div>
         </div>
 
         <div id="side-achievements" class="hidden">
             <h2>Achievements</h2>
-            <div class="eval-stats-row">
-                <div class="stat-box"><small>SESSIONS</small><span class="stat-val" id="stat-sessions">0</span></div>
-                <div class="stat-box"><small>MINUTTER</small><span class="stat-val" id="stat-minutes">0</span></div>
-                <div class="stat-box"><small>🏆</small><span class="stat-val" id="stat-unlocked">0/35</span></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <div class="stat-box"><small>SESSIONS</small><br><b id="stat-sessions" style="color:var(--primary)">0</b></div>
+                <div class="stat-box"><small>MINUTTER</small><br><b id="stat-minutes" style="color:var(--primary)">0</b></div>
+                <div class="stat-box"><small>🏆</small><br><b id="stat-unlocked" style="color:var(--primary)">0/35</b></div>
             </div>
             <div class="badge-grid" id="badge-container"></div>
         </div>
@@ -138,7 +218,7 @@
             <div class="kort">
                 <h3>Min Tilstand</h3>
                 <div id="p-chart" style="width:100%; height:200px;"></div>
-                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:15px;">
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:15px; text-align:center;">
                     <div class="stat-box"><small>PCT</small><br><b id="p-pct">-</b></div>
                     <div class="stat-box"><small>MOT</small><br><b id="p-avgM">-</b></div>
                     <div class="stat-box"><small>KONC</small><br><b id="p-avgC">-</b></div>
@@ -149,7 +229,7 @@
                 <h3>Mål</h3>
                 <textarea id="p-goalS" placeholder="Sæson mål"></textarea>
                 <textarea id="p-goal5" placeholder="5-års mål"></textarea>
-                <button onclick="gemMaal()">GEM MÅL</button>
+                <button onclick="gemMaal()" style="background:var(--player-action); color:white;">GEM MÅL</button>
             </div>
             <button onclick="firebase.auth().signOut()" style="background:#ef4444; color:white;">Log ud</button>
         </div>
@@ -164,8 +244,18 @@
                 <div id="t-spiller-liste"></div>
             </div>
             <div id="traener-database-view" class="hidden">
+                <div class="filter-container">
+                    <div class="chip active" onclick="filterDrills('Alle', this)">Alle</div>
+                    <div class="chip" onclick="filterDrills('Benarbejde', this)">Benarbejde</div>
+                    <div class="chip" onclick="filterDrills('Teknik', this)">Teknik</div>
+                    <div class="chip" onclick="filterDrills('Træningsøvelser', this)">Træning</div>
+                    <div class="chip" onclick="filterDrills('Taktiske øvelser', this)">Taktik</div>
+                    <div class="chip" onclick="filterDrills('Mentale øvelser', this)">Mental</div>
+                    <div class="chip" onclick="filterDrills('Sjove spil', this)">Sjov</div>
+                </div>
                 <div class="kort">
-                    <select id="drill-main-cat"><option value="Benarbejde">Benarbejde</option><option value="Teknik">Teknik</option><option value="Træningsøvelser">Træningsøvelser</option></select>
+                    <select id="drill-main-cat" onchange="checkDrillSub()"><option value="Benarbejde">Benarbejde</option><option value="Teknik">Teknik</option><option value="Træningsøvelser">Træningsøvelser</option><option value="Taktiske øvelser">Taktiske øvelser</option><option value="Mentale øvelser">Mentale øvelser</option><option value="Sjove spil">Sjove spil</option></select>
+                    <select id="drill-sub-cat"><option value="Offensiv">Offensiv</option><option value="Defensiv">Defensiv</option><option value="Andet">Andet</option></select>
                     <input type="text" id="drill-title" placeholder="Øvelsens navn">
                     <textarea id="drill-text" placeholder="Beskrivelse..."></textarea>
                     <button onclick="saveDrill()">GEM ØVELSE</button>
@@ -176,9 +266,9 @@
     </div>
 
     <div class="tab-bar">
-        <div class="tab-item active" onclick="visSide('side-hjem', this)"><span>🏠</span>Dashboard</div>
+        <div class="tab-item active" onclick="visSide('side-hjem', this)"><span>🏠</span>Dash</div>
         <div class="tab-item" onclick="visSide('side-kalender', this)"><span>📅</span>Plan</div>
-        <div class="tab-item" onclick="visSide('side-evaluering', this)"><span>📊</span>Eval</div>
+        <div class="tab-item" onclick="visSide('side-speed', this)"><span>⚡</span>Speed</div>
         <div class="tab-item" onclick="visSide('side-achievements', this)"><span>🏆</span>Badge</div>
         <div id="traener-tab" class="tab-item hidden" onclick="visSide('side-traener', this)"><span>📋</span>Træner</div>
         <div class="tab-item" onclick="visSide('side-profil', this)"><span>👤</span>Profil</div>
@@ -188,14 +278,23 @@
     <div id="modal-session" class="modal hidden">
         <h3 id="ms-title" style="margin:0; color:var(--primary);"></h3>
         <p id="ms-time" style="color:var(--text-dim); font-size:14px; margin-bottom:15px;"></p>
-        <div id="attendance-btns" style="display:flex; gap:10px;">
-            <button onclick="svar('Kommer')" style="flex:1;">KOMMER</button>
+        <div id="attendance-btns" style="display:flex; gap:10px; margin-bottom:15px;">
+            <button onclick="svar('Kommer')" style="flex:1; background:var(--primary); color:black;">KOMMER</button>
             <button onclick="svar('Afbud')" style="flex:1; background:#ef4444; color:white;">AFBUD</button>
         </div>
-        <div id="locked-msg" class="hidden" style="color:#ef4444; font-weight:bold; margin-bottom:10px;">Sessionen er startet - tilmelding lukket.</div>
-        <button id="btn-eval-session" onclick="gaaTilEval()" style="background:var(--player-action); color:white; margin-top:10px;">EVALUER SESSION</button>
+        <p id="locked-msg" class="hidden" style="color:#ef4444; font-size:12px; font-weight:bold; margin-bottom:10px;">Låst - Kun træner kan ændre.</p>
+        <div id="eval-section-modal">
+            <button id="btn-eval-session" onclick="gaaTilEval()" style="background:var(--player-action); color:white; width:100%;">EVALUER SESSION</button>
+            <div id="eval-summary-view" class="hidden" style="background:rgba(0,255,102,0.1); padding:15px; border-radius:15px; border:1px solid var(--primary);">
+                <b style="color:var(--primary); display:block; margin-bottom:5px;">EVALUERING:</b>
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                    <span>Mot: <b id="sum-m"></b></span><span>Konc: <b id="sum-c"></b></span><span>Krop: <b id="sum-f"></b></span>
+                </div>
+                <p id="sum-note" style="font-size:11px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:5px;"></p>
+            </div>
+        </div>
         <button id="ms-slet" onclick="sletTræning()" class="hidden" style="background:none; border:1px solid red; color:red; margin-top:10px;">SLET SESSION</button>
-        <div id="ms-spiller-liste" style="margin-top:15px; text-align:left;"></div>
+        <div id="ms-spiller-liste" style="margin-top:15px; border-top:1px solid #334155; padding-top:15px; text-align:left;"></div>
         <button onclick="lukModal()" style="background:none; color:var(--text-dim); margin-top:15px;">Luk</button>
     </div>
 
@@ -219,7 +318,7 @@
         };
         firebase.initializeApp(config);
         const db = firebase.database();
-        let curRole = 'spiller', visDato = new Date(), selT = null, evalTId = null;
+        let curRole = 'spiller', visDato = new Date(), selT = null, evalTId = null, startTime = 0, endTime = 0, valgtDatoGlob = "";
 
         google.charts.load('current', {'packages':['corechart']});
 
@@ -234,16 +333,16 @@
             { id: 8, titel: "Master", desc: "Træn 70 gange", check: (s) => s.total >= 70 },
             { id: 9, titel: "Legend", desc: "Træn 85 gange", check: (s) => s.total >= 85 },
             { id: 10, titel: "Centurion", desc: "Træn 100 gange", check: (s) => s.total >= 100 },
-            { id: 11, titel: "Warmup", desc: "500 min", check: (s) => s.mins >= 500 },
-            { id: 12, titel: "Hard Work", desc: "1000 min", check: (s) => s.mins >= 1000 },
-            { id: 13, titel: "Power", desc: "1500 min", check: (s) => s.mins >= 1500 },
-            { id: 14, titel: "Grind", desc: "2000 min", check: (s) => s.mins >= 2000 },
-            { id: 15, titel: "Machine", desc: "3000 min", check: (s) => s.mins >= 3000 },
-            { id: 16, titel: "Ironman", desc: "4000 min", check: (s) => s.mins >= 4000 },
-            { id: 17, titel: "Unstoppable", desc: "5000 min", check: (s) => s.mins >= 5000 },
-            { id: 18, titel: "Pro Status", desc: "6500 min", check: (s) => s.mins >= 6500 },
-            { id: 19, titel: "Badminton King", desc: "8000 min", check: (s) => s.mins >= 8000 },
-            { id: 20, titel: "God Mode", desc: "10000 min", check: (s) => s.mins >= 10000 },
+            { id: 11, titel: "Warmup", desc: "Træn 500 min", check: (s) => s.mins >= 500 },
+            { id: 12, titel: "Hard Work", desc: "Træn 1000 min", check: (s) => s.mins >= 1000 },
+            { id: 13, titel: "Power", desc: "Træn 1500 min", check: (s) => s.mins >= 1500 },
+            { id: 14, titel: "Grind", desc: "Træn 2000 min", check: (s) => s.mins >= 2000 },
+            { id: 15, titel: "Machine", desc: "Træn 3000 min", check: (s) => s.mins >= 3000 },
+            { id: 16, titel: "Ironman", desc: "Træn 4000 min", check: (s) => s.mins >= 4000 },
+            { id: 17, titel: "Unstoppable", desc: "Træn 5000 min", check: (s) => s.mins >= 5000 },
+            { id: 18, titel: "Pro Status", desc: "Træn 6500 min", check: (s) => s.mins >= 6500 },
+            { id: 19, titel: "Badminton King", desc: "Træn 8000 min", check: (s) => s.mins >= 8000 },
+            { id: 20, titel: "God Mode", desc: "Træn 10000 min", check: (s) => s.mins >= 10000 },
             { id: 21, titel: "Double Up", desc: "2 gange samme dag", check: (s) => s.multiDay },
             { id: 22, titel: "Week Starter", desc: "2 på en uge", check: (s) => s.maxInWeek >= 2 },
             { id: 23, titel: "Active Week", desc: "4 på en uge", check: (s) => s.maxInWeek >= 4 },
@@ -267,10 +366,10 @@
             document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if(id==='side-profil') setTimeout(() => hentProfilData(firebase.auth().currentUser.uid, 'p'), 200);
-            if(id==='side-evaluering') hentEvalueringSide();
             if(id==='side-achievements') beregnBadgeData();
             if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); loadDrills(); }
             if(id==='side-kalender') tegnKalender();
+            if(id==='side-speed') opdaterLeaderboard();
             window.scrollTo(0,0);
         }
 
@@ -287,58 +386,134 @@
             } else document.getElementById('login-skærm').classList.remove('hidden');
         });
 
+        // Speed Logic
+        const v = document.getElementById('v');
+        document.getElementById('videoInput').addEventListener('change', function() { v.src = URL.createObjectURL(this.files[0]); });
+        function setStart() { startTime = v.currentTime; alert("HIT!"); }
+        function setEnd() { endTime = v.currentTime; alert("LAND!"); }
+        function calculateSpeed() {
+            const dist = parseFloat(document.getElementById('dist').value);
+            const dur = endTime - startTime;
+            if (dur <= 0) return alert("Fejl i markering!");
+            const max = Math.round((dist / dur) * 3.6 * 2.0);
+            document.getElementById('result-speed').classList.remove('hidden');
+            document.getElementById('speedDisplay').innerText = max + " km/t";
+            gemSpeed(max);
+        }
+        function gemSpeed(speed) {
+            const u = firebase.auth().currentUser;
+            db.ref('users/'+u.uid+'/name').once('value', s => {
+                const name = s.val();
+                db.ref('speed_records/'+u.uid).once('value', rs => {
+                    const pb = rs.val() ? rs.val().max : 0;
+                    if(speed > pb) {
+                        db.ref('speed_records/'+u.uid).set({name: name, max: speed, pro: false});
+                        document.getElementById('pb-msg').innerText = "NY PERSONLIG REKORD!";
+                    } else document.getElementById('pb-msg').innerText = "Din PB: " + pb + " km/t";
+                    opdaterLeaderboard();
+                });
+            });
+        }
+        function opdaterLeaderboard() {
+            const pros = [{name:"Axelsen (Pro)", max:419, pro:true}, {name:"Pieler Kolding (Pro)", max:426, pro:true}, {name:"Marín (Pro)", max:353, pro:true}];
+            db.ref('speed_records').once('value', snap => {
+                const list = [...pros];
+                const data = snap.val() || {};
+                Object.values(data).forEach(p => list.push(p));
+                list.sort((a,b) => b.max - a.max);
+                const tbody = document.querySelector('#leaderboardBody tbody');
+                tbody.innerHTML = "";
+                list.slice(0, 10).forEach((p, i) => {
+                    tbody.innerHTML += `<tr class="${p.pro?'pro-player':''}"><td>${i+1}</td><td>${p.name}</td><td style="text-align:right; font-weight:bold; color:var(--primary)">${p.max} km/t</td></tr>`;
+                });
+            });
+        }
+
+        // Calendar Logic
         function opdaterDashboard() {
             const iDag = new Date().toISOString().split('T')[0];
-            db.ref('trainings').orderByChild('date').startAt(iDag).limitToFirst(5).on('value', snap => {
+            db.ref('trainings').on('value', snap => {
                 const list = document.getElementById('next-sessions-list'); list.innerHTML = "";
                 const data = snap.val() || {};
-                Object.keys(data).forEach(tId => {
-                    const t = data[tId];
+                const sorted = Object.keys(data).map(k => ({id: k, ...data[k]})).filter(t => t.date >= iDag).sort((a,b) => a.date.localeCompare(b.date)).slice(0, 5);
+                sorted.forEach(t => {
                     const d = new Date(t.date);
                     const ugeDag = ["Søn","Man","Tir","Ons","Tor","Fre","Lør"][d.getDay()];
                     const card = document.createElement('div'); card.className = 'kort'; card.style.textAlign = 'left';
-                    card.onclick = () => visSessionModal(tId);
+                    card.onclick = () => visSessionModal(t.id);
                     card.innerHTML = `<small style="color:var(--primary)">${ugeDag} ${t.date}</small><h3>${t.title}</h3><small>Kl. ${t.time || '17:00'} (${t.duration || '90'} min)</small>`;
                     list.appendChild(card);
                 });
             });
         }
 
+        function getUgeNr(dato) {
+            const d = new Date(Date.UTC(dato.getFullYear(), dato.getMonth(), dato.getDate()));
+            const dagNr = (d.getUTCDay() + 6) % 7;
+            d.setUTCDate(d.getUTCDate() - dagNr + 3);
+            const førsteTorsdag = d.getTime();
+            d.setUTCMonth(0, 1);
+            if (d.getUTCDay() !== 4) d.setUTCMonth(0, 1 + ((4 - d.getUTCDay()) + 7) % 7);
+            return 1 + Math.ceil((førsteTorsdag - d) / 604800000);
+        }
+
         function tegnKalender() {
-            const grid = document.getElementById('kalender-grid'); grid.innerHTML = "";
+            const grid = document.getElementById('kalender-grid');
+            grid.innerHTML = "";
             const aar = visDato.getFullYear(), maaned = visDato.getMonth();
             document.getElementById('kalender-titel').innerText = ["Januar","Februar","Marts","April","Maj","Juni","Juli","August","September","Oktober","November","December"][maaned] + " " + aar;
-            const start = new Date(aar, maaned, 1).getDay();
-            const tomme = start === 0 ? 6 : start - 1;
-            for (let i = 0; i < tomme; i++) grid.appendChild(document.createElement('div'));
+            
+            const førsteDato = new Date(aar, maaned, 1);
+            let startUgedag = førsteDato.getDay();
+            if (startUgedag === 0) startUgedag = 7; 
+            const dageIMåned = new Date(aar, maaned + 1, 0).getDate();
+
             db.ref('trainings').on('value', snap => {
                 const trs = snap.val() || {};
-                for (let d = 1; d <= new Date(aar, maaned + 1, 0).getDate(); d++) {
-                    const b = document.createElement('div'); b.className = 'dag'; b.innerText = d;
-                    const dStr = `${aar}-${String(maaned + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    const synlige = Object.keys(trs).filter(k => trs[k].date === dStr);
-                    if(synlige.length > 0) {
-                        b.style.border = '1px solid var(--primary)';
-                        b.style.background = 'rgba(0,255,102,0.1)';
-                        if(synlige.length > 1) {
-                            const c = document.createElement('span'); c.className = 'dag-count'; c.innerText = synlige.length;
-                            b.appendChild(c);
+                grid.innerHTML = ""; 
+
+                let currentDato = 1;
+                for (let uge = 0; uge < 6; uge++) {
+                    if (currentDato > dageIMåned) break;
+
+                    const ugeDato = new Date(aar, maaned, currentDato);
+                    const ugeBox = document.createElement('div');
+                    ugeBox.className = 'uge-nr';
+                    ugeBox.innerText = getUgeNr(ugeDato);
+                    grid.appendChild(ugeBox);
+
+                    for (let dag = 1; dag <= 7; dag++) {
+                        if (uge === 0 && dag < startUgedag) {
+                            grid.appendChild(document.createElement('div'));
+                        } else if (currentDato <= dageIMåned) {
+                            const dStr = `${aar}-${String(maaned + 1).padStart(2,'0')}-${String(currentDato).padStart(2,'0')}`;
+                            const b = document.createElement('div');
+                            b.className = 'dag';
+                            b.innerText = currentDato;
+
+                            const synlige = Object.keys(trs).filter(k => trs[k].date === dStr);
+                            if(synlige.length > 0) {
+                                b.style.border = '1px solid var(--primary)';
+                                b.style.background = 'rgba(0,255,102,0.1)';
+                                const c = document.createElement('span');
+                                c.className = 'dag-count';
+                                c.innerText = synlige.length;
+                                b.appendChild(c);
+                            }
+                            
+                            const tempDato = dStr;
+                            b.onclick = () => { valgtDatoGlob = tempDato; visSessionsForDag(tempDato, synlige, trs); };
+                            grid.appendChild(b);
+                            currentDato++;
+                        } else {
+                            grid.appendChild(document.createElement('div'));
                         }
-                        b.onclick = () => visSessionsForDag(dStr, synlige, trs);
-                    } else b.onclick = () => opretSessionDialog(dStr);
-                    grid.appendChild(b);
+                    }
                 }
             });
         }
 
-        function opretSessionDialog(dato) {
-            const n = prompt("Navn på session?");
-            if(!n) return;
-            const t = prompt("Tidspunkt? (f.eks. 17:00)", "17:00");
-            const d = prompt("Varighed i minutter?", "90");
-            db.ref('trainings').push({date:dato, title:n, time:t, duration:d, role:curRole, owner:firebase.auth().currentUser.uid});
-        }
-
+        // Resten af de eksisterende funktioner
         function visSessionsForDag(dato, keys, all) {
             const l = document.getElementById('day-sessions-list');
             document.getElementById('day-sessions-title').innerText = "Sessions d. " + dato; l.innerHTML = "";
@@ -351,41 +526,61 @@
             document.getElementById('day-sessions').classList.remove('hidden');
         }
 
+        function opretSessionDialog(dato) {
+            const n = prompt("Navn?"); if(!n) return;
+            const t = prompt("Tid?", "17:00");
+            const d = prompt("Minutter?", "90");
+            db.ref('trainings').push({date:dato, title:n, time:t, duration:d, owner:firebase.auth().currentUser.uid});
+        }
+
         function visSessionModal(id) {
             selT = id; document.getElementById('overlay').classList.remove('hidden');
             document.getElementById('modal-session').classList.remove('hidden');
+            const uid = firebase.auth().currentUser.uid;
             db.ref('trainings/'+id).once('value', snap => {
-                const t = snap.val();
-                document.getElementById('ms-title').innerText = t.title;
-                document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00") + " (" + (t.duration||"90") + " min)";
-                
-                // Lås tilmelding hvis træningen er startet (undtagen træner)
+                const t = snap.val(); document.getElementById('ms-title').innerText = t.title;
+                document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00");
+                document.getElementById('ms-slet').classList.toggle('hidden', curRole!=='traener');
                 const startTid = new Date(t.date + "T" + (t.time || "00:00"));
                 const erLaast = new Date() > startTid;
                 document.getElementById('attendance-btns').classList.toggle('hidden', erLaast && curRole !== 'traener');
                 document.getElementById('locked-msg').classList.toggle('hidden', !(erLaast && curRole !== 'traener'));
-                
-                document.getElementById('ms-slet').classList.toggle('hidden', curRole!=='traener');
+                db.ref('evaluations/'+uid).orderByChild('trainingId').equalTo(id).once('value', es => {
+                    const btn = document.getElementById('btn-eval-session');
+                    const view = document.getElementById('eval-summary-view');
+                    if(es.exists()) {
+                        btn.classList.add('hidden'); view.classList.remove('hidden');
+                        const ed = Object.values(es.val())[0];
+                        document.getElementById('sum-m').innerText = ed.mot;
+                        document.getElementById('sum-c').innerText = ed.conc;
+                        document.getElementById('sum-f').innerText = ed.frisk;
+                        document.getElementById('sum-note').innerText = ed.notat || "Ingen noter.";
+                    } else {
+                        btn.classList.remove('hidden'); view.classList.add('hidden');
+                    }
+                });
                 hentSvar(id, 'ms-spiller-liste');
             });
         }
 
-        function gaaTilEval() { evalTId = selT; document.getElementById('eval-target-name').innerText = "Eval: " + document.getElementById('ms-title').innerText; document.getElementById('eval-form').classList.remove('hidden'); lukModal(); visSide('side-evaluering'); }
+        function gaaTilEval() { evalTId = selT; document.getElementById('eval-target-name').innerText = "Eval: " + document.getElementById('ms-title').innerText; document.getElementById('side-evaluering').classList.remove('hidden'); document.getElementById('side-kalender').classList.add('hidden'); lukModal(); }
+        function gemEval() { 
+            const uid = firebase.auth().currentUser.uid;
+            db.ref('evaluations/'+uid).push({ mot:document.getElementById('ev-mot').value, conc:document.getElementById('ev-conc').value, frisk:document.getElementById('ev-frisk').value, notat:document.getElementById('ev-notat').value, dato:new Date().toISOString().split('T')[0], timestamp:firebase.database.ServerValue.TIMESTAMP, trainingId:evalTId }).then(()=>{
+                alert("Gemt!"); visSide('side-hjem', document.querySelector('.tab-item'));
+            }); 
+        }
+
         function lukModal() { document.querySelectorAll('.modal, .overlay').forEach(e => e.classList.add('hidden')); }
         function skiftMaaned(d) { visDato.setMonth(visDato.getMonth() + d); tegnKalender(); }
         function logind() { firebase.auth().signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value); }
         function opretBruger() { const n = prompt("Navn?"); firebase.auth().createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value).then(c => db.ref('users/'+c.user.uid).set({name:n, role:'spiller'})); }
         function svar(s) { db.ref('users/'+firebase.auth().currentUser.uid).once('value', snap => { db.ref('attendance/'+selT+'/'+firebase.auth().currentUser.uid).set({status:s, name:snap.val().name}); }); }
-        function sletTræning() { if(confirm("Slet session?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
-        function gemMaal() { db.ref('users/'+firebase.auth().currentUser.uid).update({goalSeason:document.getElementById('p-goalS').value, goal5year:document.getElementById('p-goal5').value}).then(()=>alert("Gemt!")); }
-        function gemEval() { db.ref('evaluations/'+firebase.auth().currentUser.uid).push({mot:document.getElementById('ev-mot').value, conc:document.getElementById('ev-conc').value, frisk:document.getElementById('ev-frisk').value, notat:document.getElementById('ev-notat').value, dato:new Date().toISOString().split('T')[0], timestamp:firebase.database.ServerValue.TIMESTAMP, trainingId:evalTId}).then(()=>alert("Eval gemt!")); visSide('side-hjem'); }
-        
+        function sletTræning() { if(confirm("Slet?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
         function hentSvar(id, target) { 
             db.ref('attendance/'+id).on('value', snap => { 
                 let h = ""; const d = snap.val() || {}; 
-                Object.keys(d).forEach(u => {
-                    h += `<div onclick="overstyr('${id}','${u}','${d[u].status}')" style="margin-bottom:5px;">${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`;
-                }); 
+                Object.keys(d).forEach(u => h += `<div onclick="overstyr('${id}','${u}','${d[u].status}')" style="margin-bottom:5px; font-size:13px; cursor:pointer;">${d[u].status==='Kommer'?'🟢':'🔴'} ${d[u].name}</div>`); 
                 document.getElementById(target).innerHTML = h; 
             }); 
         }
@@ -394,17 +589,12 @@
         function hentProfilData(uid, prefix) {
             db.ref('users/'+uid).once('value', s => { 
                 const u=s.val(); 
-                if(prefix==='p'){
-                    document.getElementById('p-goalS').value=u.goalSeason||"";
-                    document.getElementById('p-goal5').value=u.goal5year||"";
-                } else {
-                    document.getElementById('sd-goals').innerHTML=`<p><b>Mål:</b> ${u.goalSeason||'-'}</p><p><b>5-års:</b> ${u.goal5year||'-'}</p>`;
-                }
+                if(prefix==='p'){ document.getElementById('p-goalS').value=u.goalSeason||""; document.getElementById('p-goal5').value=u.goal5year||""; }
+                else { document.getElementById('sd-goals').innerHTML=`<p><b>Sæson:</b><br>${u.goalSeason||'-'}</p><p><b>5-års:</b><br>${u.goal5year||'-'}</p>`; }
             });
             db.ref('evaluations/'+uid).on('value', snap => {
-                const data = snap.val() || {}; 
+                const data = snap.val() || {}; tegnGraf(data, prefix+'-chart');
                 const evs = Object.values(data);
-                tegnGraf(data, prefix+'-chart');
                 if(evs.length > 0) {
                     let m=0, c=0, f=0; const s10 = evs.slice(-10);
                     s10.forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
@@ -425,144 +615,43 @@
 
         function tegnGraf(data, el) {
             const dArray = [['Dato','Mot','Konc','Krop']];
-            Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).slice(-10).forEach(e => {
-                dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5), parseInt(e.frisk)]);
-            });
+            Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).slice(-10).forEach(e => dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5), parseInt(e.frisk)]));
             if(dArray.length <= 1) return;
             const chart = new google.visualization.LineChart(document.getElementById(el));
-            chart.draw(google.visualization.arrayToDataTable(dArray), { 
-                backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', 
-                chartArea:{width:'90%', height:'70%'}, vAxis:{minValue:1, maxValue:10, gridlines:{color:'#334155'}}
-            });
+            chart.draw(google.visualization.arrayToDataTable(dArray), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', chartArea:{width:'90%', height:'70%'}, vAxis:{minValue:1, maxValue:10, gridlines:{color:'#334155'}}});
         }
 
-        function tegnHoldAnalyse() {
-            db.ref('evaluations').once('value', snap => {
-                const all = snap.val() || {}; const daily = {};
-                Object.values(all).forEach(u => Object.values(u).forEach(e => {
-                    if(!daily[e.dato]) daily[e.dato] = {m:0,c:0,f:0,count:0};
-                    daily[e.dato].m += parseInt(e.mot); daily[e.dato].c += parseInt(e.conc||5); daily[e.dato].f += parseInt(e.frisk); daily[e.dato].count++;
-                }));
-                const cData = [['Dato','Mot','Konc','Krop']];
-                Object.keys(daily).sort().slice(-10).forEach(d => { 
-                    const s=daily[d]; cData.push([d.substring(5), s.m/s.count, s.c/s.count, s.f/s.count]); 
+        function beregnBadgeData() {
+            const uid = firebase.auth().currentUser.uid;
+            db.ref('trainings').once('value', tSnap => {
+                const allT = tSnap.val() || {};
+                db.ref('attendance').once('value', aSnap => {
+                    const allA = aSnap.val() || {};
+                    db.ref('evaluations/'+uid).once('value', eSnap => {
+                        const allE = eSnap.val() || {};
+                        const dates = []; let mins = 0;
+                        Object.keys(allA).forEach(tId => { if(allA[tId] && allA[tId][uid] && allA[tId][uid].status==='Kommer') { dates.push(allT[tId]?.date); mins += parseInt(allT[tId]?.duration || 90); }});
+                        const uDates = [...new Set(dates)].sort();
+                        let s=0, ms=0; uDates.forEach((d,i) => { if(i>0 && (new Date(d)-new Date(uDates[i-1]))===86400000) s++; else s=1; if(s>ms) ms=s; });
+                        const stats = { total: dates.length, mins, maxStreak: ms, mot10Count: Object.values(allE).filter(e=>parseInt(e.mot)===10).length, multiDay: false, maxInWeek: 0, evalStreak: 0 };
+                        document.getElementById('stat-sessions').innerText = stats.total;
+                        document.getElementById('stat-minutes').innerText = mins;
+                        tegnBadges(stats);
+                    });
                 });
-                if(cData.length > 1) {
-                    const chart = new google.visualization.LineChart(document.getElementById('t-chart'));
-                    chart.draw(google.visualization.arrayToDataTable(cData), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', vAxis:{minValue:1, maxValue:10}, chartArea:{width:'85%', height:'80%'} });
-                }
             });
         }
-
- function beregnBadgeData() {
-    const uid = firebase.auth().currentUser.uid;
-    const container = document.getElementById('badge-container');
-    container.innerHTML = "<p style='grid-column: 1/-1;'>Beregner trofæer...</p>";
-
-    // 1. Hent alle træninger for at kende varighed
-    db.ref('trainings').once('value', tSnap => {
-        const allT = tSnap.val() || {};
-        
-        // 2. Hent fremmøde
-        db.ref('attendance').once('value', aSnap => {
-            const allA = aSnap.val() || {};
-            
-            // 3. Hent brugerens egne evalueringer (til de sidste badges)
-            db.ref('evaluations/' + uid).once('value', eSnap => {
-                const allE = eSnap.val() || {};
-                
-                let totalCount = 0;
-                let totalMins = 0;
-                const completedDates = [];
-
-                // Gennemgå alle fremmøder og tæl dem der er "Kommer" for denne bruger
-                Object.keys(allA).forEach(tId => {
-                    if (allA[tId] && allA[tId][uid] && allA[tId][uid].status === 'Kommer') {
-                        totalCount++;
-                        // Find træningen for at se minutter
-                        if (allT[tId]) {
-                            totalMins += parseInt(allT[tId].duration || 90);
-                            completedDates.push(allT[tId].date);
-                        }
-                    }
-                });
-
-                // Beregn streaks (dage i træk)
-                const uniqueDates = [...new Set(completedDates)].sort();
-                let currentStreak = 0;
-                let maxS = 0;
-                uniqueDates.forEach((d, i) => {
-                    if (i > 0) {
-                        const d1 = new Date(uniqueDates[i-1]);
-                        const d2 = new Date(d);
-                        const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
-                        if (diff === 1) currentStreak++;
-                        else currentStreak = 1;
-                    } else {
-                        currentStreak = 1;
-                    }
-                    if (currentStreak > maxS) maxS = currentStreak;
-                });
-
-                const mot10 = Object.values(allE).filter(e => parseInt(e.mot) === 10).length;
-
-                // Saml alle stats
-                const stats = { 
-                    total: totalCount, 
-                    mins: totalMins, 
-                    maxStreak: maxS, 
-                    mot10Count: mot10, 
-                    multiDay: false, // Kan udbygges
-                    maxInWeek: 0, 
-                    evalStreak: 0 
-                };
-
-                // Opdater tallene på skærmen
-                document.getElementById('stat-sessions').innerText = totalCount;
-                document.getElementById('stat-minutes').innerText = totalMins;
-
-                // TEGN ALLE 35 BADGES
-                container.innerHTML = "";
-                let unlockedCount = 0;
-                
-                udfordringer.forEach(u => {
-                    const isUnlocked = u.check(stats);
-                    if (isUnlocked) unlockedCount++;
-                    
-                    const box = document.createElement('div');
-                    box.className = `badge-box ${isUnlocked ? 'unlocked' : ''}`;
-                    box.innerHTML = `
-                        <div class="badge-icon">${isUnlocked ? '🏆' : '🔒'}</div>
-                        <b style="font-size:9px; display:block;">${u.titel}</b>
-                        <span style="font-size:7px; color:rgba(255,255,255,0.5);">${u.desc}</span>
-                    `;
-                    container.appendChild(box);
-                });
-                
-                document.getElementById('stat-unlocked').innerText = unlockedCount + "/35";
-            });
-        });
-    });
-}
 
         function tegnBadges(stats) {
             const container = document.getElementById('badge-container'); container.innerHTML = "";
             let uc = 0;
             udfordringer.forEach(u => {
                 const win = u.check(stats); if(win) uc++;
-                const box = document.createElement('div');
-                box.className = `badge-box ${win ? 'unlocked' : ''}`;
-                box.innerHTML = `<div class="badge-icon">${win ? '🏆' : '🔒'}</div><b>${u.titel}</b>`;
+                const box = document.createElement('div'); box.className = `badge-box ${win ? 'unlocked' : ''}`;
+                box.innerHTML = `<div class="badge-icon">${win ? '🏆' : '🔒'}</div><b>${u.titel}</b><small>${u.desc}</small>`;
                 container.appendChild(box);
             });
             document.getElementById('stat-unlocked').innerText = uc + "/35";
-        }
-
-        function switchTrainerTab(t) {
-            document.getElementById('traener-analyse-view').classList.toggle('hidden', t!=='analyse');
-            document.getElementById('traener-database-view').classList.toggle('hidden', t!=='database');
-            document.getElementById('tab-analyse').classList.toggle('active', t==='analyse');
-            document.getElementById('tab-database').classList.toggle('active', t==='database');
         }
 
         function hentAlleSpillere() {
@@ -574,14 +663,8 @@
                     d.innerHTML = `<span>${u.name}</span><span style="color:var(--primary)">Se Data ➡️</span>`;
                     d.onclick = () => { 
                         document.getElementById('modal-spiller-detail').classList.remove('hidden'); 
-                        document.getElementById('overlay').classList.remove('hidden'); 
                         document.getElementById('sd-name').innerText = u.name; 
-                        document.getElementById('sd-stats').innerHTML = `
-                            <div class="stat-box"><small>PCT</small><br><b id="sd-pct">-</b></div>
-                            <div class="stat-box"><small>MOT</small><br><b id="sd-avgM">-</b></div>
-                            <div class="stat-box"><small>KONC</small><br><b id="sd-avgC">-</b></div>
-                            <div class="stat-box"><small>KROP</small><br><b id="sd-avgF">-</b></div>
-                        `;
+                        document.getElementById('sd-stats').innerHTML = `<div class="stat-box"><small>PCT</small><br><b id="sd-pct">-</b></div><div class="stat-box"><small>MOT</small><br><b id="sd-avgM">-</b></div><div class="stat-box"><small>KONC</small><br><b id="sd-avgC">-</b></div><div class="stat-box"><small>KROP</small><br><b id="sd-avgF">-</b></div>`;
                         hentProfilData(id, 'sd'); 
                     };
                     list.appendChild(d);
@@ -589,36 +672,75 @@
             });
         }
 
-        function hentEvalueringSide() {
-            db.ref('evaluations/'+firebase.auth().currentUser.uid).on('value', snap => {
-                const evs = Object.values(snap.val()||{}).reverse();
-                const l = document.getElementById('eval-historik-liste'); l.innerHTML = "<h4>Historik</h4>";
-                let tMot = 0, tMotMonth = 0, countMonth = 0;
-                const iDag = new Date().toISOString().split('T')[0];
-                const denneMaaned = iDag.substring(0, 7);
-                evs.forEach(e => {
-                    if(e.dato === iDag) document.getElementById('ev-mot-today').innerText = e.mot;
-                    if(e.dato.includes(denneMaaned)) { tMotMonth += parseInt(e.mot); countMonth++; }
-                    tMot += parseInt(e.mot);
-                    l.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #334155; font-size:12px;"><span>${e.dato}</span><b>M:${e.mot} K:${e.conc||5} F:${e.frisk}</b></div>`;
-                });
-                document.getElementById('ev-mot-week').innerText = evs.length > 0 ? (tMot / evs.length).toFixed(1) : "-";
-                document.getElementById('ev-mot-month').innerText = countMonth > 0 ? (tMotMonth / countMonth).toFixed(1) : "-";
-            });
-        }
-        
-        function saveDrill() {
-            const t = document.getElementById('drill-title').value, tx = document.getElementById('drill-text').value;
-            if(t && tx) db.ref('drills').push({main:document.getElementById('drill-main-cat').value, title:t, text:tx}).then(()=>alert("Øvelse gemt!"));
+        function switchTrainerTab(t) {
+            document.getElementById('traener-analyse-view').classList.toggle('hidden', t!=='analyse');
+            document.getElementById('traener-database-view').classList.toggle('hidden', t!=='database');
+            document.getElementById('tab-analyse').classList.toggle('active', t==='analyse');
+            document.getElementById('tab-database').classList.toggle('active', t==='database');
         }
 
-        function loadDrills() {
+        function filterDrills(cat, btn) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            loadDrills(cat);
+        }
+
+        function checkDrillSub() {
+            const m = document.getElementById('drill-main-cat').value;
+            const needsSub = ["Benarbejde", "Teknik", "Træningsøvelser"].includes(m);
+            document.getElementById('drill-sub-cat').classList.toggle('hidden', !needsSub);
+        }
+
+        function saveDrill() {
+            const t = document.getElementById('drill-title').value, tx = document.getElementById('drill-text').value;
+            if(t && tx) db.ref('drills').push({ main:document.getElementById('drill-main-cat').value, sub:document.getElementById('drill-sub-cat').value, title:t, text:tx }).then(()=>alert("Gemt!"));
+        }
+
+        function loadDrills(filter = 'Alle') {
             db.ref('drills').on('value', snap => {
                 const list = document.getElementById('drill-list'); list.innerHTML = "";
                 const data = snap.val() || {};
                 Object.values(data).forEach(d => {
-                    list.innerHTML += `<div class="kort" style="font-size:13px; text-align:left;"><b>${d.main}: ${d.title}</b><br>${d.text}</div>`;
+                    if(filter === 'Alle' || d.main === filter) {
+                        list.innerHTML += `<div class="kort" style="text-align:left;"><b>${d.main} (${d.sub}): ${d.title}</b><br>${d.text}</div>`;
+                    }
                 });
+            });
+        }
+        
+        function tegnHoldAnalyse() {
+            db.ref('evaluations').once('value', snap => {
+                const all = snap.val() || {}; const daily = {};
+                Object.values(all).forEach(u => Object.values(u).forEach(e => {
+                    if(!daily[e.dato]) daily[e.dato] = {m:0,c:0,f:0,count:0};
+                    daily[e.dato].m += parseInt(e.mot); daily[e.dato].c += parseInt(e.conc||5); daily[e.dato].f += parseInt(e.frisk); daily[e.dato].count++;
+                }));
+                const cData = [['Dato','Mot','Konc','Krop']];
+                Object.keys(daily).sort().slice(-10).forEach(d => { const s=daily[d]; cData.push([d.substring(5), s.m/s.count, s.c/s.count, s.f/s.count]); });
+                if(cData.length > 1) {
+                    const chart = new google.visualization.LineChart(document.getElementById('t-chart'));
+                    chart.draw(google.visualization.arrayToDataTable(cData), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', vAxis:{minValue:1, maxValue:10}, chartArea:{width:'85%', height:'80%'} });
+                }
+            });
+        }
+
+        function gemMaal() { 
+            const u = firebase.auth().currentUser;
+            db.ref('users/'+u.uid).update({ goalSeason: document.getElementById('p-goalS').value, goal5year: document.getElementById('p-goal5').value }).then(()=>alert("Mål gemt!")); 
+        }
+
+        function hentEvalueringSide() {
+            db.ref('evaluations/'+firebase.auth().currentUser.uid).on('value', snap => {
+                const evs = Object.values(snap.val()||{}).reverse();
+                let tm=0, cm=0, tw=0, cw=0; const denMa = new Date().toISOString().substring(0,7);
+                const s7 = new Date(); s7.setDate(s7.getDate()-7);
+                evs.forEach(e => {
+                    if(e.dato === new Date().toISOString().split('T')[0]) document.getElementById('ev-mot-today').innerText=e.mot;
+                    if(e.dato.substring(0,7) === denMa) { tm+=parseInt(e.mot); cm++; }
+                    if(new Date(e.dato) >= s7) { tw+=parseInt(e.mot); cw++; }
+                });
+                document.getElementById('ev-mot-month').innerText = cm>0?(tm/cm).toFixed(1):"-";
+                document.getElementById('ev-mot-week').innerText = cw>0?(tw/cw).toFixed(1):"-";
             });
         }
     </script>
