@@ -10,12 +10,12 @@
     <meta name="theme-color" content="#0b0e14">
     <link rel="manifest" href="manifest.json">
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-    
-    <style>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> <script src="https://www.gstatic.com/charts/loader.js"></script>    
+
+<style>
         :root { 
             --primary: #00ff66; --bg: #0b0e14; --sidebar: #12161f; --card: #1c222d; 
             --text: #f8fafc; --text-dim: #94a3b8; --player-action: #3b82f6; 
@@ -117,7 +117,24 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: left; font-size: 14px;}
         th, td { padding: 12px; border-bottom: 1px solid #333; }
         .pro-player { background: rgba(33, 150, 243, 0.1); }
-    </style>
+
+        .dash-header { display: flex; align-items: center; gap: 15px; }
+.profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; background: #2d3748; cursor: pointer; }
+.xp-container { width: 100%; background: #0f172a; height: 12px; border-radius: 6px; margin-top: 8px; overflow: hidden; border: 1px solid #1e293b; }
+.xp-bar { height: 100%; background: linear-gradient(90deg, var(--primary), #facc15); width: 0%; transition: 1.5s cubic-bezier(0.1, 0, 0.3, 1); }
+.rank-tag { font-size: 11px; color: #facc15; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+.av-item { 
+    width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid #2d3748; 
+    cursor: pointer; object-fit: cover; transition: 0.3s;
+}
+.av-item.locked { 
+    filter: brightness(0.2) grayscale(1); cursor: not-allowed; border-color: #ef4444; 
+}
+.av-item.selected { 
+    border-color: var(--primary); box-shadow: 0 0 10px var(--primary); 
+}
+</style>
 </head>
 <body>
 
@@ -133,14 +150,27 @@
 
     <div class="main-content" id="app-skærm">
         
-        <div id="side-hjem">
-            <div class="kort" style="background: linear-gradient(45deg, #1c222d, #0b0e14);">
-                <h2 id="user-welcome" style="margin:0; color:var(--primary);">Hej!</h2>
-                <p style="color:var(--text-dim); margin:5px 0 0 0;">Klar til dagens smash?</p>
+<div id="side-hjem">
+    <div class="kort" style="background: linear-gradient(45deg, #1c222d, #0b0e14);">
+        <div class="dash-header">
+<img id="user-img" class="profile-pic" 
+     onclick="visSide('side-profil', document.querySelector('[onclick*=\'side-profil\']')); setTimeout(function(){ document.getElementById('avatar-sektion').scrollIntoView({behavior: 'smooth'}); }, 300);">
+            <input type="file" id="img-upload" class="hidden" accept="image/*" onchange="uploadImage(this)">
+            
+            <div style="flex:1;">
+                <span class="rank-tag" id="user-rank">Nybegynder</span>
+                <h2 id="user-welcome" style="margin:2px 0; color:var(--primary);">Hej!</h2>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+                    <span id="user-level">Level 1</span>
+                    <span id="xp-text">0 / 100 XP</span>
+                </div>
+                <div class="xp-container"><div class="xp-bar" id="xp-bar"></div></div>
             </div>
-            <h4 style="text-align:left; margin-bottom:10px;">Kommende Træninger</h4>
-            <div id="next-sessions-list"></div>
         </div>
+    </div>
+    <h4 style="text-align:left; margin-bottom:10px;">Kommende Træninger</h4>
+    <div id="next-sessions-list"></div>
+</div>
 
         <div id="side-kalender" class="hidden">
             <div class="kort">
@@ -225,6 +255,12 @@
                     <div class="stat-box"><small>KROP</small><br><b id="p-avgF">-</b></div>
                 </div>
             </div>
+            <div class="kort" id="avatar-sektion"> 
+    <h3>Vælg din Avatar</h3>
+    <p style="font-size: 11px; color: var(--text-dim);">Nye låses op hver 7. level!</p>
+    <div id="avatar-gallery" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+        </div>
+</div>
             <div class="kort">
                 <h3>Mål</h3>
                 <textarea id="p-goalS" placeholder="Sæson mål"></textarea>
@@ -232,6 +268,12 @@
                 <button onclick="gemMaal()" style="background:var(--player-action); color:white;">GEM MÅL</button>
             </div>
             <button onclick="firebase.auth().signOut()" style="background:#ef4444; color:white;">Log ud</button>
+            <div class="kort">
+    <h3>Vælg din Avatar</h3>
+    <p style="font-size: 11px; color: var(--text-dim);">Nye låses op hver 7. level!</p>
+    <div id="avatar-gallery" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+        </div>
+</div>
         </div>
 
         <div id="side-traener" class="hidden">
@@ -365,7 +407,12 @@
             if(btn) btn.classList.add('active');
             document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-            if(id==='side-profil') setTimeout(() => hentProfilData(firebase.auth().currentUser.uid, 'p'), 200);
+if(id==='side-profil') {
+    setTimeout(function() { 
+        hentProfilData(firebase.auth().currentUser.uid, 'p');
+        tegnAvatarGalleri(); 
+    }, 200);
+}
             if(id==='side-achievements') beregnBadgeData();
             if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); loadDrills(); }
             if(id==='side-kalender') tegnKalender();
@@ -373,19 +420,34 @@
             window.scrollTo(0,0);
         }
 
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('login-skærm').classList.add('hidden');
-                db.ref('users/' + user.uid).on('value', snap => {
-                    const u = snap.val(); if(!u) return;
-                    curRole = u.role;
-                    document.getElementById('user-welcome').innerText = "Hej " + u.name + "!";
-                    document.getElementById('traener-tab').classList.toggle('hidden', u.role !== 'traener');
-                    opdaterDashboard();
-                });
-            } else document.getElementById('login-skærm').classList.remove('hidden');
-        });
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        document.getElementById('login-skærm').classList.add('hidden');
+        syncUserData(); 
 
+        db.ref('users/' + user.uid).on('value', function(snap) {
+            var u = snap.val(); 
+            if(!u) return;
+            
+            curRole = u.role; // Gemmer rollen ('traener' eller 'spiller')
+            document.getElementById('user-welcome').innerText = "Hej " + u.name + "!";
+            
+            // TJEK ROLLE: Vis/skjul træner-menuen
+            const erTraener = (u.role === 'traener');
+            document.getElementById('traener-tab').classList.toggle('hidden', !erTraener);
+            
+            // NYT: Find din "Opret" knap og skjul den for spillere
+            const opretKnap = document.getElementById('opret-traening-knap'); // Tjek om dit ID er dette
+            if(opretKnap) {
+                opretKnap.style.display = erTraener ? 'block' : 'none';
+            }
+            
+            opdaterDashboard();
+        });
+    } else {
+        document.getElementById('login-skærm').classList.remove('hidden');
+    }
+});
         // Speed Logic
         const v = document.getElementById('v');
         document.getElementById('videoInput').addEventListener('change', function() { v.src = URL.createObjectURL(this.files[0]); });
@@ -457,61 +519,87 @@
             return 1 + Math.ceil((førsteTorsdag - d) / 604800000);
         }
 
-        function tegnKalender() {
-            const grid = document.getElementById('kalender-grid');
-            grid.innerHTML = "";
-            const aar = visDato.getFullYear(), maaned = visDato.getMonth();
-            document.getElementById('kalender-titel').innerText = ["Januar","Februar","Marts","April","Maj","Juni","Juli","August","September","Oktober","November","December"][maaned] + " " + aar;
-            
-            const førsteDato = new Date(aar, maaned, 1);
-            let startUgedag = førsteDato.getDay();
-            if (startUgedag === 0) startUgedag = 7; 
-            const dageIMåned = new Date(aar, maaned + 1, 0).getDate();
+function tegnKalender() {
+    const grid = document.getElementById('kalender-grid');
+    grid.innerHTML = "";
+    const aar = visDato.getFullYear(), maaned = visDato.getMonth();
+    document.getElementById('kalender-titel').innerText = ["Januar","Februar","Marts","April","Maj","Juni","Juli","August","September","Oktober","November","December"][maaned] + " " + aar;
+    
+    const førsteDato = new Date(aar, maaned, 1);
+    let startUgedag = førsteDato.getDay();
+    if (startUgedag === 0) startUgedag = 7; 
+    const dageIMåned = new Date(aar, maaned + 1, 0).getDate();
 
-            db.ref('trainings').on('value', snap => {
-                const trs = snap.val() || {};
-                grid.innerHTML = ""; 
+    db.ref('trainings').on('value', snap => {
+        const trs = snap.val() || {};
+        grid.innerHTML = ""; 
+        const uid = firebase.auth().currentUser.uid;
 
-                let currentDato = 1;
-                for (let uge = 0; uge < 6; uge++) {
-                    if (currentDato > dageIMåned) break;
+        let currentDato = 1;
+        for (let uge = 0; uge < 6; uge++) {
+            if (currentDato > dageIMåned) break;
 
-                    const ugeDato = new Date(aar, maaned, currentDato);
-                    const ugeBox = document.createElement('div');
-                    ugeBox.className = 'uge-nr';
-                    ugeBox.innerText = getUgeNr(ugeDato);
-                    grid.appendChild(ugeBox);
+            const ugeDato = new Date(aar, maaned, currentDato);
+            const ugeBox = document.createElement('div');
+            ugeBox.className = 'uge-nr';
+            ugeBox.innerText = getUgeNr(ugeDato);
+            grid.appendChild(ugeBox);
 
-                    for (let dag = 1; dag <= 7; dag++) {
-                        if (uge === 0 && dag < startUgedag) {
-                            grid.appendChild(document.createElement('div'));
-                        } else if (currentDato <= dageIMåned) {
-                            const dStr = `${aar}-${String(maaned + 1).padStart(2,'0')}-${String(currentDato).padStart(2,'0')}`;
-                            const b = document.createElement('div');
-                            b.className = 'dag';
-                            b.innerText = currentDato;
+            for (let dag = 1; dag <= 7; dag++) {
+                if (uge === 0 && dag < startUgedag) {
+                    grid.appendChild(document.createElement('div'));
+                } else if (currentDato <= dageIMåned) {
+                const dStr = aar + "-" + String(maaned + 1).padStart(2, '0') + "-" + String(currentDato).padStart(2, '0');
+                    
+const synligeKeys = Object.keys(trs).filter(k => {
+    const t = trs[k];
+    const erDagens = t.date === dStr;
+    const uid = firebase.auth().currentUser.uid;
+    
+    // NY REGEL:
+    // 1. Er det min egen træning? (t.spillerUid === uid)
+    // 2. Er det en fællestræning fra klubben/træneren? (t.type === 'faelles')
+    const harAdgang = (t.spillerUid === uid || t.type === 'faelles');
+    
+    return erDagens && harAdgang;
+});
 
-                            const synlige = Object.keys(trs).filter(k => trs[k].date === dStr);
-                            if(synlige.length > 0) {
-                                b.style.border = '1px solid var(--primary)';
-                                b.style.background = 'rgba(0,255,102,0.1)';
-                                const c = document.createElement('span');
-                                c.className = 'dag-count';
-                                c.innerText = synlige.length;
-                                b.appendChild(c);
-                            }
-                            
-                            const tempDato = dStr;
-                            b.onclick = () => { valgtDatoGlob = tempDato; visSessionsForDag(tempDato, synlige, trs); };
-                            grid.appendChild(b);
-                            currentDato++;
-                        } else {
-                            grid.appendChild(document.createElement('div'));
-                        }
-                    }
+                    const b = document.createElement('div');
+                    b.className = 'dag';
+                    b.innerText = currentDato;
+
+if(synligeKeys.length > 0) {
+    // Vi tjekker den første træning på dagen for at bestemme farven
+    const førsteTræning = trs[synligeKeys[0]];
+    
+    if (førsteTræning.type === 'faelles') {
+        // TRÆNERENS/KLUBBENS TRÆNING = GRØN
+        b.style.border = '1px solid var(--primary)';
+        b.style.background = 'rgba(0,255,102,0.1)';
+    } else {
+        // SPILLERENS EGEN TRÆNING = BLÅ
+        b.style.border = '1px solid #3b82f6';
+        b.style.background = 'rgba(59, 130, 246, 0.1)';
+    }
+    
+    const c = document.createElement('span');
+    c.className = 'dag-count';
+    c.innerText = synligeKeys.length;
+    b.appendChild(c);
+}
+                    
+                    const tempDato = dStr;
+                    // Vi sender kun de 'synligeKeys' videre til visnings-funktionen
+                    b.onclick = () => { valgtDatoGlob = tempDato; visSessionsForDag(tempDato, synligeKeys, trs); };
+                    grid.appendChild(b);
+                    currentDato++;
+                } else {
+                    grid.appendChild(document.createElement('div'));
                 }
-            });
+            }
         }
+    });
+}
 
         // Resten af de eksisterende funktioner
         function visSessionsForDag(dato, keys, all) {
@@ -526,12 +614,29 @@
             document.getElementById('day-sessions').classList.remove('hidden');
         }
 
-        function opretSessionDialog(dato) {
-            const n = prompt("Navn?"); if(!n) return;
-            const t = prompt("Tid?", "17:00");
-            const d = prompt("Minutter?", "90");
-            db.ref('trainings').push({date:dato, title:n, time:t, duration:d, owner:firebase.auth().currentUser.uid});
-        }
+function opretSessionDialog(dato) {
+    const n = prompt("Navn?"); if(!n) return;
+    const t = prompt("Tid?", "17:00");
+    const d = prompt("Minutter?", "90");
+    const uid = firebase.auth().currentUser.uid;
+
+    // Vi henter lige brugerens rolle hurtigt for at være 100% sikre
+    db.ref('users/' + uid + '/role').once('value').then(snap => {
+        const rolle = snap.val();
+        const typeVal = (rolle === 'traener') ? 'faelles' : 'privat';
+
+        db.ref('trainings').push({
+            date: dato,
+            title: n,
+            time: t,
+            duration: d,
+            spillerUid: uid,
+            type: typeVal
+        }).then(() => {
+            alert("Træning oprettet!");
+        }).catch(err => alert("Fejl: " + err.message));
+    });
+}
 
         function visSessionModal(id) {
             selT = id; document.getElementById('overlay').classList.remove('hidden');
@@ -540,7 +645,8 @@
             db.ref('trainings/'+id).once('value', snap => {
                 const t = snap.val(); document.getElementById('ms-title').innerText = t.title;
                 document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00");
-                document.getElementById('ms-slet').classList.toggle('hidden', curRole!=='traener');
+                const erEjer = (t.spillerUid === firebase.auth().currentUser.uid);
+document.getElementById('ms-slet').classList.toggle('hidden', !erEjer && curRole !== 'traener');
                 const startTid = new Date(t.date + "T" + (t.time || "00:00"));
                 const erLaast = new Date() > startTid;
                 document.getElementById('attendance-btns').classList.toggle('hidden', erLaast && curRole !== 'traener');
@@ -743,6 +849,84 @@
                 document.getElementById('ev-mot-week').innerText = cw>0?(tw/cw).toFixed(1):"-";
             });
         }
+    function syncUserData() {
+    const uid = firebase.auth().currentUser.uid;
+    
+    db.ref('xp_points/' + uid).on('value', function(snap) {
+        const xp = snap.val() || 0;
+        const level = Math.floor(xp / 100) + 1;
+        const xpInLevel = xp % 100;
+        
+        document.getElementById('user-level').innerText = "Level " + level;
+        document.getElementById('xp-text').innerText = xpInLevel + " / 100 XP";
+        document.getElementById('xp-bar').style.width = xpInLevel + "%";
+        
+        let rank = "Nybegynder";
+        if (level >= 10) rank = "Øvet";
+        if (level >= 20) rank = "Talent";
+        if (level >= 30) rank = "Elite";
+        if (level >= 50) rank = "LEGENDE";
+        document.getElementById('user-rank').innerText = "Rank: " + rank;
+    });
+
+    window.uploadImage = function(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const ref = storage.ref('profile_pics/' + uid);
+        ref.put(file).then(function() {
+            ref.getDownloadURL().then(function(url) {
+                db.ref('users/' + uid + '/photoURL').set(url);
+            });
+        });
+    };
+
+    db.ref('users/' + uid + '/photoURL').on('value', function(snap) {
+        if (snap.val()) document.getElementById('user-img').src = snap.val();
+    });
+}
+
+function tegnAvatarGalleri() {
+    const galleri = document.getElementById('avatar-gallery');
+    galleri.innerHTML = "";
+    
+    // Her er dine 10 badminton avatars (links til ikoner)
+    const avatars = [
+        "https://cdn-icons-png.flaticon.com/512/3306/3306560.png", // Start 1
+        "https://cdn-icons-png.flaticon.com/512/3306/3306567.png", // Start 2
+        "https://cdn-icons-png.flaticon.com/512/3306/3306574.png", // Start 3
+        "https://cdn-icons-png.flaticon.com/512/624/624103.png",   // Level 7
+        "https://cdn-icons-png.flaticon.com/512/103/103956.png",   // Level 14
+        "https://cdn-icons-png.flaticon.com/512/3306/3306613.png", // Level 21
+        "https://cdn-icons-png.flaticon.com/512/3306/3306622.png", // Level 28
+        "https://cdn-icons-png.flaticon.com/512/3306/3306634.png", // Level 35
+        "https://cdn-icons-png.flaticon.com/512/3306/3306645.png", // Level 42
+        "https://cdn-icons-png.flaticon.com/512/3306/3306651.png"  // Level 49
+    ];
+
+    db.ref('xp_points/' + firebase.auth().currentUser.uid).once('value', function(snap) {
+        const xp = snap.val() || 0;
+        const level = Math.floor(xp / 100) + 1;
+
+        avatars.forEach(function(url, index) {
+            // Beregn hvilket level der kræves (3 første er gratis, derefter +7 pr. stk)
+            const krævetLevel = index < 3 ? 1 : (index - 2) * 7;
+            const erLaast = level < krævetLevel;
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'av-item ' + (erLaast ? 'locked' : '');
+            img.title = erLaast ? "Kræver Level " + krævetLevel : "Vælg Avatar";
+            
+            if (!erLaast) {
+                img.onclick = function() {
+                    db.ref('users/' + firebase.auth().currentUser.uid + '/photoURL').set(url);
+                    alert("Ny Avatar valgt!");
+                };
+            }
+            galleri.appendChild(img);
+        });
+    });
+}
     </script>
 </body>
 </html>
