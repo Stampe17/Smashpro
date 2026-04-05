@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SmashPro - Match Center Master</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <style>
+        :root { 
+            --primary: #3b82f6; --bg: #0b0e14; --card: #1c222d; 
+            --text: #f8fafc; --text-dim: #94a3b8; --win: #00ff66; --loss: #ef4444; --xp: #facc15;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 20px; }
+        .main-content { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .kort { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #2d3748; margin-bottom: 15px; }
+        .hidden { display: none !important; }
+        
+        .sub-menu { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .sub-btn { padding: 10px 20px; background: #1e293b; border-radius: 20px; font-size: 13px; cursor: pointer; border: none; color: white; white-space: nowrap; }
+        .sub-btn.active { background: var(--primary); font-weight: bold; }
+        
+        .rank-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #2d3748; align-items: center; background: rgba(255,255,255,0.02); margin-bottom: 5px; border-radius: 10px; font-size: 14px; }
+        .xp-badge { font-size: 10px; background: var(--xp); color: black; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: 5px; }
+        
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: white; margin: 8px 0; font-size: 16px; }
+        
+        /* FIX FOR SYNLIGHED I GENERATOR DROPDOWN */
+        .gen-lvl { 
+            background-color: #1e293b !important; 
+            color: white !important; 
+            border: 1px solid #3b82f6 !important;
+            appearance: none;
+            -webkit-appearance: none;
+            padding: 2px 5px !important;
+            text-align: center;
+        }
+
+        button { width: 100%; padding: 16px; background: var(--primary); border: none; border-radius: 12px; font-weight: bold; color: white; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        
+        .search-results { background: #0f172a; border-radius: 10px; max-height: 150px; overflow-y: auto; border: 1px solid #334155; margin-bottom: 10px; }
+        .search-item { padding: 10px; border-bottom: 1px solid #1c222d; cursor: pointer; font-size: 13px; }
+
+        .modal { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card); padding: 25px; border-radius: 25px 25px 0 0; border-top: 3px solid var(--primary); z-index: 2000; max-height: 90vh; overflow-y: auto; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1500; }
+        
+        .gen-row { display: grid; grid-template-columns: 25px 30px 1fr 50px 40px 30px; gap: 5px; align-items: center; padding: 8px; border-bottom: 1px solid #333; }
+        .clickable-match { cursor: pointer; border-left: 4px solid gold; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-skærm" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
+        <div class="kort" style="max-width:350px; text-align:center;">
+            <h2 style="color:var(--primary);">⚔️ Match Center</h2>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pw" placeholder="Kode">
+            <button onclick="logind()">LOG IND</button>
+        </div>
+    </div>
+
+    <div class="main-content" id="app-skærm">
+        <div class="sub-menu">
+            <div class="sub-btn" onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.2);">← Retur</div>
+            <div class="sub-btn active" onclick="visSub('ranking', this)">Rangliste</div>
+            <div class="sub-btn" onclick="visSub('h2h', this)">H2H</div>
+            <div class="sub-btn" onclick="visSub('tactic', this)">Taktik</div>
+            <div id="traener-menu" class="sub-btn hidden" onclick="visSub('generator', this)">Kamprunder</div>
+        </div>
+
+        <div id="section-ranking">
+            <div id="ranking-list"></div>
+            <button onclick="openModal('modal-add-match')" style="background:var(--win); color:black;">+ INDBERET KLUBKAMP</button>
+        </div>
+
+        <div id="section-h2h" class="hidden">
+            <div class="kort">
+                <h3>Søg H2H Historik</h3>
+                <input type="text" id="h2h-s1" placeholder="Spiller 1..." oninput="searchPlayer(this, 'res-s1', 'val-s1')">
+                <div id="res-s1" class="search-results hidden"></div>
+                <input type="hidden" id="val-s1">
+
+                <input type="text" id="h2h-s2" placeholder="Spiller 2..." oninput="searchPlayer(this, 'res-s2', 'val-s2')">
+                <div id="res-s2" class="search-results hidden"></div>
+                <input type="hidden" id="val-s2">
+
+                <button onclick="showH2HHistory()">VIS HISTORIK 🔍</button>
+                <div id="h2h-stats-display" class="hidden">
+                    <h1 id="h2h-total-score" style="text-align:center; font-size:40px; margin:20px 0;">0 - 0</h1>
+                    <div id="h2h-history-list"></div>
+                </div>
+            </div>
+            <button onclick="openModal('modal-add-h2h')">+ REGISTRER EKSTERN KAMP</button>
+        </div>
+
+        <div id="section-tactic" class="hidden">
+            <div class="kort">
+                <h3>🧠 Strategi Generator</h3>
+                <select id="tactic-weakness">
+                    <option value="backhand">Svag baghånd</option>
+                    <option value="speed">Langsomme fødder</option>
+                    <option value="net">Dårlig ved nettet</option>
+                    <option value="mental">Mister fokus let</option>
+                    <option value="stamina">Dårlig kondition</option>
+                </select>
+                <button onclick="generateGamePlan()">FÅ GAME PLAN</button>
+                <div id="tactic-result" class="hidden" style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
+                    <b style="color:var(--primary);">Din Plan:</b>
+                    <p id="tactic-text" style="font-style:italic; font-size:14px;"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-generator" class="hidden">
+            <div class="kort">
+                <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0;">Generator</h3>
+                    <b id="count-display" style="color:var(--primary); font-size:14px;">0 spillere</b>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
+                    <span>Baner:</span>
+                    <input type="number" id="gen-courts" value="4" style="width:50px; padding:5px; margin:0;">
+                    <button onclick="openModal('modal-add-guest')" style="width:auto; padding:8px 12px; margin:0; font-size:12px; background:#334155;">+ GÆST</button>
+                </div>
+                <div id="gen-player-list"></div>
+                <button onclick="generateRounds()">GENERER RUNDER ⚙️</button>
+            </div>
+            <div id="generated-output"></div>
+        </div>
+    </div>
+
+    <div id="modal-add-match" class="modal hidden">
+        <h3>Klubkamp</h3>
+        <p style="margin:0; font-size:14px; color:var(--win);">Indberetter: <b id="m-fixed-p1"></b></p>
+        <select id="m-opp"></select>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><input type="text" id="m-s1" placeholder="21-10"><input type="text" id="m-s2" placeholder="21-12"></div>
+        <input type="text" id="m-s3" placeholder="Sæt 3">
+        <select id="m-winner"><option value="me">Jeg vandt</option><option value="opp">Modstander vandt</option></select>
+        <button onclick="saveKlubMatch()">GEM & FÅ XP</button>
+        <button onclick="lukModal()" style="background:none;">Annuller</button>
+    </div>
+
+    <div id="modal-round-result" class="modal hidden">
+        <h3 id="rr-title">Resultat</h3>
+        <input type="hidden" id="rr-p1-id"><input type="hidden" id="rr-p2-id">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><input type="text" id="rr-s1" placeholder="21-10"><input type="text" id="rr-s2" placeholder="21-12"></div>
+        <input type="text" id="rr-s3" placeholder="Sæt 3"><select id="rr-winner"><option value="1" id="rr-name1"></option><option value="2" id="rr-name2"></option></select>
+        <button onclick="saveRoundResult()">GEM & OPDATER RANG</button>
+        <button onclick="lukModal()" style="background:none;">Annuller</button>
+    </div>
+
+    <div id="modal-add-guest" class="modal hidden">
+        <h3>Tilføj Gæst</h3>
+        <input type="text" id="guest-name" placeholder="Navn">
+        <select id="guest-lvl"><option value="E">E</option><option value="M">M</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D" selected>D</option></select>
+        <button onclick="addGuest()">TILFØJ</button>
+        <button onclick="lukModal()" style="background:none;">Luk</button>
+    </div>
+
+    <div id="modal-add-h2h" class="modal hidden">
+        <h3>Ny Ekstern Kamp</h3>
+        <input type="text" id="h2h-new-p1" placeholder="Spiller 1" oninput="searchPlayer(this, 'new-res1', 'new-val1')">
+        <div id="new-res1" class="search-results hidden"></div><input type="hidden" id="new-val1">
+        <input type="text" id="h2h-new-p2" placeholder="Spiller 2" oninput="searchPlayer(this, 'new-res2', 'new-val2')">
+        <div id="new-res2" class="search-results hidden"></div><input type="hidden" id="new-val2">
+        <input type="text" id="h2h-ext-club" placeholder="Ny Klub"><input type="text" id="h2h-score-val" placeholder="Resultat"><select id="h2h-winner-select"><option value="1">S1 vandt</option><option value="2">S2 vandt</option></select>
+        <button onclick="saveNewH2H()">GEM KAMP</button>
+        <button onclick="lukModal()" style="background:none;">Annuller</button>
+    </div>
+
+    <div id="overlay" class="overlay hidden" onclick="lukModal()"></div>
+
+    <script>
+        const config = {
+            apiKey: "AIzaSyBzDeP_CdzJ7d-Y75edPt3g0OgK5-1_yGk",
+            authDomain: "badmintonapp-6f2c3.firebaseapp.com",
+            databaseURL: "https://badmintonapp-6f2c3-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "badmintonapp-6f2c3",
+            storageBucket: "badmintonapp-6f2c3.firebasestorage.app",
+            messagingSenderId: "681145707894",
+            appId: "1:681145707894:web:259251fc2ff3c89a4b9e57"
+        };
+        firebase.initializeApp(config);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let curUser = null, allUsers = [], extPlayers = [], rankingData = [], guests = [];
+
+        auth.onAuthStateChanged(function(user) {
+            if (user) { curUser = user; document.getElementById('login-skærm').classList.add('hidden'); loadData(); }
+            else { document.getElementById('login-skærm').classList.remove('hidden'); }
+        });
+
+        function loadData() {
+            db.ref('users').on('value', function(snap) {
+                const data = snap.val() || {};
+                allUsers = Object.keys(data).map(function(id) {
+                    return { id: id, name: data[id].name, role: data[id].role, lvl: data[id].lvl, club: 'Klubben' };
+                });
+                const me = allUsers.find(function(u) { return u.id === curUser.uid; });
+                if (me) {
+                    document.getElementById('m-fixed-p1').innerText = me.name;
+                    if (me.role === 'traener') document.getElementById('traener-menu').classList.remove('hidden');
+                }
+                updateRanking(); updateSelects(); updateGenList();
+            });
+            db.ref('external_players').on('value', function(snap) {
+                const data = snap.val() || {};
+                extPlayers = Object.keys(data).map(function(id) { return { id: id, name: data[id].name, club: data[id].club }; });
+            });
+        }
+
+        function updateRanking() {
+            db.ref('ranking_points').on('value', function(snap) {
+                const pts = snap.val() || {};
+                db.ref('match_counts').on('value', function(mSnap) {
+                    const counts = mSnap.val() || {};
+                    db.ref('xp_points').on('value', function(xpSnap) {
+                        const xp = xpSnap.val() || {};
+                        rankingData = allUsers.map(function(u) { 
+                            return { id: u.id, name: u.name, p: pts[u.id] || 0, count: counts[u.id] || 0, xp: xp[u.id] || 0 }; 
+                        }).sort(function(a, b) { return b.p - a.p; });
+                        
+                        document.getElementById('ranking-list').innerHTML = rankingData.map(function(u, i) {
+                            return '<div class="rank-row"><span class="rank-pos">#' + (i + 1) + '</span><span style="flex:1;">' + u.name + '<span class="xp-badge">LVL '+Math.floor(u.xp/100)+'</span></span><b>' + Math.round(u.p) + ' p <small style="color:var(--text-dim);">(' + u.count + ')</small></b></div>';
+                        }).join('');
+                    });
+                });
+            });
+        }
+
+        function saveKlubMatch() {
+            const oppId = document.getElementById('m-opp').value;
+            const iWon = document.getElementById('m-winner').value === 'me';
+            const s1 = document.getElementById('m-s1').value;
+            const s2 = document.getElementById('m-s2').value;
+            const s3 = document.getElementById('m-s3').value;
+            processMatchResult(curUser.uid, oppId, iWon, s1, s2, s3);
+            lukModal();
+        }
+
+        function processMatchResult(p1Id, p2Id, p1Won, s1, s2, s3) {
+            const scoreText = s1 + ", " + s2 + (s3 ? ", " + s3 : "");
+            const winP = s3 ? 3 : 5; const lossP = s3 ? 1 : 0;
+            const idx1 = rankingData.findIndex(function(u){return u.id === p1Id;});
+            const idx2 = rankingData.findIndex(function(u){return u.id === p2Id;});
+            let bonus = 0;
+            if (p1Won && idx1 > idx2 && idx2 !== -1) bonus = (winP * (idx1 - idx2));
+            if (!p1Won && idx2 > idx1 && idx1 !== -1) bonus = (winP * (idx2 - idx1));
+            const wId = p1Won ? p1Id : p2Id; const lId = p1Won ? p2Id : p1Id;
+            db.ref('ranking_points/' + wId).transaction(function(p) { return (p || 0) + winP + bonus; });
+            db.ref('ranking_points/' + lId).transaction(function(p) { return (p || 0) + lossP; });
+            db.ref('xp_points/' + wId).transaction(function(x) { return (x || 0) + 50 + Math.round(bonus); });
+            db.ref('xp_points/' + lId).transaction(function(x) { return (x || 0) + 20; });
+            db.ref('match_counts/' + p1Id).transaction(function(c) { return (c || 0) + 1; });
+            db.ref('match_counts/' + p2Id).transaction(function(c) { return (c || 0) + 1; });
+            checkBadges(wId, lId, s1, s2, s3);
+            const key = p1Id < p2Id ? p1Id + "" + p2Id : p2Id + "" + p1Id;
+            db.ref('h2h_global/' + key).push({ p1: p1Id, p2: p2Id, winner: wId, score: scoreText, date: new Date().toLocaleDateString() });
+        }
+
+        function checkBadges(wId, lId, s1, s2, s3) {
+            const pts = (s1 + "-" + s2 + "-" + (s3||"")).split("-");
+            pts.forEach(function(p) { if (parseInt(p) < 5 && parseInt(p) > 0) unlockBadge(wId, "Rent bord"); });
+            if (s1.includes("22-20") || s1.includes("21-19") || s2.includes("22-20") || s2.includes("21-19")) unlockBadge(wId, "Is i maven");
+        }
+
+        function unlockBadge(uid, name) { db.ref('users/' + uid + '/badges/' + name).set(true); }
+
+        function generateGamePlan() {
+            const w = document.getElementById('tactic-weakness').value;
+            const plans = {
+                backhand: "Pres modstanderen helt ud i baghåndshjørnet med dybe clears. Når de svarer kort, så smash mod deres krop.",
+                speed: "Spil masser af drops og stopbolde. Hold modstanderen i bevægelse frem og tilbage i stedet for sidelæns.",
+                net: "Tving modstanderen til nettet med korte server og drops. Spil derefter hurtige flade bolde forbi dem.",
+                mental: "Hold duellerne lange. Vær tålmodig og lav ingen nemme fejl. Modstanderen vil knække under presset.",
+                stamina: "Brug hele banen. Spil fjerbolden til alle fire hjørner. Sættet vil blive dit i slutningen."
+            };
+            document.getElementById('tactic-text').innerText = plans[w];
+            document.getElementById('tactic-result').classList.remove('hidden');
+        }
+
+        function addGuest() {
+            const n = document.getElementById('guest-name').value;
+            const l = document.getElementById('guest-lvl').value;
+            if(!n) return;
+            guests.push({ id: 'guest_'+Date.now(), name: n, lvl: l, guest: true });
+            document.getElementById('guest-name').value = ""; updateGenList(); lukModal();
+        }
+        function removeGuest(id) { guests = guests.filter(function(g) { return g.id !== id; }); updateGenList(); }
+        function updateGenList() {
+            const comb = allUsers.concat(guests);
+            document.getElementById('gen-player-list').innerHTML = comb.map(function(u, i) {
+                return '<div class="gen-row"><div>'+(i+1)+'</div><input type="checkbox" class="gen-check" value="'+u.id+'" checked onchange="updateDeltagerCount()"><span>'+u.name+'</span><select class="gen-lvl" data-id="'+u.id+'"><option value="E" '+(u.lvl==='E'?'selected':'')+'>E</option><option value="M" '+(u.lvl==='M'?'selected':'')+'>M</option><option value="A" '+(u.lvl==='A'?'selected':'')+'>A</option><option value="B" '+(u.lvl==='B'?'selected':'')+'>B</option><option value="C" '+(u.lvl==='C'?'selected':'')+'>C</option><option value="D" '+(u.lvl==='D'?'selected':'')+'>D</option></select><input type="checkbox" class="gen-single small-check" data-id="'+u.id+'"><div>'+(u.guest ? '<span onclick="removeGuest(\''+u.id+'\')" style="color:red;">X</span>' : '')+'</div></div>';
+            }).join('');
+            updateDeltagerCount();
+        }
+        function updateDeltagerCount() { document.getElementById('count-display').innerText = document.querySelectorAll('.gen-check:checked').length + " spillere"; }
+        
+        function generateRounds() {
+            const courts = parseInt(document.getElementById('gen-courts').value);
+            const combined = allUsers.concat(guests);
+            const sel = Array.from(document.querySelectorAll('.gen-check:checked')).map(function(el) {
+                const id = el.value; const p = combined.find(function(x) { return x.id===id; });
+                const wantsS = document.querySelector('.gen-single[data-id="'+id+'"]').checked;
+                const lvl = document.querySelector('.gen-lvl[data-id="'+id+'"]').value;
+                if(!p.guest) db.ref('users/'+id+'/lvl').set(lvl);
+                return { id: id, name: p.name, lvl: lvl, single: wantsS };
+            });
+            const m = { E:6, M:5, A:4, B:3, C:2, D:1 }; sel.sort(function(a,b) { return m[b.lvl] - m[a.lvl]; });
+            let o = "<h4>Dagens Runder</h4>", c = 1;
+            const sCand = sel.filter(function(p) { return p.single; });
+            for (let i=0; i<sCand.length && c <= courts; i+=2) {
+                if (sCand[i+1]) {
+                    const p1 = sCand[i], p2 = sCand[i+1];
+                    o += '<div class="kort clickable-match" onclick="openRoundResult(\''+p1.id+'\',\''+p2.id+'\',\''+p1.name+'\',\''+p2.name+'\')"><b>Bane '+c+' (S)</b><br />'+p1.name+' vs '+p2.name+'</div>';
+                    c++; sel.splice(sel.indexOf(p1), 1); sel.splice(sel.indexOf(p2), 1);
+                }
+            }
+            while (sel.length >= 4 && c <= courts) {
+                const p1 = sel.shift(), p2 = sel.shift(), p3 = sel.shift(), p4 = sel.shift();
+                o += '<div class="kort" style="border-left-color:var(--primary);"><b>Bane '+c+' (D)</b><br />'+p1.name+'/'+p2.name+' vs '+p3.name+'/'+p4.name+'</div>';
+                c++;
+            }
+            while (sel.length >= 2 && c <= courts) {
+                const p1 = sel.shift(), p2 = sel.shift();
+                o += '<div class="kort clickable-match" onclick="openRoundResult(\''+p1.id+'\',\''+p2.id+'\',\''+p1.name+'\',\''+p2.name+'\')"><b>Bane '+c+' (S)</b><br />'+p1.name+' vs '+p2.name+'</div>';
+                c++;
+            }
+            document.getElementById('generated-output').innerHTML = o;
+        }
+
+        function openRoundResult(id1, id2, name1, name2) {
+            document.getElementById('rr-p1-id').value = id1; document.getElementById('rr-p2-id').value = id2;
+            document.getElementById('rr-name1').innerText = name1; document.getElementById('rr-name2').innerText = name2;
+            document.getElementById('rr-title').innerText = name1 + " vs " + name2; openModal('modal-round-result');
+        }
+        function saveRoundResult() {
+            const p1 = document.getElementById('rr-p1-id').value, p2 = document.getElementById('rr-p2-id').value;
+            const p1Won = document.getElementById('rr-winner').value === "1";
+            const s1 = document.getElementById('rr-s1').value, s2 = document.getElementById('rr-s2').value, s3 = document.getElementById('rr-s3').value;
+            if(!p1.includes('guest') && !p2.includes('guest')) processMatchResult(p1, p2, p1Won, s1, s2, s3);
+            lukModal();
+        }
+
+        function searchPlayer(input, resId, valId) {
+            const v = input.value.toLowerCase(); const resDiv = document.getElementById(resId);
+            if (v.length < 1) { resDiv.classList.add('hidden'); return; }
+            const comb = allUsers.concat(extPlayers);
+            const filt = comb.filter(function(p) { return p.name.toLowerCase().includes(v); });
+            if (filt.length > 0) { resDiv.classList.remove('hidden'); resDiv.innerHTML = filt.map(function(p) { return '<div class="search-item" onclick="selectPlayer(\''+p.id+'\',\''+p.name+'\',\''+input.id+'\',\''+resId+'\',\''+valId+'\')">'+p.name+' ('+p.club+')</div>'; }).join(''); }
+            else { resDiv.classList.add('hidden'); document.getElementById(valId).value = "NEW"; }
+        }
+        function selectPlayer(id, name, inputId, resId, valId) { document.getElementById(inputId).value = name; document.getElementById(valId).value = id; document.getElementById(resId).classList.add('hidden'); }
+        function showH2HHistory() {
+            const id1 = document.getElementById('val-s1').value, id2 = document.getElementById('val-s2').value;
+            if (!id1 || !id2) return alert("Vælg to spillere");
+            const key = id1 < id2 ? id1 + "" + id2 : id2 + "" + id1;
+            db.ref('h2h_global/' + key).on('value', function(snap) {
+                const matches = Object.values(snap.val() || {});
+                let w1 = 0, w2 = 0; document.getElementById('h2h-stats-display').classList.remove('hidden');
+                document.getElementById('h2h-history-list').innerHTML = matches.map(function(m) {
+                    if (m.winner === id1) w1++; else w2++;
+                    return '<div class="rank-row"><div><small>'+m.date+'</small><br />Vinder: '+(m.winner===id1?document.getElementById('h2h-s1').value:document.getElementById('h2h-s2').value)+'</div><b>'+m.score+'</b></div>';
+                }).join('');
+                document.getElementById('h2h-total-score').innerText = w1 + " - " + w2;
+            });
+        }
+        function saveNewH2H() {
+            let id1 = document.getElementById('new-val1').value, id2 = document.getElementById('new-val2').value;
+            const n2 = document.getElementById('h2h-new-p2').value, c2 = document.getElementById('h2h-ext-club').value;
+            if (id2 === "NEW") { id2 = btoa(n2 + c2).replace(/=/g, ""); db.ref('external_players/' + id2).set({ name: n2, club: c2 }); }
+            const key = id1 < id2 ? id1 + "" + id2 : id2 + "" + id1;
+            const winId = document.getElementById('h2h-winner-select').value === "1" ? id1 : id2;
+            db.ref('h2h_global/' + key).push({ p1: id1, p2: id2, winner: winId, score: document.getElementById('h2h-score-val').value, date: new Date().toLocaleDateString() });
+            lukModal();
+        }
+        function visSub(s, btn) { document.querySelectorAll('.sub-btn').forEach(function(b) { b.classList.remove('active'); }); btn.classList.add('active'); ['ranking', 'h2h', 'generator', 'tactic'].forEach(function(x) { document.getElementById('section-' + x).classList.add('hidden'); }); document.getElementById('section-' + s).classList.remove('hidden'); }
+        function updateSelects() { const sel = document.getElementById('m-opp'); if (sel) { sel.innerHTML = allUsers.filter(function(u) { return u.id !== curUser.uid; }).map(function(u) { return '<option value="' + u.id + '">' + u.name + '</option>'; }).join(''); } }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById('overlay').classList.remove('hidden'); }
+        function lukModal() { document.querySelectorAll('.modal, .overlay').forEach(function(el) { el.classList.add('hidden'); }); }
+        function logind() { auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value); }
+    </script>
+</body>
+</html>
