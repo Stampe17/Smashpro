@@ -1,18 +1,22 @@
-/* Container - Tvinger den til at være i hjørnet og ikke fylde hele bredden */
-#chat-container {
+/* SMASHPRO CHAT - TOTAL ISOLERING MOD BJÆLKER */
+
+/* Hovedcontaineren */
+#chat-container.sp-wrap {
     position: fixed !important;
     bottom: 95px !important; 
     right: 20px !important;
     left: auto !important; 
     width: 60px !important; 
-    height: auto !important;
+    height: 60px !important;
     z-index: 10000 !important;
     display: block !important;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* Boblen - Tvinger den til at være rund uanset hvad mobilen siger */
-#chat-bubble {
+/* Boblen */
+#chat-bubble.sp-bub {
     width: 60px !important;
     height: 60px !important;
     min-width: 60px !important;
@@ -25,6 +29,7 @@
     cursor: pointer !important;
     box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
     position: relative !important;
+    font-size: 24px !important;
 }
 
 /* Notifikations-prikken */
@@ -43,10 +48,11 @@
     justify-content: center !important;
     align-items: center !important;
     border: 2px solid #111 !important;
+    z-index: 10 !important;
 }
 
-/* Chat vinduet - Positioneret absolut i forhold til boblen */
-#chat-window {
+/* Chat vinduet */
+#chat-window.sp-win {
     position: absolute !important;
     bottom: 75px !important; 
     right: 0 !important;
@@ -55,7 +61,7 @@
     height: 400px !important;
     max-height: 60vh !important;
     background: #1a1a1a !important;
-    border-radius: 15px !important;
+    border-radius: 20px !important;
     border: 1px solid #333 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -65,38 +71,42 @@
     overflow: hidden !important;
 }
 
-/* Skjul chatten */
-.chat-closed #chat-window {
+/* Skjul-effekten */
+.chat-closed #chat-window.sp-win {
     transform: scale(0) !important;
     opacity: 0 !important;
     pointer-events: none !important;
 }
 
-/* Header - Fjerner bjælke-stilen */
-#chat-header {
-    padding: 10px 15px !important;
+/* Header */
+.sp-header {
+    padding: 12px 15px !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     border-bottom: 1px solid #333 !important;
     background: #222 !important;
     width: 100% !important;
-    height: auto !important;
 }
+.sp-header span { color: white !important; font-weight: 600 !important; }
 
-#chat-header button {
+/* Knapperne - her dræber vi bjælke-effekten */
+#chat-container button.sp-btn {
     background: transparent !important;
     border: none !important;
     color: white !important;
     font-size: 20px !important;
     width: auto !important;
+    min-width: 0 !important;
     height: auto !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
 }
 
-/* Besked-styling */
-#chat-messages { 
+/* Besked-området */
+#chat-messages.sp-msg-area { 
     flex: 1 !important; 
     overflow-y: auto !important; 
     padding: 15px !important; 
@@ -106,7 +116,8 @@
     background: #1a1a1a !important;
 }
 
-.msg { background: #333 !important; padding: 8px 12px !important; border-radius: 12px !important; max-width: 85% !important; color: white !important; align-self: flex-start !important; }
+/* Selve besked-boblerne */
+.msg { background: #333 !important; padding: 8px 12px !important; border-radius: 12px !important; max-width: 85% !important; color: white !important; align-self: flex-start !important; position: relative !important; }
 .msg.owner { align-self: flex-end !important; background: var(--primary) !important; color: black !important; }
 
 .msg-info { 
@@ -117,32 +128,25 @@
     font-weight: 600 !important; 
 }
 
-/* Input feltet - Tvinger det til at blive i bunden af vinduet */
-#chat-input-area { 
+/* Input bar i bunden */
+.sp-input-bar { 
     display: flex !important; 
     padding: 10px !important; 
     background: #222 !important; 
     width: 100% !important;
+    gap: 10px !important;
+    align-items: center !important;
 }
 
-#chat-input-area button {
-    background: transparent !important;
-    border: none !important;
-    width: auto !important;
-    height: auto !important;
-    padding: 0 10px !important;
-    color: var(--primary) !important;
-    font-size: 20px !important;
-}
-
-#chat-input { 
+.sp-input-bar input { 
     flex: 1 !important; 
     background: #000 !important; 
     border: 1px solid #444 !important; 
     color: white !important; 
-    padding: 8px 12px !important; 
+    padding: 8px 15px !important; 
     border-radius: 20px !important; 
     outline: none !important; 
+    height: 40px !important;
 }
 
 .hidden { display: none !important; }
