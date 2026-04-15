@@ -136,6 +136,11 @@
 .av-item.selected { 
     border-color: var(--primary); box-shadow: 0 0 10px var(--primary); 
 }
+
+#chat-container button.sp-btn {
+    width: auto !important;
+    display: inline-block !important;
+}
 </style>
 </head>
 <body>
@@ -396,18 +401,6 @@
             <button onclick="sendBesked()" class="sp-btn" style="font-size:22px;">➤</button>
         </div>
     </div>
-    <div id="chat-bubble" class="sp-bub" onclick="toggleChat()">
-        <div id="chat-notif" class="hidden">0</div>
-        💬
-    </div>
-</div>
-
-    <div id="chat-bubble" class="sp-bub" onclick="toggleChat()">
-        <div id="chat-notif" class="hidden">0</div>
-        💬
-    </div>
-</div>
-
     <div id="chat-bubble" class="sp-bub" onclick="toggleChat()">
         <div id="chat-notif" class="hidden">0</div>
         💬
