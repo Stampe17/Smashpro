@@ -1,83 +1,87 @@
-/* Container til det hele */
+/* Container - Tvinger den til at være i hjørnet og ikke fylde hele bredden */
 #chat-container {
-    position: fixed;
-    bottom: 90px; /* Hævet lidt for at svæve over menuen på mobil */
-    right: 20px;
-    z-index: 10000; /* Sat op så den altid ligger øverst */
+    position: fixed !important;
+    bottom: 95px !important; 
+    right: 20px !important;
+    left: auto !important; 
+    width: 60px !important; 
+    height: auto !important;
+    z-index: 10000 !important;
+    display: block !important;
     font-family: 'Segoe UI', sans-serif;
-    display: block;
-    pointer-events: auto; /* Sikrer at man kan klikke */
 }
 
-/* Den flydende boble */
+/* Boblen - Tvinger den til at være rund uanset hvad mobilen siger */
 #chat-bubble {
-    width: 60px;
-    height: 60px;
-    background: #222;
-    border: 2px solid var(--primary);
-    border-radius: 50% !important; /* Tvinger den til at være rund på alle enheder */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    position: relative;
-    float: right;
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    background: #222 !important;
+    border: 2px solid var(--primary) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+    position: relative !important;
 }
 
 /* Notifikations-prikken */
 #chat-notif {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--primary);
-    color: black;
-    font-weight: bold;
-    font-size: 12px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid #111;
+    position: absolute !important;
+    top: -5px !important;
+    right: -5px !important;
+    background: var(--primary) !important;
+    color: black !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border: 2px solid #111 !important;
 }
 
-/* Chat vinduet - Optimere til både mobil og desktop */
+/* Chat vinduet - Positioneret absolut i forhold til boblen */
 #chat-window {
-    width: 300px; /* Standard bredde */
-    max-width: 85vw; /* Sikrer at den aldrig er bredere end mobilskærmen */
-    height: 400px;
-    max-height: 70vh; /* Sikrer at den ikke fylder hele højden på små skærme */
-    background: #1a1a1a;
-    border-radius: 15px;
-    border: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-origin: bottom right;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    clear: both;
+    position: absolute !important;
+    bottom: 75px !important; 
+    right: 0 !important;
+    width: 300px !important;
+    max-width: 85vw !important;
+    height: 400px !important;
+    max-height: 60vh !important;
+    background: #1a1a1a !important;
+    border-radius: 15px !important;
+    border: 1px solid #333 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    transform-origin: bottom right !important;
+    overflow: hidden !important;
 }
 
 /* Skjul chatten */
 .chat-closed #chat-window {
-    transform: scale(0);
-    opacity: 0;
-    pointer-events: none;
-    height: 0;
+    transform: scale(0) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
-/* FIKS AF GIGANTISKE KNAPPER */
+/* Header - Fjerner bjælke-stilen */
 #chat-header {
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #333;
-    background: #222;
-    border-radius: 15px 15px 0 0;
+    padding: 10px 15px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 1px solid #333 !important;
+    background: #222 !important;
+    width: 100% !important;
+    height: auto !important;
 }
 
 #chat-header button {
@@ -91,30 +95,54 @@
     margin: 0 !important;
 }
 
+/* Besked-styling */
+#chat-messages { 
+    flex: 1 !important; 
+    overflow-y: auto !important; 
+    padding: 15px !important; 
+    display: flex !important; 
+    flex-direction: column !important; 
+    gap: 10px !important; 
+    background: #1a1a1a !important;
+}
+
+.msg { background: #333 !important; padding: 8px 12px !important; border-radius: 12px !important; max-width: 85% !important; color: white !important; align-self: flex-start !important; }
+.msg.owner { align-self: flex-end !important; background: var(--primary) !important; color: black !important; }
+
+.msg-info { 
+    font-size: 10px !important; 
+    opacity: 0.7 !important; 
+    margin-bottom: 4px !important; 
+    display: block !important; 
+    font-weight: 600 !important; 
+}
+
+/* Input feltet - Tvinger det til at blive i bunden af vinduet */
+#chat-input-area { 
+    display: flex !important; 
+    padding: 10px !important; 
+    background: #222 !important; 
+    width: 100% !important;
+}
+
 #chat-input-area button {
     background: transparent !important;
     border: none !important;
     width: auto !important;
     height: auto !important;
     padding: 0 10px !important;
-    margin: 0 !important;
     color: var(--primary) !important;
     font-size: 20px !important;
 }
 
-/* Besked-styling */
-#chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.msg { background: #333; padding: 8px 12px; border-radius: 12px; max-width: 85%; color: white; align-self: flex-start; }
-.msg.owner { align-self: flex-end; background: var(--primary); color: black; }
-.msg-info { 
-    font-size: 10px; 
-    opacity: 0.7; 
-    margin-bottom: 4px; 
-    display: block; 
-    font-weight: 600; 
+#chat-input { 
+    flex: 1 !important; 
+    background: #000 !important; 
+    border: 1px solid #444 !important; 
+    color: white !important; 
+    padding: 8px 12px !important; 
+    border-radius: 20px !important; 
+    outline: none !important; 
 }
 
-/* Input feltet */
-#chat-input-area { display: flex; padding: 10px; background: #222; border-radius: 0 0 15px 15px; }
-#chat-input { flex: 1; background: #000; border: 1px solid #444; color: white; padding: 8px 12px; border-radius: 20px; outline: none; }
 .hidden { display: none !important; }
