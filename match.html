@@ -65,12 +65,13 @@
 
     <div class="main-content" id="app-skærm">
         <div class="sub-menu">
-            <div class="sub-btn" onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.2);">← Retur</div>
-            <div class="sub-btn active" onclick="visSub('ranking', this)">Rangliste</div>
-            <div class="sub-btn" onclick="visSub('h2h', this)">H2H</div>
-            <div class="sub-btn" onclick="visSub('tactic', this)">Taktik</div>
-            <div id="traener-menu" class="sub-btn hidden" onclick="visSub('generator', this)">Kamprunder</div>
-        </div>
+    <div class="sub-btn" onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.2);">← Retur</div>
+    <div class="sub-btn active" onclick="visSub('ranking', this)">Rangliste</div>
+    <div class="sub-btn" onclick="visSub('h2h', this)">H2H</div>
+    <div class="sub-btn" onclick="visSub('tactic', this)">Taktik</div>
+    <div id="traener-menu" class="sub-btn hidden" onclick="visSub('generator', this)">Kamprunder</div>
+    <div id="turnering-menu" class="sub-btn hidden" onclick="visSub('turnering', this)"> Turnering</div>
+</div>
 
         <div id="section-ranking">
             <div id="ranking-list"></div>
@@ -172,6 +173,57 @@
         <button onclick="lukModal()" style="background:none;">Annuller</button>
     </div>
 
+<div id="turnering" class="sub-page hidden">
+    <div class="kort">
+        <div id="setup-section">
+            <h3>Badminton Cup Manager</h3>
+            <p style="font-size:14px; color:var(--text-dim);">Indtast spillere (4, 8, 16, 32)</p>
+            <textarea id="player-input" style="height:120px;">Spiller 1
+Spiller 2
+Spiller 3
+Spiller 4</textarea>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                <button onclick="initTournament('seed')" style="background:var(--primary);">Seed Top 4</button>
+                <button onclick="initTournament('random')" style="background:var(--primary);">Lodtrækning</button>
+            </div>
+        </div>
+
+        <div id="tournament-section" class="hidden">
+            <h2 id="round-label">Runde 1</h2>
+            <div id="match-container"></div>
+        </div>
+
+        <div id="results-section" class="hidden">
+            <h2>🏆 Endelige Placeringer</h2>
+            <div id="ranking-list-final" style="margin-bottom:20px;"></div>
+            <button onclick="resetTournament()" style="background:var(--win); color:black;">START NY TURNERING</button>
+        </div>
+    </div>
+</div>
+
+<div id="scoreModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 9999;">
+    <div class="modal-content" style="padding: 30px; border-radius: 20px; width: 320px;">
+        <h3 id="modal-match-title">Indtast Resultat</h3>
+        <div id="modal-p1-name" style="font-weight:bold;"></div>
+        <div class="score-row" style="display: flex; gap: 5px; margin: 10px 0;">
+            <input type="number" id="s1-1" class="score-input" placeholder="S1" style="width:33%;">
+            <input type="number" id="s1-2" class="score-input" placeholder="S2" style="width:33%;">
+            <input type="number" id="s1-3" class="score-input" placeholder="S3" style="width:33%;">
+        </div>
+        <div id="modal-p2-name" style="font-weight:bold;"></div>
+        <div class="score-row" style="display: flex; gap: 5px; margin: 10px 0;">
+            <input type="number" id="s2-1" class="score-input" placeholder="S1" style="width:33%;">
+            <input type="number" id="s2-2" class="score-input" placeholder="S2" style="width:33%;">
+            <input type="number" id="s2-3" class="score-input" placeholder="S3" style="width:33%;">
+        </div>
+        <button class="btn-blue" style="width:100%;" onclick="saveScore()">Gem Kamp</button>
+        <button class="btn-light" style="width:100%; margin-top:10px;" onclick="closeModal()">Annuller</button>
+    </div>
+</div>
+  
+    </div>
+</div>
+
     <div id="overlay" class="overlay hidden" onclick="lukModal()"></div>
 
     <script>
@@ -205,6 +257,7 @@
                 if (me) {
                     document.getElementById('m-fixed-p1').innerText = me.name;
                     if (me.role === 'traener') document.getElementById('traener-menu').classList.remove('hidden');
+                    document.getElementById('turnering-menu').classList.remove('hidden');
                 }
                 updateRanking(); updateSelects(); updateGenList();
             });
@@ -301,38 +354,81 @@
         }
         function updateDeltagerCount() { document.getElementById('count-display').innerText = document.querySelectorAll('.gen-check:checked').length + " spillere"; }
         
-        function generateRounds() {
-            const courts = parseInt(document.getElementById('gen-courts').value);
-            const combined = allUsers.concat(guests);
-            const sel = Array.from(document.querySelectorAll('.gen-check:checked')).map(function(el) {
-                const id = el.value; const p = combined.find(function(x) { return x.id===id; });
-                const wantsS = document.querySelector('.gen-single[data-id="'+id+'"]').checked;
-                const lvl = document.querySelector('.gen-lvl[data-id="'+id+'"]').value;
-                if(!p.guest) db.ref('users/'+id+'/lvl').set(lvl);
-                return { id: id, name: p.name, lvl: lvl, single: wantsS };
-            });
-            const m = { E:6, M:5, A:4, B:3, C:2, D:1 }; sel.sort(function(a,b) { return m[b.lvl] - m[a.lvl]; });
-            let o = "<h4>Dagens Runder</h4>", c = 1;
-            const sCand = sel.filter(function(p) { return p.single; });
-            for (let i=0; i<sCand.length && c <= courts; i+=2) {
-                if (sCand[i+1]) {
-                    const p1 = sCand[i], p2 = sCand[i+1];
-                    o += '<div class="kort clickable-match" onclick="openRoundResult(\''+p1.id+'\',\''+p2.id+'\',\''+p1.name+'\',\''+p2.name+'\')"><b>Bane '+c+' (S)</b><br />'+p1.name+' vs '+p2.name+'</div>';
-                    c++; sel.splice(sel.indexOf(p1), 1); sel.splice(sel.indexOf(p2), 1);
-                }
-            }
-            while (sel.length >= 4 && c <= courts) {
-                const p1 = sel.shift(), p2 = sel.shift(), p3 = sel.shift(), p4 = sel.shift();
-                o += '<div class="kort" style="border-left-color:var(--primary);"><b>Bane '+c+' (D)</b><br />'+p1.name+'/'+p2.name+' vs '+p3.name+'/'+p4.name+'</div>';
-                c++;
-            }
-            while (sel.length >= 2 && c <= courts) {
-                const p1 = sel.shift(), p2 = sel.shift();
-                o += '<div class="kort clickable-match" onclick="openRoundResult(\''+p1.id+'\',\''+p2.id+'\',\''+p1.name+'\',\''+p2.name+'\')"><b>Bane '+c+' (S)</b><br />'+p1.name+' vs '+p2.name+'</div>';
-                c++;
-            }
-            document.getElementById('generated-output').innerHTML = o;
+function generateRounds() {
+    // 1. TØM OUTPUT (Dette sikrer at den ikke bare viser det samme igen)
+    const container = document.getElementById('generated-output');
+    if (container) container.innerHTML = ""; 
+
+    const courts = parseInt(document.getElementById('gen-courts').value);
+    const combined = allUsers.concat(guests);
+    
+    // 2. HENT SPILLERE
+    let sel = Array.from(document.querySelectorAll('.gen-check:checked')).map(function(el) {
+        const id = el.value; 
+        const p = combined.find(function(x) { return x.id === id; });
+        const wantsS = document.querySelector('.gen-single[data-id="' + id + '"]').checked;
+        const lvl = document.querySelector('.gen-lvl[data-id="' + id + '"]').value;
+        // Opdater niveau i databasen hvis det er ændret i listen
+        if(!p.guest) db.ref('users/' + id + '/lvl').set(lvl);
+        return { id: id, name: p.name, lvl: lvl, single: wantsS };
+    });
+
+    if (sel.length < 2) return alert("Vælg mindst 2 spillere");
+
+    // 3. SHUFFLE (Ryster posen helt vildt hver gang du trykker)
+    sel = sel.sort(function() { return Math.random() - 0.5; });
+
+ // 4. NIVEAU-VÆGTNING (75% Matematisk / 25% Helt tilfældigt)
+    const m = { E: 12, M: 10, A: 8, B: 6, C: 4, D: 2 };
+    
+    sel.sort(function(a, b) {
+        // Vi trækker et tal mellem 0 og 1 for at bestemme "skæbnen" for denne sammenligning
+        const tilfældighedsFaktor = Math.random();
+
+        // 25% chance for at rykke dem helt tilfældigt rundt (Kaos-elementet)
+        if (tilfældighedsFaktor > 0.75) {
+            return Math.random() - 0.5;
         }
+
+        // 75% chance for at bruge den matematiske model (2 rækker op/ned)
+        const dagsformA = (Math.random() * 6 - 3); 
+        const dagsformB = (Math.random() * 6 - 3);
+        
+        const styrkeA = m[a.lvl] + dagsformA;
+        const styrkeB = m[b.lvl] + dagsformB;
+        
+        return styrkeB - styrkeA;
+    });
+
+    let o = "<h4>Dagens Runder</h4>", c = 1;
+    let pool = [...sel];
+
+    // 5. LAV SINGLER
+    const sCand = pool.filter(function(p) { return p.single; });
+    for (let i = 0; i < sCand.length - 1 && c <= courts; i += 2) {
+        const p1 = sCand[i], p2 = sCand[i+1];
+        o += '<div class="kort clickable-match" onclick="openRoundResult(\''+p1.id+'\',\''+p2.id+'\',\''+p1.name+'\',\''+p2.name+'\')"><b>Bane '+c+' (S)</b><br />'+p1.name+' vs '+p2.name+'</div>';
+        c++; 
+        pool = pool.filter(function(p) { return p.id !== p1.id && p.id !== p2.id; });
+    }
+
+    // 6. LAV DOUBLER (4 spillere af gangen)
+    while (pool.length >= 4 && c <= courts) {
+        const p1 = pool.shift(), p2 = pool.shift(), p3 = pool.shift(), p4 = pool.shift();
+        o += '<div class="kort" style="border-left: 4px solid var(--primary);"><b>Bane '+c+' (D)</b><br />'+p1.name+'/'+p2.name+' vs '+p3.name+'/'+p4.name+'</div>';
+        c++;
+    }
+
+    // 7. RESTEN SOM SINGLER
+    while (pool.length >= 2 && c <= courts) {
+        const p1 = pool.shift(), p2 = pool.shift();
+        o += '<div class="kort clickable-match" onclick="openRoundResult(\''+p1.id+'\',\''+p2.id+'\',\''+p1.name+'\',\''+p2.name+'\')"><b>Bane '+c+' (S)</b><br />'+p1.name+' vs '+p2.name+'</div>';
+        c++;
+    }
+
+    // 8. VIS RESULTAT
+    document.getElementById('generated-output').innerHTML = o;
+}
 
         function openRoundResult(id1, id2, name1, name2) {
             document.getElementById('rr-p1-id').value = id1; document.getElementById('rr-p2-id').value = id2;
@@ -379,11 +475,237 @@
             db.ref('h2h_global/' + key).push({ p1: id1, p2: id2, winner: winId, score: document.getElementById('h2h-score-val').value, date: new Date().toLocaleDateString() });
             lukModal();
         }
-        function visSub(s, btn) { document.querySelectorAll('.sub-btn').forEach(function(b) { b.classList.remove('active'); }); btn.classList.add('active'); ['ranking', 'h2h', 'generator', 'tactic'].forEach(function(x) { document.getElementById('section-' + x).classList.add('hidden'); }); document.getElementById('section-' + s).classList.remove('hidden'); }
+        function visSub(s, btn) {
+    // 1. Gør knappen i toppen lysende (active)
+    document.querySelectorAll('.sub-btn').forEach(function(b) { 
+        b.classList.remove('active'); 
+    });
+    if (btn) btn.classList.add('active');
+
+    // 2. Her er listen over alle dine døre (sider)
+    const sider = ['ranking', 'h2h', 'generator', 'tactic', 'turnering'];
+
+    // 3. Luk alle døre først
+    sider.forEach(function(x) {
+        // Vi tjekker om siden hedder 'section-h2h' ELLER bare 'h2h'
+        const el = document.getElementById('section-' + x) || document.getElementById(x);
+        if (el) el.classList.add('hidden');
+    });
+
+    // 4. Åbn den dør, du har trykket på
+    const aktuelSide = document.getElementById('section-' + s) || document.getElementById(s);
+    if (aktuelSide) {
+        aktuelSide.classList.remove('hidden');
+    } else {
+        // Hvis den stadig er sort, vil du se denne fejl i F12:
+        console.error("Fejl: Kunne ikke finde siden med id: " + s);
+    }
+}
         function updateSelects() { const sel = document.getElementById('m-opp'); if (sel) { sel.innerHTML = allUsers.filter(function(u) { return u.id !== curUser.uid; }).map(function(u) { return '<option value="' + u.id + '">' + u.name + '</option>'; }).join(''); } }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById('overlay').classList.remove('hidden'); }
         function lukModal() { document.querySelectorAll('.modal, .overlay').forEach(function(el) { el.classList.add('hidden'); }); }
         function logind() { auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value); }
+    
+ // --- TURNERING LOGIK (OPDATERET TIL MONRAD-FORMAT) ---
+var tp = [], rounds = [], currentRoundIdx = 0, activeMatchIdx = null, matchStack = [];
+
+function initTournament(mode) {
+    var input = document.getElementById('player-input').value.trim();
+    var names = input.split('\n').map(n => n.trim()).filter(n => n !== "");
+    
+    if (![4, 8, 16, 32].includes(names.length)) {
+        return alert("Antal skal være 4, 8, 16 eller 32 for at køre en Cup.");
+    }
+
+    // Tilføjet 'history' til hver spiller for at gemme kampdata
+    var pObjs = names.map((n, i) => ({ 
+        id: i, 
+        name: n, 
+        history: [], 
+        results: [] 
+    }));
+    
+    if (mode === 'seed' || mode === 'random') {
+        if (mode === 'random') pObjs.sort(() => Math.random() - 0.5);
+        var seeded = pObjs.slice(0, 4);
+        var others = pObjs.slice(4);
+        if (mode === 'seed') others.sort(() => Math.random() - 0.5);
+        
+        var size = names.length;
+        tp = new Array(size);
+        var pos = [0, size-1, Math.floor(size/2), Math.floor(size/2)-1];
+        pos.forEach((p, i) => { if(seeded[i]) tp[p] = seeded[i]; });
+        var nextO = 0;
+        for(var i=0; i<size; i++) { if(!tp[i]) tp[i] = others[nextO++]; }
+    } else {
+        tp = pObjs;
+    }
+
+    generateFirstRound();
+    document.getElementById('setup-section').style.display = 'none';
+    document.getElementById('tournament-section').classList.remove('hidden');
+    document.getElementById('tournament-section').style.display = 'block';
+    renderRound();
+}
+
+function generateFirstRound() {
+    var matches = [];
+    for (var i = 0; i < tp.length; i += 2) {
+        matches.push({ p1: tp[i], p2: tp[i+1], winner: null, loser: null, score: "" });
+    }
+    rounds = [matches];
+    currentRoundIdx = 0;
+}
+
+function renderRound() {
+    var container = document.getElementById('match-container');
+    container.innerHTML = '';
+    document.getElementById('round-label').innerText = "Runde " + (currentRoundIdx + 1);
+
+    rounds[currentRoundIdx].forEach((m, i) => {
+        var div = document.createElement('div');
+        div.className = "kort clickable-match" + (m.winner ? " done" : "");
+        div.style.borderLeft = m.winner ? "4px solid var(--win)" : "4px solid gold";
+        div.onclick = () => openMatch(i);
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+                <span style="${m.winner === m.p1 ? 'color:var(--win); font-weight:bold;' : ''}">${m.p1.name}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <span style="${m.winner === m.p2 ? 'color:var(--win); font-weight:bold;' : ''}">${m.p2.name}</span>
+            </div>
+            ${m.score ? `<div style="font-size:12px; color:var(--text-dim); margin-top:5px;">Res: ${m.score}</div>` : ''}
+        `;
+        container.appendChild(div);
+    });
+}
+
+function openMatch(idx) {
+    if (rounds[currentRoundIdx][idx].winner) return;
+    activeMatchIdx = idx;
+    var m = rounds[currentRoundIdx][idx];
+    document.getElementById('modal-p1-name').innerText = m.p1.name;
+    document.getElementById('modal-p2-name').innerText = m.p2.name;
+    ['s1-1','s1-2','s1-3','s2-1','s2-2','s2-3'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = "";
+    });
+    document.getElementById('scoreModal').style.display = 'flex';
+}
+
+function saveScore() {
+    var m = rounds[currentRoundIdx][activeMatchIdx];
+    var s1 = [val('s1-1'), val('s1-2'), val('s1-3')];
+    var s2 = [val('s2-1'), val('s2-2'), val('s2-3')];
+    
+    var v1 = 0, v2 = 0, scoreStr = "";
+    for(var i=0; i<3; i++) {
+        if(s1[i] > 0 || s2[i] > 0) {
+            scoreStr += s1[i] + "-" + s2[i] + " ";
+            if(s1[i] > s2[i]) v1++; else if(s2[i] > s1[i]) v2++;
+        }
+    }
+
+    if((v1 === 0 && v2 === 0) || v1 === v2) return alert("Indtast et gyldigt resultat!");
+    
+    var w = v1 > v2 ? m.p1 : m.p2;
+    var l = v1 > v2 ? m.p2 : m.p1;
+    
+    m.winner = w;
+    m.loser = l;
+    m.score = scoreStr.trim();
+    
+    // Gem historik for hver spiller
+    w.history.push({ vs: l.name, res: 'Vandt', score: m.score, runde: currentRoundIdx + 1 });
+    l.history.push({ vs: w.name, res: 'Tabte', score: m.score, runde: currentRoundIdx + 1 });
+    
+    // Gem resultater til den avancerede Monrad-sortering
+    w.results.push(true);
+    l.results.push(false);
+    
+    closeModal();
+    renderRound();
+    checkProgress();
+}
+
+function checkProgress() {
+    if (rounds[currentRoundIdx].every(m => m.winner)) {
+        // I Monrad spiller alle videre så længe der er mere end 1 kamp i vinder-puljen
+        var totalRounds = Math.log2(tp.length);
+        if (currentRoundIdx + 1 < totalRounds) {
+            setTimeout(nextRound, 800);
+        } else {
+            setTimeout(showFinals, 800);
+        }
+    }
+}
+
+function nextRound() {
+    var prev = rounds[currentRoundIdx];
+    var winners = prev.map(m => m.winner);
+    var losers = prev.map(m => m.loser);
+    var next = [];
+
+    // Match vinderne mod hinanden (Cup)
+    for (var i = 0; i < winners.length; i += 2) {
+        next.push({ p1: winners[i], p2: winners[i+1], winner: null, score: "" });
+    }
+    // Match taberne mod hinanden (Monrad/Alle pladser)
+    for (var i = 0; i < losers.length; i += 2) {
+        next.push({ p1: losers[i], p2: losers[i+1], winner: null, score: "" });
+    }
+    
+    rounds.push(next);
+    currentRoundIdx++;
+    renderRound();
+}
+
+function showFinals() {
+    document.getElementById('tournament-section').style.display = 'none';
+    const resDiv = document.getElementById('results-section');
+    resDiv.classList.remove('hidden');
+    resDiv.style.display = 'block';
+    
+    // Avanceret Monrad-sortering: Vinder-stien vægter tungest fra start til slut
+    var sorted = tp.slice().sort((a, b) => {
+        for (let i = 0; i < a.results.length; i++) {
+            if (a.results[i] !== b.results[i]) return b.results[i] - a.results[i];
+        }
+        return 0;
+    });
+    
+    var list = document.getElementById('ranking-list-final');
+    if(!list) {
+        resDiv.innerHTML += '<div id="ranking-list-final"></div>';
+        list = document.getElementById('ranking-list-final');
+    }
+    
+    list.innerHTML = sorted.map((p, i) => `
+        <div class="rank-row" onclick="seSpillerHistorik(${p.id})" style="cursor:pointer; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0;">
+            <span class="rank-badge" style="background:var(--primary); color:white; padding:2px 8px; border-radius:50%; margin-right:10px;">${i+1}</span>
+            <span style="flex:1;">${p.name} <small style="color:var(--text-dim);">(Se kampe)</small></span>
+        </div>
+    `).join('');
+}
+
+// Funktion til at se historik ved klik på resultatlisten
+function seSpillerHistorik(playerId) {
+    const p = tp.find(x => x.id === playerId);
+    if (!p) return;
+    let hText = p.history.map(h => `Runde ${h.runde}: ${h.res} mod ${h.vs} (${h.score})`).join('\n');
+    alert(`Resultater for ${p.name}:\n\n${hText}`);
+}
+
+function val(id) { return parseInt(document.getElementById(id).value) || 0; }
+function closeModal() { document.getElementById('scoreModal').style.display = 'none'; }
+
+function resetTournament() {
+    document.getElementById('setup-section').style.display = 'block';
+    document.getElementById('tournament-section').style.display = 'none';
+    document.getElementById('results-section').classList.add('hidden');
+    document.getElementById('results-section').style.display = 'none';
+    tp = []; rounds = []; currentRoundIdx = 0;
+}
     </script>
 </body>
 </html>
