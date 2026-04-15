@@ -1,0 +1,117 @@
+/* Container til det hele */
+#chat-container {
+    position: fixed;
+    bottom: 85px; 
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
+    display: block; /* Sikrer den ikke arver 'flex' fra body */
+}
+
+/* Den flydende boble */
+#chat-bubble {
+    width: 60px;
+    height: 60px;
+    background: #222;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    position: relative;
+    float: right; /* Holder den i siden */
+}
+
+/* Notifikations-prikken */
+#chat-notif {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--primary);
+    color: black;
+    font-weight: bold;
+    font-size: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #111;
+}
+
+/* Chat vinduet */
+#chat-window {
+    width: 300px;
+    height: 400px;
+    background: #1a1a1a;
+    border-radius: 15px;
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-origin: bottom right;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    clear: both; /* Sikrer at vinduet ligger over boblen */
+}
+
+/* Skjul chatten */
+.chat-closed #chat-window {
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+}
+
+/* FIKS AF GIGANTISKE KNAPPER */
+#chat-header {
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    background: #222;
+    border-radius: 15px 15px 0 0;
+}
+
+#chat-header button {
+    background: transparent !important;
+    border: none !important;
+    color: white !important;
+    font-size: 20px !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#chat-input-area button {
+    background: transparent !important;
+    border: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    color: var(--primary) !important;
+    font-size: 20px !important;
+}
+
+/* Besked-styling */
+#chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.msg { background: #333; padding: 8px 12px; border-radius: 12px; max-width: 85%; color: white; align-self: flex-start; }
+.msg.owner { align-self: flex-end; background: var(--primary); color: black; }
+.msg-info { 
+    font-size: 10px; 
+    opacity: 0.7; 
+    margin-bottom: 4px; /* Lidt mere luft til teksten */
+    display: block; 
+    font-weight: 600; /* Gør navnet lidt tydeligere */
+}
+
+/* Input feltet */
+#chat-input-area { display: flex; padding: 10px; background: #222; border-radius: 0 0 15px 15px; }
+#chat-input { flex: 1; background: #000; border: 1px solid #444; color: white; padding: 8px 12px; border-radius: 20px; outline: none; }
+.hidden { display: none !important; }
