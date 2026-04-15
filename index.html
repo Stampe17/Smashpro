@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
+    <link rel="stylesheet" href="Udseende.CSS">
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0b0e14">
@@ -191,7 +193,37 @@
             </div>
         </div>
 
-        <div id="side-speed" class="hidden">
+        <div id="side-analyse" class="hidden">
+            <h2 style="margin-bottom:20px;">Træningsanalyse</h2>
+    
+             <div class="badge-grid">
+            <div class="kort" onclick="visAnalyseVærktøj('speed-tool')" style="text-align:center; cursor:pointer; border-bottom: 4px solid var(--primary);">
+            <span style="font-size:40px;">⚡</span>
+            <h3>Speed Analyzer</h3>
+            <small>Mål din smash-hastighed via video</small>
+        </div>
+
+        <div class="kort" onclick="visAnalyseVærktøj('run-tool')" style="text-align:center; opacity:0.6; cursor:pointer;">
+            <span style="font-size:40px;">🏃‍♂️</span>
+            <h3>Løbe-test</h3>
+            <small>Kondital & løbedata (Kommer snart)</small>
+        </div>
+
+        <div class="kort" style="text-align:center; opacity:0.4;">
+            <span style="font-size:40px;">🧠</span>
+            <h3>Spil-intelligens</h3>
+            <small>Taktisk analyse (Kommer snart)</small>
+        </div>
+    </div>
+</div>
+
+<div id="side-speed" class="hidden">
+    <button onclick="visSide('side-analyse')" style="background:none; border:none; color:#007bff; cursor:pointer; padding:10px 0; font-weight:bold;">
+        ← Tilbage til Analyse
+    </button>
+    
+    <h2>Speed Analyzer</h2>
+    ...
             <div class="kort">
                 <h2 style="margin:0;">⚡ Speed Analyzer</h2>
                 <input type="file" id="videoInput" accept="video/*">
@@ -310,7 +342,7 @@
     <div class="tab-bar">
         <div class="tab-item active" onclick="visSide('side-hjem', this)"><span>🏠</span>Dash</div>
         <div class="tab-item" onclick="visSide('side-kalender', this)"><span>📅</span>Plan</div>
-        <div class="tab-item" onclick="visSide('side-speed', this)"><span>⚡</span>Speed</div>
+        <div class="tab-item" onclick="visSide('side-analyse', this)"><span>📊</span>Analyse</div>
         <div class="tab-item" onclick="visSide('side-achievements', this)"><span>🏆</span>Badge</div>
         <div id="traener-tab" class="tab-item hidden" onclick="visSide('side-traener', this)"><span>📋</span>Træner</div>
         <div class="tab-item" onclick="visSide('side-profil', this)"><span>👤</span>Profil</div>
@@ -352,6 +384,26 @@
         <button onclick="lukModal()" style="margin-top:15px;">Luk</button>
     </div>
 
+    <div id="chat-container" class="chat-closed">
+    <div id="chat-window">
+        <div id="chat-header">
+            <span>Klub Chat 🏸</span>
+            <button onclick="toggleChat()" id="close-chat">×</button>
+        </div>
+        <div id="chat-messages">
+            </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Skriv besked..." onkeypress="tjekEnter(event)">
+            <button onclick="sendBesked()" id="btn-send" style="cursor:pointer !important; z-index:10000 !important;">➤</button>
+        </div>
+    </div>
+
+    <div id="chat-bubble" onclick="toggleChat()">
+        <div id="chat-notif" class="hidden">0</div>
+        <span id="chat-icon">💬</span>
+    </div>
+</div>
+
     <script>
         const config = {
             apiKey: "AIzaSyBzDeP_CdzJ7d-Y75edPt3g0OgK5-1_yGk",
@@ -369,41 +421,71 @@
         google.charts.load('current', {'packages':['corechart']});
 
         const udfordringer = [
-            { id: 1, titel: "First Step", desc: "Træn 1 gang", check: (s) => s.total >= 1 },
-            { id: 2, titel: "High Five", desc: "Træn 5 gange", check: (s) => s.total >= 5 },
-            { id: 3, titel: "Consistent", desc: "Træn 10 gange", check: (s) => s.total >= 10 },
-            { id: 4, titel: "Dedicated", desc: "Træn 15 gange", check: (s) => s.total >= 15 },
-            { id: 5, titel: "Athlete", desc: "Træn 25 gange", check: (s) => s.total >= 25 },
-            { id: 6, titel: "Warrior", desc: "Træn 40 gange", check: (s) => s.total >= 40 },
-            { id: 7, titel: "Elite", desc: "Træn 50 gange", check: (s) => s.total >= 50 },
-            { id: 8, titel: "Master", desc: "Træn 70 gange", check: (s) => s.total >= 70 },
-            { id: 9, titel: "Legend", desc: "Træn 85 gange", check: (s) => s.total >= 85 },
-            { id: 10, titel: "Centurion", desc: "Træn 100 gange", check: (s) => s.total >= 100 },
-            { id: 11, titel: "Warmup", desc: "Træn 500 min", check: (s) => s.mins >= 500 },
-            { id: 12, titel: "Hard Work", desc: "Træn 1000 min", check: (s) => s.mins >= 1000 },
-            { id: 13, titel: "Power", desc: "Træn 1500 min", check: (s) => s.mins >= 1500 },
-            { id: 14, titel: "Grind", desc: "Træn 2000 min", check: (s) => s.mins >= 2000 },
-            { id: 15, titel: "Machine", desc: "Træn 3000 min", check: (s) => s.mins >= 3000 },
-            { id: 16, titel: "Ironman", desc: "Træn 4000 min", check: (s) => s.mins >= 4000 },
-            { id: 17, titel: "Unstoppable", desc: "Træn 5000 min", check: (s) => s.mins >= 5000 },
-            { id: 18, titel: "Pro Status", desc: "Træn 6500 min", check: (s) => s.mins >= 6500 },
-            { id: 19, titel: "Badminton King", desc: "Træn 8000 min", check: (s) => s.mins >= 8000 },
-            { id: 20, titel: "God Mode", desc: "Træn 10000 min", check: (s) => s.mins >= 10000 },
-            { id: 21, titel: "Double Up", desc: "2 gange samme dag", check: (s) => s.multiDay },
-            { id: 22, titel: "Week Starter", desc: "2 på en uge", check: (s) => s.maxInWeek >= 2 },
-            { id: 23, titel: "Active Week", desc: "4 på en uge", check: (s) => s.maxInWeek >= 4 },
-            { id: 24, titel: "No Breaks", desc: "6 på en uge", check: (s) => s.maxInWeek >= 6 },
-            { id: 25, titel: "Triple", desc: "3 dage i træk", check: (s) => s.maxStreak >= 3 },
-            { id: 26, titel: "High Five Streak", desc: "5 dage i træk", check: (s) => s.maxStreak >= 5 },
-            { id: 27, titel: "Week Streak", desc: "7 dage i træk", check: (s) => s.maxStreak >= 7 },
-            { id: 28, titel: "Tenacious", desc: "10 dage i træk", check: (s) => s.maxStreak >= 10 },
-            { id: 29, titel: "Two Weeks", desc: "14 dage i træk", check: (s) => s.maxStreak >= 14 },
-            { id: 30, titel: "Feedback", desc: "Eval 3 i træk", check: (s) => s.evalStreak >= 3 },
-            { id: 31, titel: "Reflective", desc: "Eval 6 i træk", check: (s) => s.evalStreak >= 6 },
-            { id: 32, titel: "Analyst", desc: "Eval 10 i træk", check: (s) => s.evalStreak >= 10 },
-            { id: 33, titel: "Fire!", desc: "10 i mot (1 dag)", check: (s) => s.mot10Count >= 1 },
-            { id: 34, titel: "Burning Up", desc: "10 i mot (3 dage)", check: (s) => s.mot10Count >= 3 },
-            { id: 35, titel: "Sun", desc: "10 i mot (10 dage)", check: (s) => s.mot10Count >= 10 }
+    // --- 1-15: TRÆNINGSANTAL (Dine faste) ---
+    { id: 1, titel: "First Step", desc: "1 træning", check: (s) => s.total >= 1 },
+    { id: 2, titel: "Hat-Trick", desc: "3 træninger", check: (s) => s.total >= 3 },
+    { id: 3, titel: "High Five", desc: "5 træninger", check: (s) => s.total >= 5 },
+    { id: 4, titel: "Consistent", desc: "10 træninger", check: (s) => s.total >= 10 },
+    { id: 5, titel: "Club 15", desc: "15 træninger", check: (s) => s.total >= 15 },
+    { id: 6, titel: "Dedicated", desc: "20 træninger", check: (s) => s.total >= 20 },
+    { id: 7, titel: "Routine", desc: "25 træninger", check: (s) => s.total >= 25 },
+    { id: 8, titel: "Grinder", desc: "30 træninger", check: (s) => s.total >= 30 },
+    { id: 9, titel: "Athlete", desc: "40 træninger", check: (s) => s.total >= 40 },
+    { id: 10, titel: "Pro Player", desc: "50 træninger", check: (s) => s.total >= 50 },
+    { id: 11, titel: "Elite", desc: "60 træninger", check: (s) => s.total >= 60 },
+    { id: 12, titel: "Workhorse", desc: "70 træninger", check: (s) => s.total >= 70 },
+    { id: 13, titel: "Master", desc: "80 træninger", check: (s) => s.total >= 80 },
+    { id: 14, titel: "Veteran", desc: "90 træninger", check: (s) => s.total >= 90 },
+    { id: 15, titel: "Centurion", desc: "100 træninger", check: (s) => s.total >= 100 },
+
+    // --- 16-25: MINUTTER (Dine faste) ---
+    { id: 16, titel: "Warmup", desc: "500 minutter totalt", check: (s) => s.mins >= 500 },
+    { id: 17, titel: "Deep Dive", desc: "1000 minutter totalt", check: (s) => s.mins >= 1000 },
+    { id: 18, titel: "Hard Work", desc: "2000 minutter totalt", check: (s) => s.mins >= 2000 },
+    { id: 19, titel: "Power", desc: "3000 minutter totalt", check: (s) => s.mins >= 3000 },
+    { id: 20, titel: "Endurance", desc: "4000 minutter totalt", check: (s) => s.mins >= 4000 },
+    { id: 21, titel: "Machine", desc: "5000 minutter totalt", check: (s) => s.mins >= 5000 },
+    { id: 22, titel: "Stamina", desc: "7500 minutter totalt", check: (s) => s.mins >= 7500 },
+    { id: 23, titel: "Ironman", desc: "10.000 minutter totalt", check: (s) => s.mins >= 10000 },
+    { id: 24, titel: "Ultra", desc: "12.500 minutter totalt", check: (s) => s.mins >= 12500 },
+    { id: 25, titel: "Marathon", desc: "15.000 minutter totalt", check: (s) => s.mins >= 15000 },
+
+    // --- 26-28: DE SIDSTE 3 KONKRETE ---
+    { id: 26, titel: "Early Bird", desc: "Træn før kl. 08:00", check: (s) => s.time_early },
+    { id: 27, titel: "Night Owl", desc: "Træn efter kl. 20:00", check: (s) => s.time_late },
+    { id: 28, titel: "Double Up", desc: "2 træninger på én dag", check: (s) => s.day_double },
+    
+    // --- 29-33: SMASH SPEED (Brug jeres Speed Analyzer) ---
+// --- 29-33: SMASH SPEED (Koblet til Speed Analyzer) ---
+    { id: 29, titel: "Speed 100", desc: "Smash over 100 km/t", check: (s) => s.topSpeed >= 100 },
+    { id: 30, titel: "Speed 200", desc: "Smash over 200 km/t", check: (s) => s.topSpeed >= 200 },
+    { id: 31, titel: "Speed 300", desc: "Smash over 300 km/t", check: (s) => s.topSpeed >= 300 },
+    { id: 32, titel: "Speed 350", desc: "Smash over 350 km/t", check: (s) => s.topSpeed >= 350 },
+    { id: 33, titel: "Sonic Smash", desc: "Smash over 400 km/t", check: (s) => s.topSpeed >= 400 },
+
+    // --- 34-37: COOPER TEST (Løbe-distancer) ---
+    { id: 34, titel: "Cooper 2500", desc: "Løb over 2500m", check: (s, ach) => ach && ach.cooper_2500 },
+    { id: 35, titel: "Cooper 2700", desc: "Løb over 2700m", check: (s, ach) => ach && ach.cooper_2700 },
+    { id: 36, titel: "Cooper 2900", desc: "Løb over 2900m", check: (s, ach) => ach && ach.cooper_2900 },
+    { id: 37, titel: "Cooper Elite", desc: "Løb over 3050m", check: (s, ach) => ach && ach.cooper_3050 },
+
+    // --- 38-41: MOTIVATION & MENTALITET ---
+    { id: 38, titel: "Max Power", desc: "Ha' en motivation på 10", check: (s) => s.mot10Count >= 1 },
+    { id: 39, titel: "Mental Rock", desc: "5 træninger m. motivation 10", check: (s) => s.mot10Count >= 5 },
+    { id: 40, titel: "Comeback Kid", desc: "Tab 1. sæt - vind kampen", check: (s) => s.hasComeback },    { id: 41, titel: "Marathon Match", desc: "Spil en kamp over 60 min", check: (s, ach) => ach && ach.match_60 },
+    { id: 41, titel: "Iron Focus", desc: "2 mod 1 øvelse i 15m uden fejl", check: (s, ach) => ach && ach.focus_2v1 },
+
+    // --- 43-45: UGE-MÅL (Vedholdenhed) ---
+    { id: 43, titel: "Weekly 3", desc: "Træn 3 gange på én uge", check: (s) => s.maxInWeek >= 3 },
+    { id: 44, titel: "Weekly 5", desc: "Træn 5 gange på én uge", check: (s) => s.maxInWeek >= 5 },
+    { id: 45, titel: "Weekly 7", desc: "Træn hver dag i en uge", check: (s) => s.maxInWeek >= 7 },
+
+    // --- 46-50: REJSE & SPECIALS (Træneren låser op) ---
+    { id: 46, titel: "Malaysia Tour", desc: "Deltaget i Malaysia træning", check: (s) => s.hasMalaysia },
+    { id: 47, titel: "Copenhagen", desc: "Denmark Open deltagelse", check: (s) => s.hasDenmarkOpen },
+    { id: 48, titel: "Island Hopper", desc: "Låst op på rejse", check: (s) => s.hasIsland },
+    { id: 49, titel: "Gym Rat", desc: "Trænet styrke 5 gange", check: (s) => s.strengthCount >= 5 },
+    { id: 50, titel: "Runner", desc: "Løbetræning 5 gange", check: (s) => s.runCount >= 5 }
         ];
 
         function visSide(id, btn) {
@@ -411,8 +493,8 @@
             if(btn) btn.classList.add('active');
             document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-if(id==='side-profil') {
-    setTimeout(function() { 
+            if(id==='side-profil') {
+            setTimeout(function() { 
         hentProfilData(firebase.auth().currentUser.uid, 'p');
         tegnAvatarGalleri(); 
     }, 200);
@@ -423,6 +505,14 @@ if(id==='side-profil') {
             if(id==='side-speed') opdaterLeaderboard();
             window.scrollTo(0,0);
         }
+
+function visAnalyseVærktøj(toolId) {
+    if (toolId === 'speed-tool') {
+        visSide('side-speed'); // Vi sender dem videre til din eksisterende speed-side
+    } else if (toolId === 'run-tool') {
+        alert("Løbe-modulet er under opbygning! 🏃‍♂️💨");
+    }
+}
 
 firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
@@ -447,6 +537,8 @@ firebase.auth().onAuthStateChanged(function(user) {
             }
             
             opdaterDashboard();
+            // --- HER STARTER VI CHATTEN ---
+            startChatLytter();
         });
     } else {
         document.getElementById('login-skærm').classList.remove('hidden');
@@ -605,87 +697,211 @@ if(synligeKeys.length > 0) {
     });
 }
 
-        // Resten af de eksisterende funktioner
-        function visSessionsForDag(dato, keys, all) {
-            const l = document.getElementById('day-sessions-list');
-            document.getElementById('day-sessions-title').innerText = "Sessions d. " + dato; l.innerHTML = "";
-            keys.forEach(k => {
-                const t = all[k]; const div = document.createElement('div'); div.className = 'kort';
-                div.innerHTML = `<b>${t.title}</b><br><small>Kl. ${t.time} (${t.duration} min)</small>`;
-                div.onclick = () => visSessionModal(k);
-                l.appendChild(div);
-            });
-            document.getElementById('day-sessions').classList.remove('hidden');
-        }
+// --- OPDATERET VISNING AF SESSIONS ---
+function visSessionsForDag(dato, keys, all) {
+    const l = document.getElementById('day-sessions-list');
+    const titleEl = document.getElementById('day-sessions-title');
+    if (titleEl) titleEl.innerText = "Sessions d. " + dato; 
+    if (l) {
+        l.innerHTML = "";
+        keys.forEach(k => {
+            const t = all[k]; 
+            const div = document.createElement('div'); 
+            div.className = 'kort';
+            div.innerHTML = `<b>${t.title}</b><br><small>Kl. ${t.time} (${t.duration} min)</small>`;
+            div.onclick = () => visSessionModal(k);
+            l.appendChild(div);
+        });
+    }
+    document.getElementById('day-sessions').classList.remove('hidden');
+}
 
+// --- OPDATERET OPRETTELSE MED XP OG KATEGORIER ---
 function opretSessionDialog(dato) {
-    const n = prompt("Navn?"); if(!n) return;
+    const n = prompt("Navn på session?"); if(!n) return;
     const t = prompt("Tid?", "17:00");
     const d = prompt("Minutter?", "90");
     const uid = firebase.auth().currentUser.uid;
 
-    // Vi henter lige brugerens rolle hurtigt for at være 100% sikre
     db.ref('users/' + uid + '/role').once('value').then(snap => {
         const rolle = snap.val();
-        const typeVal = (rolle === 'traener') ? 'faelles' : 'privat';
+        let sessionType = (rolle === 'traener') ? 'faelles' : 'privat';
+        let subType = "Badminton"; // Standard
 
+        // Bevarer kategorivælgeren for trænere (vigtigt for badges)
+        if (rolle === 'traener') {
+            const valg = prompt("Vælg kategori:\n1: Badminton\n2: Styrke\n3: Løb\n4: Malaysia Badminton\n5: Malaysia Løb\n6: Denmark Open", "1");
+            const typer = {
+                "1": "Badminton",
+                "2": "Styrke",
+                "3": "Løb",
+                "4": "Malaysia Badminton",
+                "5": "Malaysia Løb",
+                "6": "Denmark Open"
+            };
+            subType = typer[valg] || "Badminton";
+        }
+
+        // Gemmer træningen
         db.ref('trainings').push({
             date: dato,
             title: n,
             time: t,
             duration: d,
             spillerUid: uid,
-            type: typeVal
+            type: sessionType,
+            category: subType 
         }).then(() => {
-            alert("Træning oprettet!");
+            // Vi har fjernet XP-tildelingen herfra for at undgå snyd.
+            // Spilleren får nu i stedet 25 XP (10+15) via gemEval funktionen bagefter.
+            if (sessionType === 'privat') {
+                alert("Træning oprettet! Husk at evaluere sessionen bagefter for at få dine 25 XP 🚀");
+            } else {
+                alert("Træning oprettet!");
+            }
+
+            if(typeof tegnKalender === "function") tegnKalender();
         }).catch(err => alert("Fejl: " + err.message));
     });
 }
 
-        function visSessionModal(id) {
-            selT = id; document.getElementById('overlay').classList.remove('hidden');
-            document.getElementById('modal-session').classList.remove('hidden');
-            const uid = firebase.auth().currentUser.uid;
-            db.ref('trainings/'+id).once('value', snap => {
-                const t = snap.val(); document.getElementById('ms-title').innerText = t.title;
-                document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00");
-                const erEjer = (t.spillerUid === firebase.auth().currentUser.uid);
-document.getElementById('ms-slet').classList.toggle('hidden', !erEjer && curRole !== 'traener');
-                const startTid = new Date(t.date + "T" + (t.time || "00:00"));
-                const erLaast = new Date() > startTid;
-                document.getElementById('attendance-btns').classList.toggle('hidden', erLaast && curRole !== 'traener');
-                document.getElementById('locked-msg').classList.toggle('hidden', !(erLaast && curRole !== 'traener'));
-                db.ref('evaluations/'+uid).orderByChild('trainingId').equalTo(id).once('value', es => {
-                    const btn = document.getElementById('btn-eval-session');
-                    const view = document.getElementById('eval-summary-view');
-                    if(es.exists()) {
-                        btn.classList.add('hidden'); view.classList.remove('hidden');
-                        const ed = Object.values(es.val())[0];
-                        document.getElementById('sum-m').innerText = ed.mot;
-                        document.getElementById('sum-c').innerText = ed.conc;
-                        document.getElementById('sum-f').innerText = ed.frisk;
-                        document.getElementById('sum-note').innerText = ed.notat || "Ingen noter.";
-                    } else {
-                        btn.classList.remove('hidden'); view.classList.add('hidden');
-                    }
-                });
-                hentSvar(id, 'ms-spiller-liste');
-            });
-        }
+ function visSessionModal(id) {
+    selT = id; 
+    document.getElementById('overlay').classList.remove('hidden');
+    document.getElementById('modal-session').classList.remove('hidden');
+    const uid = firebase.auth().currentUser.uid;
+
+    db.ref('trainings/'+id).once('value', snap => {
+        const t = snap.val();
+        document.getElementById('modal-session').dataset.type = t.type; 
+        document.getElementById('ms-title').innerText = t.title;
+        document.getElementById('ms-time').innerText = t.date + " kl. " + (t.time||"17:00");
+        
+        // Gem typen på modal-elementet så vi kan læse den senere
+        document.getElementById('modal-session').dataset.type = t.type;
+
+        const erEjer = (t.spillerUid === firebase.auth().currentUser.uid);
+        document.getElementById('ms-slet').classList.toggle('hidden', !erEjer && curRole !== 'traener');
+        
+        const startTid = new Date(t.date + "T" + (t.time || "00:00"));
+        const erLaast = new Date() > startTid;
+        
+        document.getElementById('attendance-btns').classList.toggle('hidden', erLaast && curRole !== 'traener');
+        document.getElementById('locked-msg').classList.toggle('hidden', !(erLaast && curRole !== 'traener'));
+        
+        // --- DIN EKSISTERENDE EVALUERINGSTJEK ---
+        db.ref('evaluations/'+uid).orderByChild('trainingId').equalTo(id).once('value', es => {
+            const btn = document.getElementById('btn-eval-session');
+            const view = document.getElementById('eval-summary-view');
+            if(es.exists()) {
+                btn.classList.add('hidden'); view.classList.remove('hidden');
+                const ed = Object.values(es.val())[0];
+                document.getElementById('sum-m').innerText = ed.mot;
+                document.getElementById('sum-c').innerText = ed.conc;
+                document.getElementById('sum-f').innerText = ed.frisk;
+                document.getElementById('sum-note').innerText = ed.notat || "Ingen noter.";
+            } else {
+                btn.classList.remove('hidden'); view.classList.add('hidden');
+            }
+        });
+        
+        hentSvar(id, 'ms-spiller-liste');
+    });
+}
 
         function gaaTilEval() { evalTId = selT; document.getElementById('eval-target-name').innerText = "Eval: " + document.getElementById('ms-title').innerText; document.getElementById('side-evaluering').classList.remove('hidden'); document.getElementById('side-kalender').classList.add('hidden'); lukModal(); }
-        function gemEval() { 
-            const uid = firebase.auth().currentUser.uid;
-            db.ref('evaluations/'+uid).push({ mot:document.getElementById('ev-mot').value, conc:document.getElementById('ev-conc').value, frisk:document.getElementById('ev-frisk').value, notat:document.getElementById('ev-notat').value, dato:new Date().toISOString().split('T')[0], timestamp:firebase.database.ServerValue.TIMESTAMP, trainingId:evalTId }).then(()=>{
-                alert("Gemt!"); visSide('side-hjem', document.querySelector('.tab-item'));
-            }); 
-        }
+function gemEval() { 
+    const uid = firebase.auth().currentUser.uid;
+    
+    // 1. Gem selve evalueringen
+    db.ref('evaluations/'+uid).push({ 
+        mot: document.getElementById('ev-mot').value, 
+        conc: document.getElementById('ev-conc').value, 
+        frisk: document.getElementById('ev-frisk').value, 
+        notat: document.getElementById('ev-notat').value, 
+        dato: new Date().toISOString().split('T')[0], 
+        timestamp: firebase.database.ServerValue.TIMESTAMP, 
+        trainingId: evalTId 
+    }).then(() => {
+        
+        // 2. Find ud af hvilken type træning det var (Fælles eller Privat)
+        db.ref('trainings/' + evalTId).once('value', snap => {
+            const t = snap.val();
+            let samletXP = 10; // Basis point for selve evalueringen
+
+            // Hvis det er spillerens egen private træning, lægger vi 15 point oveni (i alt 25)
+            if (t && t.type === 'privat' && t.spillerUid === uid) {
+                samletXP = 25; 
+            }
+
+            // 3. Giv point med snyde-sikring (så de kun får point én gang pr. træning)
+            const logRef = db.ref('xp_log/' + uid + '/' + evalTId + '_eval');
+            logRef.once('value', logSnap => {
+                if (!logSnap.val()) {
+                    // Giv XP via transaction (sikker opdatering)
+                    db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + samletXP);
+                    
+                    // Sæt "kvittering" i loggen
+                    logRef.set({
+                        dato: new Date().toISOString(),
+                        type: 'evaluering_point'
+                    });
+                    
+                    alert("Flot! Du har optjent " + samletXP + " XP! 🚀");
+                } else {
+                    alert("Evaluering gemt!");
+                }
+                
+                // Gå tilbage til forsiden
+                visSide('side-hjem', document.querySelector('.tab-item'));
+            });
+        });
+
+    }).catch(err => {
+        alert("Der skete en fejl: " + err.message);
+    }); 
+}
 
         function lukModal() { document.querySelectorAll('.modal, .overlay').forEach(e => e.classList.add('hidden')); }
         function skiftMaaned(d) { visDato.setMonth(visDato.getMonth() + d); tegnKalender(); }
         function logind() { firebase.auth().signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value); }
         function opretBruger() { const n = prompt("Navn?"); firebase.auth().createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pw').value).then(c => db.ref('users/'+c.user.uid).set({name:n, role:'spiller'})); }
-        function svar(s) { db.ref('users/'+firebase.auth().currentUser.uid).once('value', snap => { db.ref('attendance/'+selT+'/'+firebase.auth().currentUser.uid).set({status:s, name:snap.val().name}); }); }
+     function svar(s) {
+    const uid = firebase.auth().currentUser.uid;
+    const id = selT; // Bruger det globale ID fra modalen
+    const type = document.getElementById('modal-session').dataset.type;
+
+    db.ref('users/' + uid).once('value', snap => {
+        const brugerNavn = snap.val().name;
+
+        // 1. Gem status i attendance (ligesom før)
+        db.ref('attendance/' + id + '/' + uid).set({
+            status: s,
+            name: brugerNavn
+        }).then(() => {
+            
+            // 2. XP LOGIK: Kun hvis man trykker 'Kommer'
+            if (s === 'Kommer') {
+                if (type === 'faelles') {
+                    // Tjek om der allerede er givet point for denne træning
+                    const xpRef = db.ref('xp_log/' + uid + '/' + id);
+                    xpRef.once('value', logSnap => {
+                        if (!logSnap.val()) {
+                            // Giv 25 XP
+                            db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + 25);
+                            // Lås loggen
+                            xpRef.set({ type: 'faelles_deltagelse', dato: new Date().toISOString() });
+                            alert("Tilmeldt! Du har optjent 25 XP 🏸");
+                        }
+                    });
+                } else if (type === 'privat') {
+                    // Besked til private træninger
+                    alert("Tilmeldt! Husk at evaluere bagefter for at få dine 25 XP 🚀");
+                }
+            }
+        });
+    });
+}
         function sletTræning() { if(confirm("Slet?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
         function hentSvar(id, target) { 
             db.ref('attendance/'+id).on('value', snap => { 
@@ -694,7 +910,37 @@ document.getElementById('ms-slet').classList.toggle('hidden', !erEjer && curRole
                 document.getElementById(target).innerHTML = h; 
             }); 
         }
-        function overstyr(tId, uId, s) { if(curRole==='traener') { const n = s==='Kommer'?'Afbud':'Kommer'; db.ref('attendance/'+tId+'/'+uId+'/status').set(n); }}
+function overstyr(tId, uId, s) { 
+    if(curRole === 'traener') { 
+        const n = s === 'Kommer' ? 'Afbud' : 'Kommer'; 
+        
+        // 1. Opdater selve fremmøde-status som normalt
+        db.ref('attendance/' + tId + '/' + uId + '/status').set(n); 
+
+        // 2. Håndter XP hvis status ændres til 'Kommer'
+        if (n === 'Kommer') {
+            // Tjek om spilleren ALLEREDE har fået XP for denne specifikke træning
+            const xpRef = db.ref('xp_log/' + uId + '/' + tId);
+            
+            xpRef.once('value', snap => {
+                if (!snap.val()) {
+                    // Hvis der IKKE findes en log, giv XP og opret loggen
+                    db.ref('xp_points/' + uId).transaction(xp => (xp || 0) + 25);
+                    
+                    // Sæt en kvittering så de ikke kan få point igen for samme tId
+                    xpRef.set({
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        type: 'traening_fremmoede'
+                    });
+                    
+                    console.log("Første gang tilmeldt: 25 XP givet til " + uId);
+                } else {
+                    console.log("XP allerede givet for denne træning tidligere.");
+                }
+            });
+        }
+    } 
+}
 
         function hentProfilData(uid, prefix) {
             db.ref('users/'+uid).once('value', s => { 
@@ -731,38 +977,151 @@ document.getElementById('ms-slet').classList.toggle('hidden', !erEjer && curRole
             chart.draw(google.visualization.arrayToDataTable(dArray), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', chartArea:{width:'90%', height:'70%'}, vAxis:{minValue:1, maxValue:10, gridlines:{color:'#334155'}}});
         }
 
-        function beregnBadgeData() {
-            const uid = firebase.auth().currentUser.uid;
-            db.ref('trainings').once('value', tSnap => {
-                const allT = tSnap.val() || {};
-                db.ref('attendance').once('value', aSnap => {
-                    const allA = aSnap.val() || {};
-                    db.ref('evaluations/'+uid).once('value', eSnap => {
-                        const allE = eSnap.val() || {};
-                        const dates = []; let mins = 0;
-                        Object.keys(allA).forEach(tId => { if(allA[tId] && allA[tId][uid] && allA[tId][uid].status==='Kommer') { dates.push(allT[tId]?.date); mins += parseInt(allT[tId]?.duration || 90); }});
-                        const uDates = [...new Set(dates)].sort();
-                        let s=0, ms=0; uDates.forEach((d,i) => { if(i>0 && (new Date(d)-new Date(uDates[i-1]))===86400000) s++; else s=1; if(s>ms) ms=s; });
-                        const stats = { total: dates.length, mins, maxStreak: ms, mot10Count: Object.values(allE).filter(e=>parseInt(e.mot)===10).length, multiDay: false, maxInWeek: 0, evalStreak: 0 };
-                        document.getElementById('stat-sessions').innerText = stats.total;
-                        document.getElementById('stat-minutes').innerText = mins;
+function beregnBadgeData() {
+    const uid = firebase.auth().currentUser.uid;
+    
+    db.ref('trainings').once('value', tSnap => {
+        const allT = tSnap.val() || {};
+        db.ref('attendance').once('value', aSnap => {
+            const allA = aSnap.val() || {};
+            db.ref('evaluations/' + uid).once('value', eSnap => {
+                const allE = eSnap.val() || {};
+                db.ref('h2h_global').once('value', h2hSnap => {
+                    const allH2H = h2hSnap.val() || {};
+                    db.ref('speed_records/' + uid).once('value', speedSnap => {
+                        
+                        // 1. HENT SPEED REKORD
+                        const val = speedSnap.val();
+                        let myMaxSpeed = 0;
+                        if (val) {
+                            myMaxSpeed = (typeof val === 'object') ? (val.max || 0) : val;
+                        }
+
+                        // 2. FORBERED TÆLLERE
+                        const attDates = [];
+                        const attTimes = [];
+                        let mins = 0;
+                        let attendedSessionIds = new Set(); 
+
+                        let hasMalaysia = false;
+                        let hasDenmarkOpen = false;
+                        let hasIsland = false;
+                        let strengthCount = 0;
+                        let runCount = 0;
+
+                        // 3. GENNEMGÅ FREMMØDE (Unik tælling)
+                        Object.keys(allA).forEach(tId => {
+                            if (allA[tId] && allA[tId][uid] && allA[tId][uid].status === 'Kommer') {
+                                const tData = allT[tId];
+                                
+                                if (tData && !attendedSessionIds.has(tId)) {
+                                    attendedSessionIds.add(tId); 
+                                    
+                                    attDates.push(tData.date);
+                                    attTimes.push(tData.time || "17:00");
+                                    mins += parseInt(tData.duration || 90);
+
+                                    const cat = (tData.category || "").toLowerCase();
+                                    const typ = (tData.type || "").toLowerCase();
+
+                                    if (cat.includes("malaysia") || typ.includes("malaysia")) hasMalaysia = true;
+                                    if (cat.includes("denmark open") || typ.includes("denmark open")) hasDenmarkOpen = true;
+                                    if (cat.includes("styrke") || typ.includes("styrke")) strengthCount++;
+                                    if (cat.includes("løb") || typ.includes("løb")) runCount++;
+                                }
+                            }
+                        });
+
+                        // 4. BEREGN UGE-STATISTIK (Weekly badges)
+                        const uniqueDates = [...new Set(attDates)].sort();
+                        const weekCounts = {};
+                        uniqueDates.forEach(d => {
+                            const wk = getUgeNr(new Date(d));
+                            weekCounts[wk] = (weekCounts[wk] || 0) + 1;
+                        });
+                        const maxInWeek = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
+
+                        // 5. COMEBACK KID LOGIK
+                        let hasComeback = false;
+                        Object.values(allH2H).forEach(group => {
+                            Object.values(group).forEach(m => {
+                                if ((m.p1 === uid || m.p2 === uid) && m.winner === uid) {
+                                    const sets = m.score ? m.score.split(',') : [];
+                                    if (sets.length >= 2) {
+                                        const s1 = sets[0].trim().split('-');
+                                        const p1S = parseInt(s1[0]), p2S = parseInt(s1[1]);
+                                        if (m.p1 === uid && p1S < p2S) hasComeback = true;
+                                        if (m.p2 === uid && p2S < p1S) hasComeback = true;
+                                    }
+                                }
+                            });
+                        });
+
+                        // 6. SAML ALT I STATS OBJEKTET
+                        const stats = {
+                            total: attendedSessionIds.size,
+                            mins: mins,
+                            hasMalaysia: hasMalaysia,
+                            hasDenmarkOpen: hasDenmarkOpen,
+                            hasIsland: hasIsland,
+                            strengthCount: strengthCount,
+                            runCount: runCount,
+                            maxInWeek: maxInWeek,
+                            time_early: attTimes.some(t => t && parseInt(t.split(':')[0]) < 8),
+                            time_late: attTimes.some(t => t && parseInt(t.split(':')[0]) >= 20),
+                            day_double: Object.values(attDates.reduce((a,c)=>{a[c]=(a[c]||0)+1; return a},{})).some(v => v >= 2),
+                            mot10Count: Object.values(allE).filter(e => parseInt(e.mot) === 10).length,
+                            hasComeback: hasComeback,
+                            topSpeed: myMaxSpeed
+                        };
+
+                        // 7. OPDATER SKÆRM OG TEGN BADGES
+                        console.log("Stats er nu:", stats);
+                        
+                        if (document.getElementById('stat-sessions')) {
+                            document.getElementById('stat-sessions').innerText = stats.total;
+                        }
+                        if (document.getElementById('stat-minutes')) {
+                            document.getElementById('stat-minutes').innerText = stats.mins;
+                        }
+
                         tegnBadges(stats);
-                    });
-                });
+
+                    }); // Lukker speed
+                }); // Lukker h2h
+            }); // Lukker evalueringer
+        }); // Lukker attendance
+    }); // Lukker trainings
+}
+        function tegnBadges(stats) {
+    const container = document.getElementById('badge-container'); 
+    container.innerHTML = "";
+    let uc = 0;
+    const uid = firebase.auth().currentUser.uid; // Vi skal bruge brugerens ID
+
+    udfordringer.forEach(u => {
+        const win = u.check(stats); 
+        if(win) {
+            uc++;
+            // NYT: Tjek i databasen om vi allerede har givet XP for dette badge
+            db.ref('users/' + uid + '/badges/' + u.titel).once('value', snap => {
+                if (!snap.val()) {
+                    // Hvis badget IKKE findes i databasen endnu:
+                    db.ref('users/' + uid + '/badges/' + u.titel).set(true); // Gem det
+                    db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + 50); // GIV 50 XP
+                    console.log("BOOM! 50 XP givet for: " + u.titel);
+                }
             });
         }
 
-        function tegnBadges(stats) {
-            const container = document.getElementById('badge-container'); container.innerHTML = "";
-            let uc = 0;
-            udfordringer.forEach(u => {
-                const win = u.check(stats); if(win) uc++;
-                const box = document.createElement('div'); box.className = `badge-box ${win ? 'unlocked' : ''}`;
-                box.innerHTML = `<div class="badge-icon">${win ? '🏆' : '🔒'}</div><b>${u.titel}</b><small>${u.desc}</small>`;
-                container.appendChild(box);
-            });
-            document.getElementById('stat-unlocked').innerText = uc + "/35";
-        }
+        const box = document.createElement('div'); 
+        box.className = `badge-box ${win ? 'unlocked' : ''}`;
+        box.innerHTML = `<div class="badge-icon">${win ? '🏆' : '🔒'}</div><b>${u.titel}</b><small>${u.desc}</small>`;
+        container.appendChild(box);
+    });
+    
+    document.getElementById('stat-unlocked').innerText = uc + "/35";
+}
 
         function hentAlleSpillere() {
             db.ref('users').once('value', snap => {
@@ -853,23 +1212,69 @@ document.getElementById('ms-slet').classList.toggle('hidden', !erEjer && curRole
                 document.getElementById('ev-mot-week').innerText = cw>0?(tw/cw).toFixed(1):"-";
             });
         }
-    function syncUserData() {
+   function syncUserData() {
     const uid = firebase.auth().currentUser.uid;
     
-    db.ref('xp_points/' + uid).on('value', function(snap) {
-        const xp = snap.val() || 0;
-        const level = Math.floor(xp / 100) + 1;
-        const xpInLevel = xp % 100;
+db.ref('xp_points/' + uid).on('value', function(snap) {
+    const totalXp = snap.val() || 0;
+    
+    let tempXp = totalXp;
+    let level = 1;
+    let xpRequiredForNext = 100;
+
+    // Loop der finder dit level baseret på trappetrin
+    while (true) {
+        // Find ud af hvad det koster at stige fra dette level
+        // Level 1-10: 100 XP
+        // Level 11-20: 200 XP
+        // Level 21-30: 300 XP... osv.
+        let multiplier = Math.ceil(level / 10); 
+        let cost = multiplier * 100;
+
+        if (tempXp >= cost) {
+            tempXp -= cost;
+            level++;
+        } else {
+            xpRequiredForNext = cost;
+            break;
+        }
+    }
+
+    const xpInLevel = tempXp; // Det der er tilbage efter alle levels er trukket fra
+    const progressProcent = (xpInLevel / xpRequiredForNext) * 100;
+
+    // Opdater skærmen
+    document.getElementById('user-level').innerText = "Level " + level;
+    document.getElementById('xp-text').innerText = xpInLevel + " / " + xpRequiredForNext + " XP";
+    document.getElementById('xp-bar').style.width = progressProcent + "%";
+
+        // --- DIN NYE LEVEL-LISTE ---
+        const levelTitler = {
+            1: "Fjer-samler", 2: "Taskekrøller", 3: "Opvarmnings-hader", 4: "Serv-rammer (måske)", 5: "Net-snitter", 
+            6: "Baglinje-skytten", 7: "Gummi-arm", 8: "Ketsjer-svinger", 9: "Bane-turist", 10: "Hobby-spiller",
+            11: "Knæ-bøjer", 12: "Sved-garant", 13: "Grebs-nørd", 14: "Hurtig-fod", 15: "Fjer-dræber", 
+            16: "Intervaller-overlever", 17: "Fokus-monster", 18: "Teknik-tænker", 19: "Coach-pleaser", 20: "Talentet",
+            21: "Hal-rotte", 22: "Grips-ekspert", 23: "Cross-specialist", 24: "Longline-maskine", 25: "Drop-konge / Drop-dronning", 
+            26: "Smash-aspirant", 27: "Point-høster", 28: "Turnerings-haj", 29: "Dommer-favorit", 30: "Challenger",
+            31: "Ben-af-stål", 32: "Lunger-som-en-hest", 33: "Raket-start", 34: "Lyn-refleks", 35: "Net-troldmand", 
+            36: "Smash-kanon", 37: "Gulv-slider", 38: "Flyvende-fjer", 39: "Tempo-styring", 40: "Speedster",
+            41: "Lobb-master", 42: "Finte-fyrsten", 43: "Psykologisk-kriger", 44: "Svagheds-finder", 45: "Banens-arkitekt", 
+            46: "Køligt-overblik", 47: "Counter-smash-specialist", 48: "Fejlfri-maskine", 49: "Taktik-tavle-nørd", 50: "Strategen",
+            51: "Grus-i-maskineriet", 52: "Smash-returnerings-mur", 53: "Utrættelig-fighter", 54: "Præcisions-skytte", 55: "Power-player", 
+            56: "Backhand-beast", 57: "Spring-smash-entusiast", 58: "Net-spin-ekvilibrist", 59: "Sejrs-stimer-starter", 60: "Elite-spiller",
+            61: "Hallens Skræk", 62: "Pokal-samler", 63: "Medalje-sluger", 64: "Lokal-rival-knuser", 65: "Comeback-specialist", 
+            66: "Mental-gigant", 67: "Clutch-player", 68: "Publikum-pleaser", 69: "Stat-padder", 70: "MVP",
+            71: "Jern-psyke", 72: "Uknækkelig", 73: "Zone-betræder", 74: "Fjer-whisperer", 75: "Dominator", 
+            76: "Master-of-Puppets", 77: "King/Queen of the Court", 78: "Triple-threat", 79: "Ketsjer-kunstner", 80: "Champion",
+            81: "Overmenneskelig-rækkevidde", 82: "Tids-bøjer", 83: "Tyngdekrafts-trodser", 84: "Smash-lydmurs-bryder", 85: "Udødelig-forsvarer", 
+            86: "Spil-gennemlyser", 87: "Hallens-hersker", 88: "Badminton-ikon", 89: "Legende-status", 90: "Stormester",
+            91: "Fjerbold-alkymist", 92: "Banens-gud", 93: "Smash-fra-himlen", 94: "Zen-master", 95: "Uovervindelig-aura", 
+            96: "Badminton-profet", 97: "Historiebøgerne-kalder", 98: "Hall-of-Famer", 99: "Sidste-Boss", 100: "G.O.A.T."
+        };
+
+        // Find titlen baseret på level (hvis level er over 100, bliver den ved G.O.A.T.)
+        let rank = levelTitler[level] || (level > 100 ? "G.O.A.T." : "Nybegynder");
         
-        document.getElementById('user-level').innerText = "Level " + level;
-        document.getElementById('xp-text').innerText = xpInLevel + " / 100 XP";
-        document.getElementById('xp-bar').style.width = xpInLevel + "%";
-        
-        let rank = "Nybegynder";
-        if (level >= 10) rank = "Øvet";
-        if (level >= 20) rank = "Talent";
-        if (level >= 30) rank = "Elite";
-        if (level >= 50) rank = "LEGENDE";
         document.getElementById('user-rank').innerText = "Rank: " + rank;
     });
 
@@ -931,6 +1336,117 @@ function tegnAvatarGalleri() {
             }
             galleri.appendChild(img);
         });
+    });
+}
+
+let sidsteSetTimestamp = localStorage.getItem('chat_last_seen') || 0;
+
+// 1. Åbn/Luk chat og nulstil notifikationer
+function toggleChat() {
+    const chat = document.getElementById('chat-container');
+    chat.classList.toggle('chat-closed');
+    
+    if (!chat.classList.contains('chat-closed')) {
+        // Gem nuværende tid som "sidst set"
+        sidsteSetTimestamp = Date.now();
+        localStorage.setItem('chat_last_seen', sidsteSetTimestamp);
+        
+        // Skjul notifikations-prik
+        document.getElementById('chat-notif').classList.add('hidden');
+        document.getElementById('chat-notif').innerText = "0";
+        
+        // Scroll til bunden
+        setTimeout(() => {
+            const m = document.getElementById('chat-messages');
+            m.scrollTop = m.scrollHeight;
+        }, 100);
+    }
+}
+
+// 2. Send besked
+function sendBesked() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    // Strategi for at finde navnet:
+    // 1. Tjek window.curUser (som vi lige har sat i auth-lytteren)
+    // 2. Hvis ikke den findes, prøv at kigge i velkomst-teksten (hvor der står "Hej Kasper!")
+    let afsenderNavn = "Spiller";
+    
+    if (window.curUser && window.curUser.name) {
+        afsenderNavn = window.curUser.name;
+    } else {
+        // Backup: Hvis alt andet fejler, så "stjæl" navnet fra velkomsten på skærmen
+        const welcomeText = document.getElementById('user-welcome').innerText;
+        afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "");
+    }
+
+    db.ref('global_chat').push({
+        uid: user.uid,
+        name: afsenderNavn,
+        text: msg,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        input.value = "";
+    });
+}
+
+function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
+
+function startChatLytter() {
+    db.ref('global_chat').limitToLast(30).on('value', snap => {
+        const messagesDiv = document.getElementById('chat-messages');
+        const notifDiv = document.getElementById('chat-notif');
+        const isClosed = document.getElementById('chat-container').classList.contains('chat-closed');
+        const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+        
+        messagesDiv.innerHTML = "";
+        let nyeBeskeder = 0;
+
+        snap.forEach(child => {
+            const m = child.val();
+            const erMin = currentUid && m.uid === currentUid;
+            
+            let tid = "";
+            if (m.timestamp) {
+                const datoObj = new Date(m.timestamp);
+                const timer = datoObj.getHours().toString().padStart(2, '0');
+                const minutter = datoObj.getMinutes().toString().padStart(2, '0');
+                tid = timer + ":" + minutter;
+            }
+
+            if (m.timestamp > sidsteSetTimestamp && !erMin) {
+                nyeBeskeder++;
+            }
+
+            const div = document.createElement('div');
+            div.className = erMin ? 'msg owner' : 'msg';
+            div.innerHTML = `<span class="msg-info">${m.name} • ${tid}</span>${m.text}`;
+            messagesDiv.appendChild(div);
+        });
+
+        // 1. Vis notifikation på selve chat-boblen inde i appen
+        if (isClosed && nyeBeskeder > 0) {
+            notifDiv.innerText = nyeBeskeder;
+            notifDiv.classList.remove('hidden');
+        }
+
+        // 2. --- NYT: Opdater den røde prik på selve App-ikonet på mobilen ---
+        if ('setAppBadge' in navigator) {
+            if (nyeBeskeder > 0) {
+                navigator.setAppBadge(nyeBeskeder).catch((error) => {
+                    console.error("Fejl ved Badge:", error);
+                });
+            } else {
+                navigator.clearAppBadge();
+            }
+        }
+
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 }
     </script>
