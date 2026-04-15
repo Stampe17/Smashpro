@@ -1,6 +1,6 @@
 /* SMASHPRO CHAT - TOTAL ISOLERING MOD BJÆLKER */
 
-/* Hovedcontaineren */
+/* Hovedcontaineren - Låst til hjørnet */
 #chat-container.sp-wrap {
     position: fixed !important;
     bottom: 95px !important; 
@@ -15,14 +15,14 @@
     padding: 0 !important;
 }
 
-/* Boblen */
+/* Boblen - Cirkel-garanti */
 #chat-bubble.sp-bub {
     width: 60px !important;
     height: 60px !important;
     min-width: 60px !important;
     background: #222 !important;
     border: 2px solid var(--primary) !important;
-    border-radius: 50% !important;
+    border-radius: 50% !important; /* Tvinger den til at være rund */
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -30,6 +30,7 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
     position: relative !important;
     font-size: 24px !important;
+    overflow: hidden !important;
 }
 
 /* Notifikations-prikken */
@@ -51,7 +52,7 @@
     z-index: 10 !important;
 }
 
-/* Chat vinduet */
+/* Chat vinduet - Positioneret over boblen */
 #chat-window.sp-win {
     position: absolute !important;
     bottom: 75px !important; 
@@ -90,19 +91,31 @@
 }
 .sp-header span { color: white !important; font-weight: 600 !important; }
 
-/* Knapperne - her dræber vi bjælke-effekten */
-#chat-container button.sp-btn {
-    background: transparent !important;
+/* Aggressiv knap-kontrol - Dræber alle bjælker */
+#chat-container button, 
+#chat-container .sp-btn,
+.sp-circle-btn {
+    width: 40px !important; /* Fast størrelse stopper stræk */
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    border-radius: 50% !important; /* Gør dem runde */
+    background: var(--primary) !important;
+    color: black !important;
     border: none !important;
-    color: white !important;
-    font-size: 20px !important;
-    width: auto !important;
-    min-width: 0 !important;
-    height: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: none !important;
     cursor: pointer !important;
+}
+
+/* Specifik overstyring for X-knappen hvis den skal være gennemsigtig */
+.sp-header .sp-btn {
+    background: transparent !important;
+    color: white !important;
 }
 
 /* Besked-området */
@@ -116,9 +129,21 @@
     background: #1a1a1a !important;
 }
 
-/* Selve besked-boblerne */
-.msg { background: #333 !important; padding: 8px 12px !important; border-radius: 12px !important; max-width: 85% !important; color: white !important; align-self: flex-start !important; position: relative !important; }
-.msg.owner { align-self: flex-end !important; background: var(--primary) !important; color: black !important; }
+/* Besked-bobler */
+.msg { 
+    background: #333 !important; 
+    padding: 8px 12px !important; 
+    border-radius: 12px !important; 
+    max-width: 85% !important; 
+    color: white !important; 
+    align-self: flex-start !important; 
+    position: relative !important; 
+}
+.msg.owner { 
+    align-self: flex-end !important; 
+    background: var(--primary) !important; 
+    color: black !important; 
+}
 
 .msg-info { 
     font-size: 10px !important; 
@@ -150,21 +175,3 @@
 }
 
 .hidden { display: none !important; }
-
-/* Denne regel tvinger alle knapper i chatten til IKKE at være 100% brede */
-#chat-container button, 
-#chat-container .sp-btn {
-    width: auto !important;
-    min-width: 0 !important;
-    padding: 5px !important;
-    background: transparent !important;
-    margin: 0 !important;
-    display: inline-flex !important;
-    box-shadow: none !important;
-}
-
-/* Tvinger boblen til at være rund uanset hvad */
-#chat-bubble {
-    border-radius: 50% !important;
-    overflow: hidden !important;
-}
