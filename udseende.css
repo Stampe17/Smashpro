@@ -150,3 +150,21 @@
 }
 
 .hidden { display: none !important; }
+
+/* Denne regel tvinger alle knapper i chatten til IKKE at være 100% brede */
+#chat-container button, 
+#chat-container .sp-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    padding: 5px !important;
+    background: transparent !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    box-shadow: none !important;
+}
+
+/* Tvinger boblen til at være rund uanset hvad */
+#chat-bubble {
+    border-radius: 50% !important;
+    overflow: hidden !important;
+}
