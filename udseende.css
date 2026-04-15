@@ -1,11 +1,12 @@
 /* Container til det hele */
 #chat-container {
     position: fixed;
-    bottom: 85px; 
+    bottom: 90px; /* Hævet lidt for at svæve over menuen på mobil */
     right: 20px;
-    z-index: 9999;
+    z-index: 10000; /* Sat op så den altid ligger øverst */
     font-family: 'Segoe UI', sans-serif;
-    display: block; /* Sikrer den ikke arver 'flex' fra body */
+    display: block;
+    pointer-events: auto; /* Sikrer at man kan klikke */
 }
 
 /* Den flydende boble */
@@ -14,14 +15,14 @@
     height: 60px;
     background: #222;
     border: 2px solid var(--primary);
-    border-radius: 50%;
+    border-radius: 50% !important; /* Tvinger den til at være rund på alle enheder */
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     position: relative;
-    float: right; /* Holder den i siden */
+    float: right;
 }
 
 /* Notifikations-prikken */
@@ -42,10 +43,12 @@
     border: 2px solid #111;
 }
 
-/* Chat vinduet */
+/* Chat vinduet - Optimere til både mobil og desktop */
 #chat-window {
-    width: 300px;
+    width: 300px; /* Standard bredde */
+    max-width: 85vw; /* Sikrer at den aldrig er bredere end mobilskærmen */
     height: 400px;
+    max-height: 70vh; /* Sikrer at den ikke fylder hele højden på små skærme */
     background: #1a1a1a;
     border-radius: 15px;
     border: 1px solid #333;
@@ -55,7 +58,7 @@
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-origin: bottom right;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    clear: both; /* Sikrer at vinduet ligger over boblen */
+    clear: both;
 }
 
 /* Skjul chatten */
@@ -106,9 +109,9 @@
 .msg-info { 
     font-size: 10px; 
     opacity: 0.7; 
-    margin-bottom: 4px; /* Lidt mere luft til teksten */
+    margin-bottom: 4px; 
     display: block; 
-    font-weight: 600; /* Gør navnet lidt tydeligere */
+    font-weight: 600; 
 }
 
 /* Input feltet */
