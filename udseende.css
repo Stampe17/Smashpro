@@ -111,4 +111,49 @@
 }
 
 /* HJÆLPEKLASSER */
+
+/* Containeren der holder alle beskeder */
+#chat-messages {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    padding: 15px !important;
+}
+
+/* Den enkelte besked-boble */
+.sp-msg {
+    display: flex !important;
+    flex-direction: column !important; /* Navn øverst, tekst nederst */
+    max-width: 85% !important;
+    padding: 10px 14px !important;
+    border-radius: 15px !important;
+    margin-bottom: 5px !important;
+    background: #333 !important;
+    color: white !important;
+    align-self: flex-start !important; /* Venstre side */
+}
+
+/* Dine egne beskeder */
+.sp-msg.owner {
+    align-self: flex-end !important; /* Højre side */
+    background: var(--primary) !important;
+    color: black !important;
+}
+
+/* Navn og tid - skal have sin egen linje */
+.sp-msg-info {
+    font-size: 11px !important;
+    font-weight: bold !important;
+    margin-bottom: 4px !important;
+    opacity: 0.8 !important;
+    display: block !important;
+}
+
+/* Selve teksten - skal have sin egen linje */
+.sp-msg-text {
+    font-size: 14px !important;
+    display: block !important;
+    word-wrap: break-word !important;
+    line-height: 1.4 !important;
+}
 .hidden { display: none !important; }
