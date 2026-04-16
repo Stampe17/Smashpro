@@ -1,191 +1,6 @@
-/* SMASHPRO CHAT - TOTAL ISOLERING MOD BJÆLKER */
+/* --- SMASHPRO CHAT - NY VERSION (TOP-MENU MODAL) --- */
 
-/* Hovedcontaineren - Låst til hjørnet */
-#chat-container.sp-wrap {
-    position: fixed !important;
-    bottom: 95px !important; 
-    right: 20px !important;
-    left: auto !important; 
-    width: 60px !important; 
-    height: 60px !important;
-    z-index: 10000 !important;
-    display: block !important;
-    font-family: 'Segoe UI', Tahoma, sans-serif !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* 1. Selve cirklen */
-#chat-bubble.sp-bub {
-    width: 60px !important;
-    height: 60px !important;
-    min-width: 60px !important;
-    background: #222 !important;
-    border: 2px solid var(--primary) !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    cursor: pointer !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-/* 2. Ikonet inde i cirklen (NY TILFØJELSE) */
-#chat-bubble.sp-bub span {
-    font-size: 24px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    pointer-events: none !important; /* Gør at man klikker "igennem" ikonet og rammer knappen */
-}
-
-/* Notifikations-prikken */
-#chat-notif {
-    position: absolute !important;
-    top: -5px !important;
-    right: -5px !important;
-    background: var(--primary) !important;
-    color: black !important;
-    font-weight: bold !important;
-    font-size: 12px !important;
-    width: 22px !important;
-    height: 22px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    border: 2px solid #111 !important;
-    z-index: 10 !important;
-}
-
-/* Chat vinduet - Positioneret over boblen */
-#chat-window.sp-win {
-    position: absolute !important;
-    bottom: 75px !important; 
-    right: 0 !important;
-    width: 300px !important;
-    max-width: 85vw !important;
-    height: 400px !important;
-    max-height: 60vh !important;
-    background: #1a1a1a !important;
-    border-radius: 20px !important;
-    border: 1px solid #333 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    transform-origin: bottom right !important;
-    overflow: hidden !important;
-}
-
-/* Skjul-effekten */
-.chat-closed #chat-window.sp-win {
-    transform: scale(0) !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
-
-/* Header */
-.sp-header {
-    padding: 12px 15px !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    border-bottom: 1px solid #333 !important;
-    background: #222 !important;
-    width: 100% !important;
-}
-.sp-header span { color: white !important; font-weight: 600 !important; }
-
-/* Aggressiv knap-kontrol - Dræber alle bjælker */
-#chat-container button, 
-#chat-container .sp-btn,
-.sp-circle-btn {
-    width: 40px !important; /* Fast størrelse stopper stræk */
-    height: 40px !important;
-    min-width: 40px !important;
-    max-width: 40px !important;
-    border-radius: 50% !important; /* Gør dem runde */
-    background: var(--primary) !important;
-    color: black !important;
-    border: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    cursor: pointer !important;
-}
-
-/* Specifik overstyring for X-knappen hvis den skal være gennemsigtig */
-.sp-header .sp-btn {
-    background: transparent !important;
-    color: white !important;
-}
-
-/* Besked-området */
-#chat-messages.sp-msg-area { 
-    flex: 1 !important; 
-    overflow-y: auto !important; 
-    padding: 15px !important; 
-    display: flex !important; 
-    flex-direction: column !important; 
-    gap: 10px !important; 
-    background: #1a1a1a !important;
-}
-
-/* Besked-bobler */
-.msg { 
-    background: #333 !important; 
-    padding: 8px 12px !important; 
-    border-radius: 12px !important; 
-    max-width: 85% !important; 
-    color: white !important; 
-    align-self: flex-start !important; 
-    position: relative !important; 
-}
-.msg.owner { 
-    align-self: flex-end !important; 
-    background: var(--primary) !important; 
-    color: black !important; 
-}
-
-.msg-info { 
-    font-size: 10px !important; 
-    opacity: 0.7 !important; 
-    margin-bottom: 4px !important; 
-    display: block !important; 
-    font-weight: 600 !important; 
-}
-
-/* Input bar i bunden */
-.sp-input-bar { 
-    display: flex !important; 
-    padding: 10px !important; 
-    background: #222 !important; 
-    width: 100% !important;
-    gap: 10px !important;
-    align-items: center !important;
-}
-
-.sp-input-bar input { 
-    flex: 1 !important; 
-    background: #000 !important; 
-    border: 1px solid #444 !important; 
-    color: white !important; 
-    padding: 8px 15px !important; 
-    border-radius: 20px !important; 
-    outline: none !important; 
-    height: 40px !important;
-}
-
-/* Ny notifikations-prik til toppen ved Hej Kasper */
+/* 1. NOTIFIKATIONS-PRIK VED NAVNET (HEJ KASPER) */
 .dot-notif {
     height: 10px !important;
     width: 10px !important;
@@ -203,15 +18,97 @@
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* Overlay til den nye Chat-modal */
+/* 2. CHAT OVERLAY (FULLSCREEN MODAL) */
 .chat-overlay {
     position: fixed !important;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9) !important;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: rgba(0,0,0,0.92) !important;
     z-index: 100000 !important;
     display: flex;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(5px); /* Gør baggrunden lidt lækker og sløret */
 }
 
+/* 3. BESKED-STYLING (OPTIMERET TIL MOBIL) */
+#chat-messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 15px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    background: #1a1a1a !important;
+}
+
+.msg { 
+    background: #2a2a2a !important; 
+    padding: 10px 14px !important; 
+    border-radius: 15px !important; 
+    max-width: 85% !important; 
+    color: white !important; 
+    align-self: flex-start !important; 
+    display: flex !important;
+    flex-direction: column !important; /* Tvinger info-linjen øverst og tekst nederst */
+}
+
+/* Dine egne beskeder (Højre side) */
+.msg.owner { 
+    align-self: flex-end !important; 
+    background: var(--primary) !important; 
+    color: black !important; 
+    border-bottom-right-radius: 4px !important;
+}
+
+/* Navn og Tid (Info-linjen) */
+.msg-info { 
+    font-size: 10px !important; 
+    opacity: 0.7 !important; 
+    margin-bottom: 4px !important; 
+    display: block !important; 
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+}
+
+/* Selve teksten i beskeden */
+.msg-text {
+    display: block !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    word-wrap: break-word !important;
+}
+
+/* 4. MODAL ELEMENTER (HEADER & INPUT) */
+.chat-modal-header {
+    padding: 15px !important;
+    border-bottom: 1px solid #333 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: #222 !important;
+}
+
+.chat-modal-input {
+    padding: 15px !important;
+    display: flex !important;
+    gap: 10px !important;
+    border-top: 1px solid #333 !important;
+    background: #222 !important;
+}
+
+.chat-modal-input input {
+    flex: 1 !important;
+    background: #000 !important;
+    border: 1px solid #444 !important;
+    color: white !important;
+    padding: 12px !important;
+    border-radius: 10px !important;
+    outline: none !important;
+    font-size: 16px !important; /* Forhindrer zoom-fejl på iPhone */
+}
+
+/* HJÆLPEKLASSER */
 .hidden { display: none !important; }
