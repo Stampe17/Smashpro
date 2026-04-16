@@ -1399,15 +1399,12 @@ function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
 function startChatLytter() {
     db.ref('global_chat').limitToLast(30).on('value', snap => {
         const messagesDiv = document.getElementById('chat-messages');
-        const notifTop = document.getElementById('chat-notif-top'); // Prikken ved navnet
+        const notifTop = document.getElementById('chat-notif-top');
         const chatOverlay = document.getElementById('chat-overlay');
-        
-        // Tjekker om chatten er lukket
         const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
         const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
         
         if (!messagesDiv) return;
-        
         messagesDiv.innerHTML = "";
         let nyeBeskeder = 0;
 
@@ -1415,50 +1412,43 @@ function startChatLytter() {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
-            let tid = "";
+            // Dato og Tid format
+            let tidsStempel = "";
             if (m.timestamp) {
-                const datoObj = new Date(m.timestamp);
-                const timer = datoObj.getHours().toString().padStart(2, '0');
-                const minutter = datoObj.getMinutes().toString().padStart(2, '0');
-                tid = timer + ":" + minutter;
+                const d = new Date(m.timestamp);
+                const dato = d.toLocaleDateString('da-DK', {day: '2-digit', month: '2-digit'});
+                const tid = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+                tidsStempel = `${dato} kl. ${tid}`;
             }
 
-            // Tæller nye beskeder fra andre
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 nyeBeskeder++;
             }
 
             const div = document.createElement('div');
-            // Vi bruger 'sp-msg' for at matche den nye aggressive CSS
+            // VIGTIGT: Vi tvinger klasserne her
             div.className = erMin ? 'sp-msg owner' : 'sp-msg';
             
-            // Vi bruger <div> herunder, fordi det tvinger linjeskift naturligt på mobilen
             div.innerHTML = `
-                <div class="sp-msg-info">${m.name} • ${tid}</div>
+                <div class="sp-msg-info">${m.name} • ${tidsStempel}</div>
                 <div class="sp-msg-text">${m.text}</div>
             `;
-            
             messagesDiv.appendChild(div);
         });
 
-        // 1. Styring af den pulserende prik ved "Hej Kasper"
+        // PRIK-LOGIK: Vi fjerner 'hidden' klassen helt manuelt her
         if (erLukket && nyeBeskeder > 0) {
-            if (notifTop) notifTop.classList.remove('hidden');
+            if (notifTop) {
+                notifTop.style.display = 'inline-block'; // Tvinger den frem
+                notifTop.classList.remove('hidden');
+            }
         } else {
-            // Hvis chatten er åben, eller der ingen nye er, skjul prikken
-            if (notifTop) notifTop.classList.add('hidden');
-        }
-
-        // 2. Opdater App-ikon Badge (den røde prik på selve mobil-ikonet)
-        if ('setAppBadge' in navigator) {
-            if (nyeBeskeder > 0) {
-                navigator.setAppBadge(nyeBeskeder).catch((e) => console.log("Badge error:", e));
-            } else {
-                navigator.clearAppBadge();
+            if (notifTop) {
+                notifTop.style.display = 'none'; // Gemmer den
+                notifTop.classList.add('hidden');
             }
         }
 
-        // Scroll altid til bunden af chatten
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 }
