@@ -1,36 +1,6 @@
-/* --- SMASHPRO CHAT - ELITE V5 (FORCE SIDE-PLYS) --- */
+/* --- SMASHPRO CHAT - ELITE V6 (NEON RØD & MARKØR) --- */
 
-/* 1. NOTIFIKATIONS-STYLING */
-.dot-notif {
-    height: 10px !important;
-    width: 10px !important;
-    background-color: var(--primary) !important;
-    border-radius: 50% !important;
-    display: inline-block !important;
-    margin-left: 10px !important;
-    box-shadow: 0 0 10px var(--primary) !important;
-    animation: pulse-green 1.5s infinite;
-}
-
-@keyframes pulse-green {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.4); opacity: 0.7; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* 2. CHAT OVERLAY */
-.chat-overlay {
-    position: fixed !important;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.94) !important;
-    z-index: 100000 !important;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(8px);
-}
-
-/* 3. BESKED-CONTAINER (Vigtig ændring her!) */
+/* 1. BESKED-CONTAINER */
 #chat-messages {
     flex: 1 !important;
     overflow-y: auto !important;
@@ -39,10 +9,9 @@
     flex-direction: column !important;
     gap: 12px !important;
     background: #1a1a1a !important;
-    /* Vi fjerner align-items herfra for at lade margin styre siderne */
 }
 
-/* 4. BESKED-BOBLERNE */
+/* 2. BESKED-BOBLER (FORCE SIDE-STYRING) */
 .sp-msg {
     display: flex !important;
     flex-direction: column !important;
@@ -51,40 +20,59 @@
     border-radius: 18px !important;
     background: #2a2a2a !important;
     color: white !important;
-    margin-bottom: 4px !important;
-    margin-right: auto !important; /* Tvinger andres beskeder til venstre */
+    margin-right: auto !important;
     align-self: flex-start !important;
 }
 
-/* DIN EGEN BESKED (Grøn og til højre) */
 .sp-msg.owner {
     margin-right: 0 !important;
-    margin-left: auto !important; /* Tvinger din besked til højre */
+    margin-left: auto !important;
     align-self: flex-end !important;
-    background: var(--primary) !important;
+    background: var(--primary) !important; /* Din grønne farve */
     color: black !important;
     border-bottom-right-radius: 4px !important;
 }
 
-.sp-msg-info {
-    font-size: 9px !important;
-    font-weight: 700 !important;
-    margin-bottom: 4px !important;
-    display: block !important;
-    opacity: 0.7;
+/* 3. NY BESKED MARKØR (Den der viser hvor du nåede til) */
+.chat-unread-marker {
+    width: 100% !important;
+    text-align: center !important;
+    border-bottom: 1px solid #ff0044 !important;
+    line-height: 0.1em !important;
+    margin: 20px 0 !important;
+    color: #ff0044 !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
     text-transform: uppercase;
 }
+.chat-unread-marker span { background:#1a1a1a; padding:0 10px; }
 
-.sp-msg-text {
-    display: block !important;
-    font-size: 14px !important;
-    line-height: 1.4 !important;
-    word-wrap: break-word !important;
+/* 4. INFO & TEKST */
+.sp-msg-info { font-size: 9px !important; opacity: 0.7; text-transform: uppercase; margin-bottom: 4px; }
+.sp-msg-text { font-size: 14px !important; line-height: 1.4 !important; word-wrap: break-word; }
+
+/* 5. MODAL & INPUT */
+.chat-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+.hidden { display: none !important; }
+
+.chat-unread-marker {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin: 20px 0 !important;
+    color: #ff0044 !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
 }
 
-/* 5. MODAL HEADER & INPUT */
-.chat-modal-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #222; }
-.chat-modal-input { padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; background: #222; }
-.chat-modal-input input { flex: 1; background: #000; border: 1px solid #444; color: white; padding: 12px; border-radius: 10px; font-size: 16px; outline: none; }
+.chat-unread-marker::before, .chat-unread-marker::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ff0044;
+}
 
-.hidden { display: none !important; }
+.chat-unread-marker span {
+    padding: 0 15px;
+    background: #1a1a1a; /* Matcher din chat baggrund */
+}
