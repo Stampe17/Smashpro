@@ -1341,28 +1341,24 @@ function tegnAvatarGalleri() {
     });
 }
 
-// --- 1. GLOBALE VARIABLER (Husk hvor langt vi er nået) ---
+// --- GLOBALE VARIABLER ---
 let sidsteSetTimestamp = localStorage.getItem('sidsteChatSet') || 0;
 
-// --- 2. ÅBN/LUK CHAT (Gemmer også læst-tidspunkt) ---
+// --- 1. ÅBN/LUK CHAT ---
 function toggleChat() {
     const overlay = document.getElementById('chat-overlay');
-    const notifTop = document.getElementById('chat-notif-top');
+    const welcomeText = document.getElementById('user-welcome');
     
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
         
-        // Gem nuværende tidspunkt som "sidst set" i browserens hukommelse
+        // Når chatten åbnes, nulstiller vi notifikationen
         sidsteSetTimestamp = Date.now();
         localStorage.setItem('sidsteChatSet', sidsteSetTimestamp);
         
-        // Fjern prikken med det samme når chatten åbnes
-        if (notifTop) {
-            notifTop.style.setProperty('display', 'none', 'important');
-            notifTop.classList.add('hidden');
-        }
+        // Gør navnet hvidt igen
+        if (welcomeText) welcomeText.style.color = 'var(--primary)'; // Bruger din primære farve som standard
         
-        // Scroll til bunden så vi ser de nyeste beskeder
         setTimeout(() => {
             const m = document.getElementById('chat-messages');
             if (m) m.scrollTop = m.scrollHeight;
@@ -1372,45 +1368,13 @@ function toggleChat() {
     }
 }
 
-// --- 3. SEND BESKED ---
-function sendBesked() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    let afsenderNavn = "Spiller";
-    
-    // Prøv at finde navnet fra bruger-objektet eller velkomsten
-    if (window.curUser && window.curUser.name) {
-        afsenderNavn = window.curUser.name;
-    } else {
-        const welcomeText = document.getElementById('user-welcome').innerText;
-        afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "").trim();
-    }
-
-    db.ref('global_chat').push({
-        uid: user.uid,
-        name: afsenderNavn,
-        text: msg,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        input.value = "";
-    });
-}
-
-function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
-
-// --- 4. CHAT-LYTTER (Opdaterer beskeder og prik) ---
+// --- 2. CHAT-LYTTER (Med grønt navn logik) ---
 function startChatLytter() {
     db.ref('global_chat').limitToLast(30).on('value', snap => {
         const messagesDiv = document.getElementById('chat-messages');
-        const notifTop = document.getElementById('chat-notif-top');
+        const welcomeText = document.getElementById('user-welcome');
         const chatOverlay = document.getElementById('chat-overlay');
         
-        // Er chatten lukket lige nu?
         const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
         const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
         
@@ -1422,7 +1386,6 @@ function startChatLytter() {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
-            // Formatering af dato og klokkeslæt
             let tidsStempel = "";
             if (m.timestamp) {
                 const d = new Date(m.timestamp);
@@ -1431,15 +1394,12 @@ function startChatLytter() {
                 tidsStempel = `${dato} kl. ${tid}`;
             }
 
-            // Tæl nye beskeder (hvis de er efter vi sidst kiggede, og ikke er vores egne)
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 nyeBeskeder++;
             }
 
             const div = document.createElement('div');
-            // 'sp-msg' aktiverer din CSS. 'owner' skubber dine egne til højre.
             div.className = erMin ? 'sp-msg owner' : 'sp-msg';
-            
             div.innerHTML = `
                 <div class="sp-msg-info">${m.name} • ${tidsStempel}</div>
                 <div class="sp-msg-text">${m.text}</div>
@@ -1447,21 +1407,43 @@ function startChatLytter() {
             messagesDiv.appendChild(div);
         });
 
-        // PRIK-LOGIK: Viser den pulserende prik ved "Hej Kasper"
-        if (notifTop) {
+        // NOTIFIKATION: Gør navnet helt grønt/lysende hvis der er nye beskeder
+        if (welcomeText) {
             if (erLukket && nyeBeskeder > 0) {
-                notifTop.style.setProperty('display', 'inline-block', 'important');
-                notifTop.classList.remove('hidden');
+                welcomeText.style.color = '#00ff66'; // Ultra grøn
+                welcomeText.style.textShadow = '0 0 10px #00ff66'; // Giver det en glød
             } else {
-                notifTop.style.setProperty('display', 'none', 'important');
-                notifTop.classList.add('hidden');
+                welcomeText.style.color = 'var(--primary)'; // Tilbage til normal
+                welcomeText.style.textShadow = 'none';
             }
         }
 
-        // Scroll til bunden
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 }
+
+// --- 3. SEND FUNKTIONER ---
+function sendBesked() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg || !firebase.auth().currentUser) return;
+
+    let afsenderNavn = "Spiller";
+    if (window.curUser && window.curUser.name) {
+        afsenderNavn = window.curUser.name;
+    } else {
+        const welcomeText = document.getElementById('user-welcome').innerText;
+        afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "").trim();
+    }
+
+    db.ref('global_chat').push({
+        uid: firebase.auth().currentUser.uid,
+        name: afsenderNavn,
+        text: msg,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => { input.value = ""; });
+}
+function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
     </script>
 </body>
 </html>
