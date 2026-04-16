@@ -1341,28 +1341,38 @@ function tegnAvatarGalleri() {
     });
 }
 
-let sidsteSetTimestamp = localStorage.getItem('chat_last_seen') || 0;
+// --- 1. GLOBALE VARIABLER (Husk hvor langt vi er nået) ---
+let sidsteSetTimestamp = localStorage.getItem('sidsteChatSet') || 0;
 
-// 1. Åbn/Luk chat og nulstil notifikationer
+// --- 2. ÅBN/LUK CHAT (Gemmer også læst-tidspunkt) ---
 function toggleChat() {
     const overlay = document.getElementById('chat-overlay');
-    const isHidden = overlay.classList.contains('hidden');
+    const notifTop = document.getElementById('chat-notif-top');
     
-    if (isHidden) {
+    if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
+        
+        // Gem nuværende tidspunkt som "sidst set" i browserens hukommelse
         sidsteSetTimestamp = Date.now();
-        document.getElementById('chat-notif-top').classList.add('hidden');
-        // Scroll til bunden
+        localStorage.setItem('sidsteChatSet', sidsteSetTimestamp);
+        
+        // Fjern prikken med det samme når chatten åbnes
+        if (notifTop) {
+            notifTop.style.setProperty('display', 'none', 'important');
+            notifTop.classList.add('hidden');
+        }
+        
+        // Scroll til bunden så vi ser de nyeste beskeder
         setTimeout(() => {
             const m = document.getElementById('chat-messages');
-            if(m) m.scrollTop = m.scrollHeight;
-        }, 200);
+            if (m) m.scrollTop = m.scrollHeight;
+        }, 150);
     } else {
         overlay.classList.add('hidden');
     }
 }
 
-// 2. Send besked
+// --- 3. SEND BESKED ---
 function sendBesked() {
     const input = document.getElementById('chat-input');
     const msg = input.value.trim();
@@ -1371,17 +1381,14 @@ function sendBesked() {
     const user = firebase.auth().currentUser;
     if (!user) return;
 
-    // Strategi for at finde navnet:
-    // 1. Tjek window.curUser (som vi lige har sat i auth-lytteren)
-    // 2. Hvis ikke den findes, prøv at kigge i velkomst-teksten (hvor der står "Hej Kasper!")
     let afsenderNavn = "Spiller";
     
+    // Prøv at finde navnet fra bruger-objektet eller velkomsten
     if (window.curUser && window.curUser.name) {
         afsenderNavn = window.curUser.name;
     } else {
-        // Backup: Hvis alt andet fejler, så "stjæl" navnet fra velkomsten på skærmen
         const welcomeText = document.getElementById('user-welcome').innerText;
-        afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "");
+        afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "").trim();
     }
 
     db.ref('global_chat').push({
@@ -1396,11 +1403,14 @@ function sendBesked() {
 
 function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
 
+// --- 4. CHAT-LYTTER (Opdaterer beskeder og prik) ---
 function startChatLytter() {
     db.ref('global_chat').limitToLast(30).on('value', snap => {
         const messagesDiv = document.getElementById('chat-messages');
         const notifTop = document.getElementById('chat-notif-top');
         const chatOverlay = document.getElementById('chat-overlay');
+        
+        // Er chatten lukket lige nu?
         const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
         const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
         
@@ -1412,7 +1422,7 @@ function startChatLytter() {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
-            // Dato og Tid format
+            // Formatering af dato og klokkeslæt
             let tidsStempel = "";
             if (m.timestamp) {
                 const d = new Date(m.timestamp);
@@ -1421,12 +1431,13 @@ function startChatLytter() {
                 tidsStempel = `${dato} kl. ${tid}`;
             }
 
+            // Tæl nye beskeder (hvis de er efter vi sidst kiggede, og ikke er vores egne)
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 nyeBeskeder++;
             }
 
             const div = document.createElement('div');
-            // VIGTIGT: Vi tvinger klasserne her
+            // 'sp-msg' aktiverer din CSS. 'owner' skubber dine egne til højre.
             div.className = erMin ? 'sp-msg owner' : 'sp-msg';
             
             div.innerHTML = `
@@ -1436,19 +1447,18 @@ function startChatLytter() {
             messagesDiv.appendChild(div);
         });
 
-        // PRIK-LOGIK: Vi fjerner 'hidden' klassen helt manuelt her
-        if (erLukket && nyeBeskeder > 0) {
-            if (notifTop) {
-                notifTop.style.display = 'inline-block'; // Tvinger den frem
+        // PRIK-LOGIK: Viser den pulserende prik ved "Hej Kasper"
+        if (notifTop) {
+            if (erLukket && nyeBeskeder > 0) {
+                notifTop.style.setProperty('display', 'inline-block', 'important');
                 notifTop.classList.remove('hidden');
-            }
-        } else {
-            if (notifTop) {
-                notifTop.style.display = 'none'; // Gemmer den
+            } else {
+                notifTop.style.setProperty('display', 'none', 'important');
                 notifTop.classList.add('hidden');
             }
         }
 
+        // Scroll til bunden
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 }
