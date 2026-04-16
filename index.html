@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
-    <link rel="stylesheet" href="Udseende.CSS?v=10.0">
+    <link rel="stylesheet" href="Udseende.CSS?v=11.0">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1344,7 +1344,7 @@ function tegnAvatarGalleri() {
 // --- GLOBALE VARIABLER ---
 let sidsteSetTimestamp = localStorage.getItem('sidsteChatSet') || 0;
 
-// --- 1. ÅBN/LUK CHAT ---
+// --- 1. ÅBN/LUK CHAT (Med Hukommelse-scroll) ---
 function toggleChat() {
     const overlay = document.getElementById('chat-overlay');
     const welcomeText = document.getElementById('user-welcome');
@@ -1352,23 +1352,73 @@ function toggleChat() {
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
         
-        // Når chatten åbnes, nulstiller vi notifikationen
-        sidsteSetTimestamp = Date.now();
-        localStorage.setItem('sidsteChatSet', sidsteSetTimestamp);
-        
-        // Gør navnet hvidt igen
-        if (welcomeText) welcomeText.style.color = 'var(--primary)'; // Bruger din primære farve som standard
-        
         setTimeout(() => {
-            const m = document.getElementById('chat-messages');
-            if (m) m.scrollTop = m.scrollHeight;
-        }, 150);
+            const marker = document.querySelector('.chat-unread-marker');
+            const messagesDiv = document.getElementById('chat-messages');
+            
+            if (marker) {
+                marker.scrollIntoView({ behavior: 'auto', block: 'center' });
+            } else if (messagesDiv) {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+            
+            // Marker som læst efter 2 sekunder
+            setTimeout(() => {
+                sidsteSetTimestamp = Date.now();
+                localStorage.setItem('sidsteChatSet', sidsteSetTimestamp);
+                if (welcomeText) {
+                    welcomeText.style.color = 'var(--primary)';
+                    welcomeText.style.textShadow = 'none';
+                }
+            }, 2000);
+            
+        }, 100);
     } else {
         overlay.classList.add('hidden');
     }
 }
 
-// --- 2. CHAT-LYTTER (Med grønt navn logik) ---
+// --- 2. SEND BESKED FUNKTIONEN (DEN MANGLENDE DEL) ---
+function sendBesked() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    let afsenderNavn = "Spiller";
+    
+    // Forsøg at finde dit navn
+    if (window.curUser && window.curUser.name) {
+        afsenderNavn = window.curUser.name;
+    } else {
+        const welcomeElement = document.getElementById('user-welcome');
+        if (welcomeElement) {
+            const welcomeText = welcomeElement.innerText;
+            afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "").trim();
+        }
+    }
+
+    db.ref('global_chat').push({
+        uid: user.uid,
+        name: afsenderNavn,
+        text: msg,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        input.value = ""; // Tøm feltet
+        // Scroll til bunden med det samme når man selv sender
+        const messagesDiv = document.getElementById('chat-messages');
+        if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+}
+
+// Gør det muligt at trykke "Enter" for at sende
+function tjekEnter(e) { 
+    if (e.key === 'Enter') sendBesked(); 
+}
+
+// --- 3. CHAT-LYTTER (Opdaterer skærmen) ---
 function startChatLytter() {
     db.ref('global_chat').limitToLast(30).on('value', snap => {
         const messagesDiv = document.getElementById('chat-messages');
@@ -1379,23 +1429,34 @@ function startChatLytter() {
         const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
         
         if (!messagesDiv) return;
+        
+        const varIBunden = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 100;
+        
         messagesDiv.innerHTML = "";
         let nyeBeskeder = 0;
+        let markørIndsat = false;
 
         snap.forEach(child => {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
+            if (m.timestamp > sidsteSetTimestamp && !erMin) {
+                if (!markørIndsat) {
+                    const marker = document.createElement('div');
+                    marker.className = 'chat-unread-marker';
+                    marker.innerHTML = '<span>Nye beskeder herfra</span>';
+                    messagesDiv.appendChild(marker);
+                    markørIndsat = true;
+                }
+                nyeBeskeder++;
+            }
+
             let tidsStempel = "";
             if (m.timestamp) {
                 const d = new Date(m.timestamp);
-                const dato = d.toLocaleDateString('da-DK', {day: '2-digit', month: '2-digit'});
-                const tid = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
-                tidsStempel = `${dato} kl. ${tid}`;
-            }
-
-            if (m.timestamp > sidsteSetTimestamp && !erMin) {
-                nyeBeskeder++;
+                tidsStempel = d.toLocaleDateString('da-DK', {day:'2-digit', month:'2-digit'}) + 
+                              " kl. " + d.getHours().toString().padStart(2,'0') + ":" + 
+                              d.getMinutes().toString().padStart(2,'0');
             }
 
             const div = document.createElement('div');
@@ -1407,43 +1468,22 @@ function startChatLytter() {
             messagesDiv.appendChild(div);
         });
 
-        // NOTIFIKATION: Gør navnet helt grønt/lysende hvis der er nye beskeder
+        // Neon rød notifikation
         if (welcomeText) {
             if (erLukket && nyeBeskeder > 0) {
-                welcomeText.style.color = '#00ff66'; // Ultra grøn
-                welcomeText.style.textShadow = '0 0 10px #00ff66'; // Giver det en glød
-            } else {
-                welcomeText.style.color = 'var(--primary)'; // Tilbage til normal
+                welcomeText.style.color = '#ff0044';
+                welcomeText.style.textShadow = '0 0 15px #ff0044';
+            } else if (erLukket) {
+                welcomeText.style.color = 'var(--primary)';
                 welcomeText.style.textShadow = 'none';
             }
         }
 
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        if (varIBunden && !markørIndsat) {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
     });
 }
-
-// --- 3. SEND FUNKTIONER ---
-function sendBesked() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if (!msg || !firebase.auth().currentUser) return;
-
-    let afsenderNavn = "Spiller";
-    if (window.curUser && window.curUser.name) {
-        afsenderNavn = window.curUser.name;
-    } else {
-        const welcomeText = document.getElementById('user-welcome').innerText;
-        afsenderNavn = welcomeText.replace("Hej ", "").replace("!", "").trim();
-    }
-
-    db.ref('global_chat').push({
-        uid: firebase.auth().currentUser.uid,
-        name: afsenderNavn,
-        text: msg,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => { input.value = ""; });
-}
-function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
     </script>
 </body>
 </html>
