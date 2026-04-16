@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
-    <link rel="stylesheet" href="Udseende.CSS?v=5.5">
+    <link rel="stylesheet" href="Udseende.CSS?v=7.0">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1421,13 +1421,20 @@ function startChatLytter() {
                 tid = timer + ":" + minutter;
             }
 
+            // Tæl nye beskeder (hvis de er efter vi sidst kiggede, og ikke er vores egne)
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 nyeBeskeder++;
             }
 
             const div = document.createElement('div');
             div.className = erMin ? 'msg owner' : 'msg';
-            div.innerHTML = `<span class="msg-info">${m.name} • ${tid}</span>${m.text}`;
+            
+            // OPDATERET HTML: Vi pakker tekst og info ind hver for sig, så de kan styles på mobilen
+            div.innerHTML = `
+                <span class="msg-info">${m.name} • ${tid}</span>
+                <span class="msg-text">${m.text}</span>
+            `;
+            
             messagesDiv.appendChild(div);
         });
 
@@ -1438,7 +1445,7 @@ function startChatLytter() {
             if (notifTop) notifTop.classList.add('hidden');
         }
 
-        // 2. Behold din Badge-funktion til mobil-ikonet
+        // 2. Behold din Badge-funktion til mobil-ikonet (det på startskærmen)
         if ('setAppBadge' in navigator) {
             if (nyeBeskeder > 0) {
                 navigator.setAppBadge(nyeBeskeder).catch((error) => {
@@ -1449,6 +1456,7 @@ function startChatLytter() {
             }
         }
 
+        // Scroll altid til bunden af chatten
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
 }
