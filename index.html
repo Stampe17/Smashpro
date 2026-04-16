@@ -395,13 +395,19 @@
             <span style="color: white !important;">Klub Chat 🏸</span>
             <button onclick="toggleChat()" class="sp-btn">×</button>
         </div>
-        <div id="chat-messages" class="sp-msg-area">
-            </div>
+        <div id="chat-messages" class="sp-msg-area"></div>
         <div class="sp-input-bar">
             <input type="text" id="chat-input" placeholder="Skriv..." onkeypress="tjekEnter(event)">
             <button onclick="sendBesked()" class="sp-btn" style="font-size:22px;">➤</button>
         </div>
     </div>
+
+    <div id="chat-bubble" class="sp-bub" onclick="toggleChat()" 
+     style="width: 60px !important; height: 60px !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; background: #222 !important; border: 2px solid #00ff66 !important; position: fixed !important; bottom: 95px !important; right: 20px !important;">
+    <div id="chat-notif" class="hidden">0</div>
+    <span style="font-size: 24px;">💬</span>
+</div>
+</div>
 
     <div id="chat-bubble" class="sp-bub" onclick="toggleChat()">
         <div id="chat-notif" class="hidden">0</div>
