@@ -164,15 +164,17 @@
      onclick="visSide('side-profil', document.querySelector('[onclick*=\'side-profil\']')); setTimeout(function(){ document.getElementById('avatar-sektion').scrollIntoView({behavior: 'smooth'}); }, 300);">
             <input type="file" id="img-upload" class="hidden" accept="image/*" onchange="uploadImage(this)">
             
-            <div style="flex:1;">
-                <span class="rank-tag" id="user-rank">Nybegynder</span>
-                <h2 id="user-welcome" style="margin:2px 0; color:var(--primary);">Hej!</h2>
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
-                    <span id="user-level">Level 1</span>
-                    <span id="xp-text">0 / 100 XP</span>
-                </div>
-                <div class="xp-container"><div class="xp-bar" id="xp-bar"></div></div>
-            </div>
+           <div style="flex:1; cursor:pointer;" onclick="toggleChat()">
+    <span class="rank-tag" id="user-rank">Nybegynder</span>
+    <h2 id="user-welcome" style="margin:2px 0; color:var(--primary); display: flex; align-items: center;">
+        Hej! <span id="chat-notif-top" class="dot-notif hidden"></span>
+    </h2>
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+        <span id="user-level">Level 1</span>
+        <span id="xp-text">0 / 100 XP</span>
+    </div>
+    <div class="xp-container"><div class="xp-bar" id="xp-bar"></div></div>
+</div>
         </div>
     </div>
     <h4 style="text-align:left; margin-bottom:10px;">Kommende Træninger</h4>
@@ -389,23 +391,18 @@
         <button onclick="lukModal()" style="margin-top:15px;">Luk</button>
     </div>
 
-<div id="chat-container" class="sp-wrap chat-closed" style="position: fixed !important; bottom: 95px !important; right: 20px !important; z-index: 999999 !important; width: 60px !important; height: 60px !important;">
-    <div id="chat-window" class="sp-win">
-        <div class="sp-header">
-            <span style="color: white !important;">Klub Chat 🏸</span>
-            <button onclick="toggleChat()" class="sp-btn">×</button>
+<div id="chat-overlay" class="chat-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100000; display: flex; justify-content: center; align-items: center;">
+    <div class="chat-modal" style="width: 90%; max-width: 400px; height: 80vh; background: #1a1a1a; border-radius: 20px; display: flex; flex-direction: column; border: 1px solid #333; overflow: hidden;">
+        <div class="chat-modal-header" style="padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #222;">
+            <h3 style="margin:0; color:var(--primary);">Klub Chat 🏸</h3>
+            <button onclick="toggleChat()" style="background: #333; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer;">Luk</button>
         </div>
-        <div id="chat-messages" class="sp-msg-area"></div>
-        <div class="sp-input-bar">
-            <input type="text" id="chat-input" placeholder="Skriv..." onkeypress="tjekEnter(event)">
-            <button onclick="sendBesked()" class="sp-btn" style="font-size:22px;">➤</button>
+        <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+            </div>
+        <div class="chat-modal-input" style="padding: 15px; display: flex; gap: 10px; border-top: 1px solid #333; background: #222;">
+            <input type="text" id="chat-input" placeholder="Skriv besked..." onkeypress="tjekEnter(event)" style="flex: 1; background: #000; border: 1px solid #444; color: white; padding: 12px; border-radius: 10px; outline: none;">
+            <button onclick="sendBesked()" style="background: var(--primary); color: black; border: none; width: 45px; height: 45px; border-radius: 10px; font-size: 20px; cursor: pointer;">➤</button>
         </div>
-    </div>
-
-    <div id="chat-bubble" class="sp-bub" onclick="toggleChat()" 
-         style="width: 60px !important; height: 60px !important; border-radius: 50% !important; background: #222 !important; border: 2px solid #00ff66 !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;">
-        <div id="chat-notif" class="hidden">0</div>
-        <span style="font-size: 24px !important; pointer-events: none !important; line-height: 1 !important; display: block !important;">💬</span>
     </div>
 </div>
 
@@ -1348,23 +1345,20 @@ let sidsteSetTimestamp = localStorage.getItem('chat_last_seen') || 0;
 
 // 1. Åbn/Luk chat og nulstil notifikationer
 function toggleChat() {
-    const chat = document.getElementById('chat-container');
-    chat.classList.toggle('chat-closed');
+    const overlay = document.getElementById('chat-overlay');
+    const isHidden = overlay.classList.contains('hidden');
     
-    if (!chat.classList.contains('chat-closed')) {
-        // Gem nuværende tid som "sidst set"
+    if (isHidden) {
+        overlay.classList.remove('hidden');
         sidsteSetTimestamp = Date.now();
-        localStorage.setItem('chat_last_seen', sidsteSetTimestamp);
-        
-        // Skjul notifikations-prik
-        document.getElementById('chat-notif').classList.add('hidden');
-        document.getElementById('chat-notif').innerText = "0";
-        
+        document.getElementById('chat-notif-top').classList.add('hidden');
         // Scroll til bunden
         setTimeout(() => {
             const m = document.getElementById('chat-messages');
-            m.scrollTop = m.scrollHeight;
-        }, 100);
+            if(m) m.scrollTop = m.scrollHeight;
+        }, 200);
+    } else {
+        overlay.classList.add('hidden');
     }
 }
 
@@ -1405,9 +1399,12 @@ function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
 function startChatLytter() {
     db.ref('global_chat').limitToLast(30).on('value', snap => {
         const messagesDiv = document.getElementById('chat-messages');
-        const notifDiv = document.getElementById('chat-notif');
-        const isClosed = document.getElementById('chat-container').classList.contains('chat-closed');
+        const notifTop = document.getElementById('chat-notif-top'); // Den nye prik ved navnet
+        const chatOverlay = document.getElementById('chat-overlay');
+        const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
         const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+        
+        if (!messagesDiv) return; // Sikkerhedstjek
         
         messagesDiv.innerHTML = "";
         let nyeBeskeder = 0;
@@ -1434,13 +1431,14 @@ function startChatLytter() {
             messagesDiv.appendChild(div);
         });
 
-        // 1. Vis notifikation på selve chat-boblen inde i appen
-        if (isClosed && nyeBeskeder > 0) {
-            notifDiv.innerText = nyeBeskeder;
-            notifDiv.classList.remove('hidden');
+        // 1. Vis/Skjul den pulserende prik ved "Hej Kasper"
+        if (erLukket && nyeBeskeder > 0) {
+            if (notifTop) notifTop.classList.remove('hidden');
+        } else {
+            if (notifTop) notifTop.classList.add('hidden');
         }
 
-        // 2. --- NYT: Opdater den røde prik på selve App-ikonet på mobilen ---
+        // 2. Behold din Badge-funktion til mobil-ikonet
         if ('setAppBadge' in navigator) {
             if (nyeBeskeder > 0) {
                 navigator.setAppBadge(nyeBeskeder).catch((error) => {
