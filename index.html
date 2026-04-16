@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
-    <link rel="stylesheet" href="Udseende.CSS?v=4.0">
+    <link rel="stylesheet" href="Udseende.CSS?v=5.5">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -389,7 +389,7 @@
         <button onclick="lukModal()" style="margin-top:15px;">Luk</button>
     </div>
 
-<div id="chat-container" class="sp-wrap chat-closed">
+<div id="chat-container" class="sp-wrap chat-closed" style="position: fixed !important; bottom: 95px !important; right: 20px !important; z-index: 999999 !important; width: 60px !important; height: 60px !important;">
     <div id="chat-window" class="sp-win">
         <div class="sp-header">
             <span style="color: white !important;">Klub Chat 🏸</span>
@@ -402,9 +402,10 @@
         </div>
     </div>
 
-    <div id="chat-bubble" class="sp-bub" onclick="toggleChat()" style="cursor: pointer !important;">
+    <div id="chat-bubble" class="sp-bub" onclick="toggleChat()" 
+         style="width: 60px !important; height: 60px !important; border-radius: 50% !important; background: #222 !important; border: 2px solid #00ff66 !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;">
         <div id="chat-notif" class="hidden">0</div>
-        <span style="pointer-events: none;">💬</span>
+        <span style="font-size: 24px !important; pointer-events: none !important; line-height: 1 !important; display: block !important;">💬</span>
     </div>
 </div>
 
