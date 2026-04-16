@@ -1,4 +1,4 @@
-/* --- SMASHPRO CHAT - NY VERSION (TOP-MENU MODAL) --- */
+/* --- SMASHPRO CHAT - ELITE V4 (OPRYDDET & SIKRET) --- */
 
 /* 1. NOTIFIKATIONS-PRIK VED NAVNET (HEJ KASPER) */
 .dot-notif {
@@ -30,10 +30,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(5px); /* Gør baggrunden lidt lækker og sløret */
+    backdrop-filter: blur(5px);
 }
 
-/* 3. BESKED-STYLING (OPTIMERET TIL MOBIL) */
+/* 3. BESKED-CONTAINER (TVINGER FLEX-LAYOUT) */
 #chat-messages {
     flex: 1 !important;
     overflow-y: auto !important;
@@ -42,46 +42,50 @@
     flex-direction: column !important;
     gap: 12px !important;
     background: #1a1a1a !important;
+    align-items: flex-start !important; /* Standard er venstre */
 }
 
-.msg { 
-    background: #2a2a2a !important; 
-    padding: 10px 14px !important; 
-    border-radius: 15px !important; 
-    max-width: 85% !important; 
-    color: white !important; 
-    align-self: flex-start !important; 
+/* 4. DEN ENKELTE BESKED-BOBLE */
+.sp-msg {
     display: flex !important;
-    flex-direction: column !important; /* Tvinger info-linjen øverst og tekst nederst */
+    flex-direction: column !important;
+    max-width: 80% !important;
+    padding: 10px 14px !important;
+    border-radius: 15px !important;
+    background: #2a2a2a !important;
+    color: white !important;
+    margin-bottom: 4px !important;
+    align-self: flex-start !important; /* Venstre side som standard */
 }
 
-/* Dine egne beskeder (Højre side) */
-.msg.owner { 
-    align-self: flex-end !important; 
-    background: var(--primary) !important; 
-    color: black !important; 
+/* DIN EGEN BESKED (Tvinges til højre) */
+.sp-msg.owner {
+    align-self: flex-end !important; /* Dette flytter den til højre */
+    background: var(--primary) !important;
+    color: black !important;
     border-bottom-right-radius: 4px !important;
 }
 
-/* Navn og Tid (Info-linjen) */
-.msg-info { 
-    font-size: 10px !important; 
-    opacity: 0.7 !important; 
-    margin-bottom: 4px !important; 
-    display: block !important; 
+/* INFO-LINJE (Navn og Dato/Tid) */
+.sp-msg-info {
+    font-size: 9px !important;
     font-weight: 700 !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+    opacity: 0.7;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* Selve teksten i beskeden */
-.msg-text {
+/* SELVE TEKST-INDHOLDET */
+.sp-msg-text {
     display: block !important;
     font-size: 14px !important;
     line-height: 1.4 !important;
     word-wrap: break-word !important;
 }
 
-/* 4. MODAL ELEMENTER (HEADER & INPUT) */
+/* 5. MODAL ELEMENTER (HEADER & INPUT) */
 .chat-modal-header {
     padding: 15px !important;
     border-bottom: 1px solid #333 !important;
@@ -111,49 +115,4 @@
 }
 
 /* HJÆLPEKLASSER */
-
-/* Containeren der holder alle beskeder */
-#chat-messages {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-    padding: 15px !important;
-}
-
-/* Den enkelte besked-boble */
-.sp-msg {
-    display: flex !important;
-    flex-direction: column !important; /* Navn øverst, tekst nederst */
-    max-width: 85% !important;
-    padding: 10px 14px !important;
-    border-radius: 15px !important;
-    margin-bottom: 5px !important;
-    background: #333 !important;
-    color: white !important;
-    align-self: flex-start !important; /* Venstre side */
-}
-
-/* Dine egne beskeder */
-.sp-msg.owner {
-    align-self: flex-end !important; /* Højre side */
-    background: var(--primary) !important;
-    color: black !important;
-}
-
-/* Navn og tid - skal have sin egen linje */
-.sp-msg-info {
-    font-size: 11px !important;
-    font-weight: bold !important;
-    margin-bottom: 4px !important;
-    opacity: 0.8 !important;
-    display: block !important;
-}
-
-/* Selve teksten - skal have sin egen linje */
-.sp-msg-text {
-    font-size: 14px !important;
-    display: block !important;
-    word-wrap: break-word !important;
-    line-height: 1.4 !important;
-}
 .hidden { display: none !important; }
