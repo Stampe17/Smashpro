@@ -15,22 +15,33 @@
     padding: 0 !important;
 }
 
-/* Boblen - Cirkel-garanti */
+/* 1. Selve cirklen */
 #chat-bubble.sp-bub {
     width: 60px !important;
     height: 60px !important;
     min-width: 60px !important;
     background: #222 !important;
     border: 2px solid var(--primary) !important;
-    border-radius: 50% !important; /* Tvinger den til at være rund */
+    border-radius: 50% !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     cursor: pointer !important;
     box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
     position: relative !important;
-    font-size: 24px !important;
     overflow: hidden !important;
+}
+
+/* 2. Ikonet inde i cirklen (NY TILFØJELSE) */
+#chat-bubble.sp-bub span {
+    font-size: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important; /* Gør at man klikker "igennem" ikonet og rammer knappen */
 }
 
 /* Notifikations-prikken */
