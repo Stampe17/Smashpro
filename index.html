@@ -1386,21 +1386,50 @@ function håndterHjerte(msgId, hjerteData) {
     const user = firebase.auth().currentUser;
     if (!user) return;
     const uid = user.uid;
-    const navn = window.curUser?.name || "En spiller";
+    
+    // Vi starter med en standard, hvis alt fejler
+    let mitNavn = "Spiller";
+
+    // 1. Tjek det globale bruger-objekt
+    if (window.curUser && window.curUser.name) {
+        mitNavn = window.curUser.name;
+    } 
+    // 2. Tjek Firebase profil
+    else if (user.displayName) {
+        mitNavn = user.displayName;
+    } 
+    // 3. Tjek Velkomst-teksten (vi kigger efter elementet 'user-welcome')
+    else if (document.getElementById('user-welcome')) {
+        let txt = document.getElementById('user-welcome').innerText;
+        // Vi fjerner "Hej", "Velkommen", "!" og mellemrum
+        mitNavn = txt.replace(/Hej|Velkommen|!/gi, "").trim();
+    }
+    // 4. Sidste udvej: Find en besked i chatten, som denne bruger har skrevet, og snup navnet derfra
+    else {
+        const mineBeskeder = document.querySelectorAll(`[data-id]`);
+        for (let msg of mineBeskeder) {
+            // Vi leder efter en besked-boble hvor navnet står i toppen
+            // (Dette virker fordi vi lige har tegnet chatten)
+            const infoHeader = msg.querySelector('div b');
+            if (infoHeader && msg.classList.contains('owner')) {
+                mitNavn = infoHeader.innerText;
+                break;
+            }
+        }
+    }
 
     let likes = hjerteData || {};
 
     if (likes[uid]) {
-        // Hvis jeg allerede har liket -> Fjern mit like
         db.ref(`global_chat/${msgId}/likes/${uid}`).remove();
     } else {
-        // Hvis jeg ikke har liket -> Tilføj mig
-        db.ref(`global_chat/${msgId}/likes/${uid}`).set(navn);
+        db.ref(`global_chat/${msgId}/likes/${uid}`).set(mitNavn);
     }
 }
 
 function visHvemDerHarLiket(likes) {
     if (!likes) return;
+    // Vi tager alle navnene fra objektet og sætter dem sammen med komma
     const navne = Object.values(likes).join(", ");
     alert("Liket af: " + navne);
 }
