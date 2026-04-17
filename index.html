@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
-    <link rel="stylesheet" href="Udseende.CSS?v=20.0">
+    <link rel="stylesheet" href="Udseende.CSS?v=60.0">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1440,11 +1440,13 @@ function startChatLytter() {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
+            // Markør logik
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 if (!markørIndsat) {
                     const marker = document.createElement('div');
                     marker.className = 'chat-unread-marker';
-                    marker.innerHTML = '<span>Nye beskeder herfra</span>';
+                    // Vi sikrer os at span-tagget er her, så det kan blive rødt i CSS
+                    marker.innerHTML = '<span>Nye beskeder herfra</span>'; 
                     messagesDiv.appendChild(marker);
                     markørIndsat = true;
                 }
@@ -1468,7 +1470,7 @@ function startChatLytter() {
             messagesDiv.appendChild(div);
         });
 
-        // Neon rød notifikation
+        // Neon rød notifikation på navnet
         if (welcomeText) {
             if (erLukket && nyeBeskeder > 0) {
                 welcomeText.style.color = '#ff0044';
@@ -1479,6 +1481,9 @@ function startChatLytter() {
             }
         }
 
+        // Hvis man ikke har åbnet chatten endnu og der er en markør, 
+        // så lader vi toggleChat styre scroll til markøren. 
+        // Ellers scroller vi til bunden hvis man er der.
         if (varIBunden && !markørIndsat) {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
