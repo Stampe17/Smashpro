@@ -510,6 +510,8 @@
             window.scrollTo(0,0);
         }
 
+// --- 1. MODUL VISNING OG NAVIGATION ---
+// --- 1. MODUL VISNING OG NAVIGATION ---
 function visAnalyseVærktøj(toolId) {
     if (toolId === 'speed-tool') {
         visSide('side-speed'); 
@@ -541,7 +543,7 @@ function visAnalyseVærktøj(toolId) {
                     GEM & BEREGN RESULTAT
                 </button>
                 
-                <button onclick="visSide('side-analyse')" style="width: 100%; background: #ff4444; color: white; border: none; margin-top: 20px; cursor: pointer; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 14px; display: block; position: relative; z-index: 10001;">
+                <button onclick="try{ visSide('side-analyse') }catch(e){ location.reload() }" style="width: 100%; background: #ff4444; color: white; border: none; margin-top: 20px; cursor: pointer; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 14px; display: block; position: relative; z-index: 10001;">
                     GÅ TILBAGE
                 </button>
             </div>
@@ -562,6 +564,7 @@ function opdaterInputHjælp() {
     else { label.innerText = "TID I MINUTTER (Eks 12.5)"; input.placeholder = "12.5"; }
 }
 
+// --- 2. BEREGNING OG DATABANK ---
 async function gemFysiskResultat() {
     const type = document.getElementById('test-type').value;
     const resultat = parseFloat(document.getElementById('test-input').value);
@@ -585,8 +588,7 @@ async function gemFysiskResultat() {
             if (kondital > 52) niveau = "Elite"; else if (kondital > 45) niveau = "Meget god"; else if (kondital > 38) niveau = "God";
         } else if (type === "5km" || type === "10km") {
             let distance = type === "5km" ? 5000 : 10000;
-            let hastighed = distance / (resultat * 60); // omregnet til m/sek
-            // En mere stabil VO2Max beregning for løb:
+            let hastighed = distance / (resultat * 60); 
             kondital = (hastighed * 0.2) + (hastighed * 0.9 * 0) + 3.5; 
             if (kondital > 50) niveau = "Elite"; else if (kondital > 42) niveau = "Meget god";
         } else if (type === "bip") {
@@ -608,7 +610,6 @@ async function gemFysiskResultat() {
             timestamp: firebase.database.ServerValue.TIMESTAMP
         };
 
-        // VIGTIGT: Vi venter på Firebase her!
         await db.ref('fysiske_tests').push(data);
         await db.ref('users/' + user.uid + '/stats/xp').set(nuværendeXP + 100);
 
@@ -623,6 +624,7 @@ async function gemFysiskResultat() {
     }
 }
 
+// --- 3. LEADERBOARD OG AFSLUTNING ---
 function visLeaderboard(testType) {
     const container = document.getElementById('run-module-container');
     if (!container) return;
@@ -651,9 +653,9 @@ function visLeaderboard(testType) {
             <h2 style="color:#00ff66; text-align:center;">🏆 KLUB RANGERING</h2>
             <div style="max-height:300px; overflow-y:auto; background:#111; border-radius:10px; margin-bottom:15px;">${rows}</div>
             
-            <button onclick="visSide('side-analyse')" 
+            <button onclick="try{ visSide('side-hjem') }catch(e){ location.reload() }" 
                     style="width:100%; padding:18px; background:#00ff66; color:black; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:16px; position:relative; z-index:10001;">
-                FÆRDIG - TILBAGE TIL MENU
+                FÆRDIG - TIL DASHBOARD
             </button>
         `;
     });
