@@ -1345,9 +1345,9 @@ function tegnAvatarGalleri() {
 
 // --- GLOBALE VARIABLER ---
 let sidsteSetTimestamp = localStorage.getItem('sidsteChatSet') || 0;
-let valgtSvarId = null; // Holder styr på hvilken besked vi svarer på
+let valgtSvarId = null;
 
-// --- 1. ÅBN/LUK CHAT (Med Hukommelse-scroll) ---
+// --- 1. ÅBN/LUK CHAT ---
 function toggleChat() {
     const overlay = document.getElementById('chat-overlay');
     const welcomeText = document.getElementById('user-welcome');
@@ -1365,7 +1365,6 @@ function toggleChat() {
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
             
-            // Marker som læst efter 2 sekunder
             setTimeout(() => {
                 sidsteSetTimestamp = Date.now();
                 localStorage.setItem('sidsteChatSet', sidsteSetTimestamp);
@@ -1378,16 +1377,39 @@ function toggleChat() {
         }, 100);
     } else {
         overlay.classList.add('hidden');
-        annullerSvar(); // Luk svar-baren hvis man lukker chatten
+        annullerSvar();
     }
 }
 
-// --- 2. SVAR-LOGIK (VISUEL PREVIEW) ---
+// --- 2. NY HJERTE-LOGIK (TOGGLE & SE NAVNE) ---
+function håndterHjerte(msgId, hjerteData) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const uid = user.uid;
+    const navn = window.curUser?.name || "En spiller";
+
+    let likes = hjerteData || {};
+
+    if (likes[uid]) {
+        // Hvis jeg allerede har liket -> Fjern mit like
+        db.ref(`global_chat/${msgId}/likes/${uid}`).remove();
+    } else {
+        // Hvis jeg ikke har liket -> Tilføj mig
+        db.ref(`global_chat/${msgId}/likes/${uid}`).set(navn);
+    }
+}
+
+function visHvemDerHarLiket(likes) {
+    if (!likes) return;
+    const navne = Object.values(likes).join(", ");
+    alert("Liket af: " + navne);
+}
+
+// --- 3. SVAR-LOGIK ---
 function forberedSvar(id, navn, tekst) {
     valgtSvarId = id;
     const inputBar = document.querySelector('.chat-modal-input');
     
-    // Find eller opret svar-preview baren
     let svarBar = document.getElementById('svar-preview-js');
     if (!svarBar) {
         svarBar = document.createElement('div');
@@ -1411,7 +1433,7 @@ function annullerSvar() {
     if (svarBar) svarBar.style.display = 'none';
 }
 
-// --- 3. SEND BESKED FUNKTIONEN (NU MED SVAR-DATA) ---
+// --- 4. SEND BESKED ---
 function sendBesked() {
     const input = document.getElementById('chat-input');
     const msg = input.value.trim();
@@ -1420,25 +1442,15 @@ function sendBesked() {
     const user = firebase.auth().currentUser;
     if (!user) return;
 
-    let afsenderNavn = "Spiller";
-    if (window.curUser && window.curUser.name) {
-        afsenderNavn = window.curUser.name;
-    } else {
-        const welcomeElement = document.getElementById('user-welcome');
-        if (welcomeElement) {
-            afsenderNavn = welcomeElement.innerText.replace("Hej ", "").replace("!", "").trim();
-        }
-    }
+    let afsenderNavn = window.curUser?.name || document.getElementById('user-welcome').innerText.replace("Hej ", "").replace("!", "").trim();
 
     const data = {
         uid: user.uid,
         name: afsenderNavn,
         text: msg,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        hjerter: 0
+        timestamp: firebase.database.ServerValue.TIMESTAMP
     };
 
-    // Hvis vi svarer på en besked, tilføj info om den
     if (valgtSvarId) {
         const originalMsg = document.querySelector(`[data-id="${valgtSvarId}"] .sp-msg-text-content`)?.innerText;
         const originalNavn = document.querySelector(`[data-id="${valgtSvarId}"] b`)?.innerText || "Bruger";
@@ -1455,11 +1467,9 @@ function sendBesked() {
     });
 }
 
-function tjekEnter(e) { 
-    if (e.key === 'Enter') sendBesked(); 
-}
+function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
 
-// --- 4. CHAT-LYTTER (MED SVAR, HJERTER OG MARKØR) ---
+// --- 5. CHAT-LYTTER (ALT FLETTE SAMMEN) ---
 function startChatLytter() {
     db.ref('global_chat').limitToLast(30).on('value', snap => {
         const messagesDiv = document.getElementById('chat-messages');
@@ -1467,7 +1477,7 @@ function startChatLytter() {
         const chatOverlay = document.getElementById('chat-overlay');
         
         const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
-        const currentUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+        const currentUid = firebase.auth().currentUser?.uid;
         
         if (!messagesDiv) return;
         
@@ -1482,6 +1492,10 @@ function startChatLytter() {
             const id = child.key;
             const erMin = currentUid && m.uid === currentUid;
             
+            const likes = m.likes || {};
+            const antalLikes = Object.keys(likes).length;
+            const harJegLiket = currentUid && likes[currentUid];
+
             // 1. DEN RØDE LINJE
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 if (!markørIndsat) {
@@ -1511,7 +1525,7 @@ function startChatLytter() {
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
             
-            let baseStyle = `display: flex; flex-direction: column; max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 12px; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position:relative;`;
+            let baseStyle = `display: flex; flex-direction: column; max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 15px; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position:relative;`;
 
             if (erMin) {
                 div.style.cssText = baseStyle + `align-self: flex-end; background: #00ff66; color: black; border-bottom-right-radius: 4px; margin-left: auto;`;
@@ -1519,11 +1533,14 @@ function startChatLytter() {
                 div.style.cssText = baseStyle + `align-self: flex-start; background: #2a2a2a; color: white; border-bottom-left-radius: 4px; margin-right: auto;`;
             }
             
-            // HTML for Svar-citat
             let citatHTML = m.svarTekst ? `<div style="background:rgba(0,0,0,0.1); padding:5px 8px; border-radius:8px; font-size:10px; margin-bottom:6px; border-left:2px solid #666; font-style:italic;">${m.svarNavn}: ${m.svarTekst}</div>` : "";
             
-            // HTML for Hjerte-badge
-            let hjerteBadge = (m.hjerter || 0) > 0 ? `<div style="position:absolute; bottom:-8px; ${erMin?'left':'right'}:10px; background:#444; border-radius:10px; padding:2px 6px; font-size:10px; color:white; border:1px solid #555;">❤️ ${m.hjerter}</div>` : "";
+            // Hjerte-badge: Nu med JSON.stringify for at sende listen over navne med til klik-funktionen
+            let hjerteBadge = antalLikes > 0 ? `
+                <div onclick='visHvemDerHarLiket(${JSON.stringify(likes)})' 
+                     style="position:absolute; bottom:-10px; ${erMin?'left':'right'}:10px; background:#444; border-radius:10px; padding:2px 8px; font-size:10px; color:white; border:1px solid ${harJegLiket ? '#ff0044' : '#555'}; cursor:pointer; z-index:10;">
+                    ${harJegLiket ? '❤️' : '🤍'} ${antalLikes}
+                </div>` : "";
 
             div.innerHTML = `
                 <div style="font-size: 9px; font-weight: bold; opacity: 0.7; margin-bottom: 4px; text-transform: uppercase;">
@@ -1535,14 +1552,17 @@ function startChatLytter() {
                 </div>
                 <div style="display:flex; gap:12px; margin-top:8px; opacity:0.4; font-size:10px; font-weight:bold;">
                     <span onclick="forberedSvar('${id}', '${m.name}', '${m.text}')" style="cursor:pointer;">SVAR</span>
-                    <span onclick="db.ref('global_chat/${id}').update({hjerter: ${(m.hjerter||0)+1}})" style="cursor:pointer;">❤️</span>
+                    <span onclick='håndterHjerte("${id}", ${JSON.stringify(likes)})' 
+                          style="cursor:pointer; color: ${harJegLiket ? '#ff0044' : 'inherit'};">
+                        ${harJegLiket ? '❤️ LIKET' : '❤️ LIKE'}
+                    </span>
                 </div>
                 ${hjerteBadge}
             `;
             messagesDiv.appendChild(div);
         });
 
-        // 3. NEON RØD NOTIFIKATION (Navnet)
+        // 3. NEON RØD NOTIFIKATION
         if (welcomeText) {
             if (erLukket && nyeBeskeder > 0) {
                 welcomeText.style.color = '#ff0044';
