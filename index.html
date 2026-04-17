@@ -1440,19 +1440,11 @@ function startChatLytter() {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
-            // HER ER MASTER-FIXET FOR DEN RØDE LINJE:
+            // 1. DEN RØDE LINJE (Hukommelse)
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 if (!markørIndsat) {
                     const marker = document.createElement('div');
-                    marker.className = 'chat-unread-marker';
-                    
-                    // Vi tvinger stylingen direkte på elementet her - så CSS filen er ligegyldig
-                    marker.style.display = "flex";
-                    marker.style.alignItems = "center";
-                    marker.style.justifyContent = "center";
-                    marker.style.margin = "30px 0";
-                    marker.style.width = "100%";
-
+                    marker.style.cssText = "display:flex; align-items:center; justify-content:center; margin:30px 0; width:100%;";
                     marker.innerHTML = `
                         <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
                         <span style="padding:0 15px; color:#ff0044 !important; font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:2px; text-shadow: 0 0 8px rgba(255,0,68,0.6);">
@@ -1474,16 +1466,53 @@ function startChatLytter() {
                               d.getMinutes().toString().padStart(2,'0');
             }
 
+            // 2. STYLING AF BESKED-BOBLERNE (DIREKTE KODE)
             const div = document.createElement('div');
-            div.className = erMin ? 'sp-msg owner' : 'sp-msg';
+            
+            // Fælles grund-styling for alle bobler
+            let baseStyle = `
+                display: flex;
+                flex-direction: column;
+                max-width: 80%;
+                padding: 10px 14px;
+                border-radius: 18px;
+                margin-bottom: 8px;
+                font-family: sans-serif;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            `;
+
+            if (erMin) {
+                // DIN GRØNNE BOKS (Højre side)
+                div.style.cssText = baseStyle + `
+                    align-self: flex-end;
+                    background: #ccff00; /* Din SmashPro grønne farve */
+                    color: black;
+                    border-bottom-right-radius: 4px;
+                    margin-left: auto;
+                `;
+            } else {
+                // ANDRES SORTE/GRÅ BOKS (Venstre side)
+                div.style.cssText = baseStyle + `
+                    align-self: flex-start;
+                    background: #2a2a2a;
+                    color: white;
+                    border-bottom-left-radius: 4px;
+                    margin-right: auto;
+                `;
+            }
+            
             div.innerHTML = `
-                <div class="sp-msg-info">${m.name} • ${tidsStempel}</div>
-                <div class="sp-msg-text">${m.text}</div>
+                <div style="font-size: 9px; font-weight: bold; opacity: 0.7; margin-bottom: 4px; text-transform: uppercase;">
+                    ${m.name} • ${tidsStempel}
+                </div>
+                <div style="font-size: 14px; line-height: 1.4; word-wrap: break-word;">
+                    ${m.text}
+                </div>
             `;
             messagesDiv.appendChild(div);
         });
 
-        // Neon rød notifikation på navnet
+        // 3. NEON RØD NOTIFIKATION (Navnet)
         if (welcomeText) {
             if (erLukket && nyeBeskeder > 0) {
                 welcomeText.style.color = '#ff0044';
