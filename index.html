@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SmashPro Hub - Elite V3.5 FINAL PRO</title>
     
-    <link rel="stylesheet" href="Udseende.CSS?v=60.0">
+    <link rel="stylesheet" href="Udseende.CSS?v=70.0">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1440,13 +1440,26 @@ function startChatLytter() {
             const m = child.val();
             const erMin = currentUid && m.uid === currentUid;
             
-            // Markør logik
+            // HER ER MASTER-FIXET FOR DEN RØDE LINJE:
             if (m.timestamp > sidsteSetTimestamp && !erMin) {
                 if (!markørIndsat) {
                     const marker = document.createElement('div');
                     marker.className = 'chat-unread-marker';
-                    // Vi sikrer os at span-tagget er her, så det kan blive rødt i CSS
-                    marker.innerHTML = '<span>Nye beskeder herfra</span>'; 
+                    
+                    // Vi tvinger stylingen direkte på elementet her - så CSS filen er ligegyldig
+                    marker.style.display = "flex";
+                    marker.style.alignItems = "center";
+                    marker.style.justifyContent = "center";
+                    marker.style.margin = "30px 0";
+                    marker.style.width = "100%";
+
+                    marker.innerHTML = `
+                        <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
+                        <span style="padding:0 15px; color:#ff0044 !important; font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:2px; text-shadow: 0 0 8px rgba(255,0,68,0.6);">
+                            Nye beskeder herfra
+                        </span>
+                        <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
+                    `;
                     messagesDiv.appendChild(marker);
                     markørIndsat = true;
                 }
@@ -1481,9 +1494,6 @@ function startChatLytter() {
             }
         }
 
-        // Hvis man ikke har åbnet chatten endnu og der er en markør, 
-        // så lader vi toggleChat styre scroll til markøren. 
-        // Ellers scroller vi til bunden hvis man er der.
         if (varIBunden && !markørIndsat) {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
