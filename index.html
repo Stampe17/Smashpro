@@ -210,10 +210,10 @@
             <small>Mål din smash-hastighed via video</small>
         </div>
 
-        <div class="kort" onclick="visAnalyseVærktøj('run-tool')" style="text-align:center; opacity:0.6; cursor:pointer;">
+        <div class="kort" onclick="visAnalyseVærktøj('run-tool')" style="text-align:center; cursor:pointer; background: #222; border-radius: 15px; padding: 20px;">
             <span style="font-size:40px;">🏃‍♂️</span>
             <h3>Løbe-test</h3>
-            <small>Kondital & løbedata (Kommer snart)</small>
+            <small style="color: var(--primary);">Kondital & Fysisk Data</small>
         </div>
 
         <div class="kort" style="text-align:center; opacity:0.4;">
@@ -512,10 +512,151 @@
 
 function visAnalyseVærktøj(toolId) {
     if (toolId === 'speed-tool') {
-        visSide('side-speed'); // Vi sender dem videre til din eksisterende speed-side
-    } else if (toolId === 'run-tool') {
-        alert("Løbe-modulet er under opbygning! 🏃‍♂️💨");
+        visSide('side-speed'); 
+    } 
+    else if (toolId === 'run-tool') {
+        const area = document.getElementById('analyse-content-area') || document.body; 
+        
+        area.innerHTML = `
+            <div id="run-module-container" style="padding: 20px; background: #1a1a1a; border-radius: 15px; color: white; margin-top:20px; border: 1px solid #333; position: relative; z-index: 10000; pointer-events: auto;">
+                <h2 style="color: #00ff66; margin-bottom: 10px; display:flex; align-items:center; gap:10px;">
+                    <span>🏃‍♂️</span> Fysisk Test Center
+                </h2>
+                <p style="font-size: 13px; opacity: 0.8; margin-bottom: 20px;">Vælg test og indtast resultat.</p>
+
+                <select id="test-type" onchange="opdaterInputHjælp()" style="width: 100%; padding: 14px; margin-bottom: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; font-size:15px;">
+                    <option value="cooper">Cooper-test (12 min løb)</option>
+                    <option value="2.4km">2.4 km løb (tid)</option>
+                    <option value="bip">Bip-test (Level.Shuttle)</option>
+                    <option value="5km">5 km løb (tid)</option>
+                    <option value="10km">10 km løb (tid)</option>
+                    <option value="agility">Agility T-Test (sekunder)</option>
+                    <option value="jump">Vertical Jump (cm)</option>
+                </select>
+
+                <label id="input-label" style="display:block; font-size:11px; color:#888; margin-bottom:5px; font-weight:bold;">INDTAST METER</label>
+                <input type="number" id="test-input" placeholder="Eks. 2800" step="0.01" style="width: 100%; padding: 14px; margin-bottom: 25px; background: #000; color: white; border: 1px solid #444; border-radius: 10px; font-size: 18px; outline:none;">
+
+                <button onclick="gemFysiskResultat()" style="width: 100%; padding: 16px; background: #00ff66; color: black; border: none; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,255,102,0.2);">
+                    GEM & BEREGN RESULTAT
+                </button>
+                
+                <button onclick="visSide('side-analyse')" style="width: 100%; background: #ff4444; color: white; border: none; margin-top: 20px; cursor: pointer; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 14px; display: block; position: relative; z-index: 10001;">
+                    GÅ TILBAGE
+                </button>
+            </div>
+        `;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
+}
+
+function opdaterInputHjælp() {
+    const type = document.getElementById('test-type').value;
+    const label = document.getElementById('input-label');
+    const input = document.getElementById('test-input');
+    
+    if (type === "cooper") { label.innerText = "INDTAST METER"; input.placeholder = "Eks. 2800"; }
+    else if (type === "bip") { label.innerText = "LEVEL.SHUTTLE (Eks 10.4)"; input.placeholder = "10.4"; }
+    else if (type === "jump") { label.innerText = "HØJDE I CM"; input.placeholder = "45"; }
+    else if (type === "agility") { label.innerText = "TID I SEKUNDER"; input.placeholder = "10.5"; }
+    else { label.innerText = "TID I MINUTTER (Eks 12.5)"; input.placeholder = "12.5"; }
+}
+
+async function gemFysiskResultat() {
+    const type = document.getElementById('test-type').value;
+    const resultat = parseFloat(document.getElementById('test-input').value);
+    const alder = prompt("Indtast din alder:", "16");
+    
+    if (!resultat || !alder) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    try {
+        const userSnap = await db.ref('users/' + user.uid).once('value');
+        const afsenderNavn = userSnap.val()?.name || "Spiller";
+        const nuværendeXP = userSnap.val()?.stats?.xp || 0;
+
+        let kondital = 0;
+        let niveau = "Middel";
+
+        if (type === "cooper") {
+            kondital = (resultat - 504.9) / 44.73;
+            if (kondital > 52) niveau = "Elite"; else if (kondital > 45) niveau = "Meget god"; else if (kondital > 38) niveau = "God";
+        } else if (type === "5km" || type === "10km") {
+            let distance = type === "5km" ? 5000 : 10000;
+            let hastighed = distance / (resultat * 60); // omregnet til m/sek
+            // En mere stabil VO2Max beregning for løb:
+            kondital = (hastighed * 0.2) + (hastighed * 0.9 * 0) + 3.5; 
+            if (kondital > 50) niveau = "Elite"; else if (kondital > 42) niveau = "Meget god";
+        } else if (type === "bip") {
+            kondital = (3.46 * resultat) + 12.2;
+            if (kondital > 50) niveau = "Elite"; else if (kondital > 44) niveau = "Meget god";
+        } else if (type === "jump") {
+            if (resultat > 55) niveau = "Elite"; else if (resultat > 45) niveau = "Meget god";
+        } else if (type === "agility") {
+            if (resultat < 9.5) niveau = "Elite"; else if (resultat < 10.5) niveau = "Meget god";
+        }
+
+        const data = {
+            uid: user.uid,
+            navn: afsenderNavn,
+            testType: type,
+            score: resultat,
+            kondital: kondital > 0 ? kondital.toFixed(1) : null,
+            niveau: niveau,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        // VIGTIGT: Vi venter på Firebase her!
+        await db.ref('fysiske_tests').push(data);
+        await db.ref('users/' + user.uid + '/stats/xp').set(nuværendeXP + 100);
+
+        let besked = `🔥 FLOT ARBEJDE, ${afsenderNavn.toUpperCase()}!\n\n`;
+        if (data.kondital) besked += `Dit Kondital: ${data.kondital} (VO2 Max)\n`;
+        besked += `Dit Niveau: ${niveau}\n\nDu har optjent 100 XP!`;
+        
+        alert(besked);
+        visLeaderboard(type);
+    } catch (e) { 
+        alert("Fejl: " + e.message); 
+    }
+}
+
+function visLeaderboard(testType) {
+    const container = document.getElementById('run-module-container');
+    if (!container) return;
+
+    db.ref('fysiske_tests').orderByChild('testType').equalTo(testType).once('value', snap => {
+        let bestResults = {};
+        const lavereErBedst = ["2.4km", "5km", "10km", "agility"].includes(testType);
+
+        snap.forEach(child => {
+            const d = child.val();
+            if (!bestResults[d.uid] || (lavereErBedst ? d.score < bestResults[d.uid].score : d.score > bestResults[d.uid].score)) {
+                bestResults[d.uid] = d;
+            }
+        });
+
+        let entries = Object.values(bestResults).sort((a, b) => lavereErBedst ? a.score - b.score : b.score - a.score);
+
+        let rows = entries.map((data, i) => `
+            <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #333; background:${data.uid === firebase.auth().currentUser.uid ? 'rgba(0,255,102,0.1)' : 'none'}">
+                <span><b>${i+1}. ${data.navn}</b><br><small style="color:#00ff66">${data.niveau || ''}</small></span>
+                <span style="text-align:right"><b>${data.score}</b><br><small>${data.kondital ? 'VO2: '+data.kondital : ''}</small></span>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <h2 style="color:#00ff66; text-align:center;">🏆 KLUB RANGERING</h2>
+            <div style="max-height:300px; overflow-y:auto; background:#111; border-radius:10px; margin-bottom:15px;">${rows}</div>
+            
+            <button onclick="visSide('side-analyse')" 
+                    style="width:100%; padding:18px; background:#00ff66; color:black; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:16px; position:relative; z-index:10001;">
+                FÆRDIG - TILBAGE TIL MENU
+            </button>
+        `;
+    });
 }
 
 firebase.auth().onAuthStateChanged(function(user) {
