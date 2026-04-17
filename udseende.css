@@ -55,29 +55,31 @@
 .chat-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
 .hidden { display: none !important; }
 
-/* MARKØR FOR NYE BESKEDER - EKSTRA TYDELIG PÅ MOBIL */
+/* MARKØR FOR NYE BESKEDER - TOTAL RØD OVERSTYRING */
 .chat-unread-marker {
     display: flex !important;
     align-items: center !important;
     text-align: center !important;
-    margin: 25px 0 !important;
-    color: #ff0044 !important; /* Den neonrøde farve */
-    font-size: 12px !important;
-    font-weight: 900 !important; /* Ekstra fed tekst */
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
+    margin: 30px 0 !important;
+    width: 100% !important;
 }
 
 .chat-unread-marker::before, 
 .chat-unread-marker::after {
     content: "" !important;
     flex: 1 !important;
-    border-bottom: 2px solid #ff0044 !important; /* Tykkere rød linje */
+    border-bottom: 2px solid #ff0044 !important; /* Den neonrøde linje */
+    box-shadow: 0 0 5px rgba(255, 0, 68, 0.4) !important;
 }
 
 .chat-unread-marker span {
     padding: 0 15px !important;
-    background: #1a1a1a !important; /* Sørg for at denne matcher din baggrund */
-    color: #ff0044 !important; /* Tvinger teksten til at være rød */
-    text-shadow: 0 0 8px rgba(255, 0, 68, 0.5) !important; /* Lille rød glød */
+    background: #1a1a1a !important; /* Matcher chat-baggrund */
+    color: #ff0044 !important;      /* TVINGER TEKSTEN TIL RØD */
+    font-size: 11px !important;
+    font-weight: 900 !important;    /* Ekstra fed */
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important; /* Gør den mere tydelig */
+    display: inline-block !important;
+    text-shadow: 0 0 8px rgba(255, 0, 68, 0.6) !important; /* Rød glød på bogstaverne */
 }
