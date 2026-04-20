@@ -429,8 +429,8 @@
 
         google.charts.load('current', {'packages':['corechart']});
 
-        const udfordringer = [
-    // --- 1-15: TRÆNINGSANTAL (Dine faste) ---
+    const udfordringer = [
+    // --- 1-15: TRÆNINGSANTAL ---
     { id: 1, titel: "First Step", desc: "1 træning", check: (s) => s.total >= 1 },
     { id: 2, titel: "Hat-Trick", desc: "3 træninger", check: (s) => s.total >= 3 },
     { id: 3, titel: "High Five", desc: "5 træninger", check: (s) => s.total >= 5 },
@@ -447,7 +447,7 @@
     { id: 14, titel: "Veteran", desc: "90 træninger", check: (s) => s.total >= 90 },
     { id: 15, titel: "Centurion", desc: "100 træninger", check: (s) => s.total >= 100 },
 
-    // --- 16-25: MINUTTER (Dine faste) ---
+    // --- 16-25: MINUTTER ---
     { id: 16, titel: "Warmup", desc: "500 minutter totalt", check: (s) => s.mins >= 500 },
     { id: 17, titel: "Deep Dive", desc: "1000 minutter totalt", check: (s) => s.mins >= 1000 },
     { id: 18, titel: "Hard Work", desc: "2000 minutter totalt", check: (s) => s.mins >= 2000 },
@@ -459,43 +459,54 @@
     { id: 24, titel: "Ultra", desc: "12.500 minutter totalt", check: (s) => s.mins >= 12500 },
     { id: 25, titel: "Marathon", desc: "15.000 minutter totalt", check: (s) => s.mins >= 15000 },
 
-    // --- 26-28: DE SIDSTE 3 KONKRETE ---
+    // --- 26-28: KONKRETE ---
     { id: 26, titel: "Early Bird", desc: "Træn før kl. 08:00", check: (s) => s.time_early },
     { id: 27, titel: "Night Owl", desc: "Træn efter kl. 20:00", check: (s) => s.time_late },
     { id: 28, titel: "Double Up", desc: "2 træninger på én dag", check: (s) => s.day_double },
     
-    // --- 29-33: SMASH SPEED (Brug jeres Speed Analyzer) ---
-// --- 29-33: SMASH SPEED (Koblet til Speed Analyzer) ---
+    // --- 29-33: SMASH SPEED ---
     { id: 29, titel: "Speed 100", desc: "Smash over 100 km/t", check: (s) => s.topSpeed >= 100 },
     { id: 30, titel: "Speed 200", desc: "Smash over 200 km/t", check: (s) => s.topSpeed >= 200 },
     { id: 31, titel: "Speed 300", desc: "Smash over 300 km/t", check: (s) => s.topSpeed >= 300 },
     { id: 32, titel: "Speed 350", desc: "Smash over 350 km/t", check: (s) => s.topSpeed >= 350 },
     { id: 33, titel: "Sonic Smash", desc: "Smash over 400 km/t", check: (s) => s.topSpeed >= 400 },
 
-    // --- 34-37: COOPER TEST (Løbe-distancer) ---
-    { id: 34, titel: "Cooper 2500", desc: "Løb over 2500m", check: (s, ach) => ach && ach.cooper_2500 },
-    { id: 35, titel: "Cooper 2700", desc: "Løb over 2700m", check: (s, ach) => ach && ach.cooper_2700 },
-    { id: 36, titel: "Cooper 2900", desc: "Løb over 2900m", check: (s, ach) => ach && ach.cooper_2900 },
-    { id: 37, titel: "Cooper Elite", desc: "Løb over 3050m", check: (s, ach) => ach && ach.cooper_3050 },
+    // --- 34-37: COOPER TEST ---
+    { id: 34, titel: "Cooper 2500", desc: "Løb over 2500m", check: (s) => s.maxCooper >= 2500 },
+    { id: 35, titel: "Cooper 2700", desc: "Løb over 2700m", check: (s) => s.maxCooper >= 2700 },
+    { id: 36, titel: "Cooper 2900", desc: "Løb over 2900m", check: (s) => s.maxCooper >= 2900 },
+    { id: 37, titel: "Cooper Elite", desc: "Løb over 3050m", check: (s) => s.maxCooper >= 3050 },
 
-    // --- 38-41: MOTIVATION & MENTALITET ---
+    // --- 38-42: MOTIVATION & MENTALITET ---
     { id: 38, titel: "Max Power", desc: "Ha' en motivation på 10", check: (s) => s.mot10Count >= 1 },
     { id: 39, titel: "Mental Rock", desc: "5 træninger m. motivation 10", check: (s) => s.mot10Count >= 5 },
-    { id: 40, titel: "Comeback Kid", desc: "Tab 1. sæt - vind kampen", check: (s) => s.hasComeback },    { id: 41, titel: "Marathon Match", desc: "Spil en kamp over 60 min", check: (s, ach) => ach && ach.match_60 },
-    { id: 41, titel: "Iron Focus", desc: "2 mod 1 øvelse i 15m uden fejl", check: (s, ach) => ach && ach.focus_2v1 },
-
-    // --- 43-45: UGE-MÅL (Vedholdenhed) ---
+    { id: 40, titel: "Comeback Kid", desc: "Tab 1. sæt - vind kampen", check: (s) => s.hasComeback },
+    { id: 41, titel: "Super Star", desc: "10 træninger m. motivation 10", check: (s) => s.mot10Count >= 10 },
+    { id: 42, titel: "Mindset King", desc: "20 træninger m. motivation 10", check: (s) => s.mot10Count >= 20 },
+  
+    // --- 43-45: UGE-MÅL ---
     { id: 43, titel: "Weekly 3", desc: "Træn 3 gange på én uge", check: (s) => s.maxInWeek >= 3 },
     { id: 44, titel: "Weekly 5", desc: "Træn 5 gange på én uge", check: (s) => s.maxInWeek >= 5 },
     { id: 45, titel: "Weekly 7", desc: "Træn hver dag i en uge", check: (s) => s.maxInWeek >= 7 },
 
-    // --- 46-50: REJSE & SPECIALS (Træneren låser op) ---
+    // --- 46-50: REJSE & SPECIALS ---
     { id: 46, titel: "Malaysia Tour", desc: "Deltaget i Malaysia træning", check: (s) => s.hasMalaysia },
     { id: 47, titel: "Copenhagen", desc: "Denmark Open deltagelse", check: (s) => s.hasDenmarkOpen },
-    { id: 48, titel: "Island Hopper", desc: "Låst op på rejse", check: (s) => s.hasIsland },
+    { id: 48, titel: "Malaysia Runner", desc: "Gennemført Malaysia løb", check: (s) => s.hasMalaysiaRace === true },
     { id: 49, titel: "Gym Rat", desc: "Trænet styrke 5 gange", check: (s) => s.strengthCount >= 5 },
-    { id: 50, titel: "Runner", desc: "Løbetræning 5 gange", check: (s) => s.runCount >= 5 }
-        ];
+    { id: 50, titel: "Runner", desc: "Løbetræning 5 gange", check: (s) => s.runCount >= 5 },
+
+ // --- 51-54: DE ULTIMATIVE BADGES (Symmetri-fix) ---
+    { id: 51, titel: "Månedens Slider", desc: "Trænet i 4 uger i træk", check: (s) => s.maxInWeek >= 1 && s.total >= 4 },
+    { 
+        id: 52, 
+        titel: "SmashPro Ambassadør", 
+        desc: "Træning, Speed, Cooper & Evaluering", 
+        check: (s) => s.total >= 1 && s.topSpeed > 0 && s.maxCooper > 0 && s.mot10Count >= 0 // Kræver nu data fra alle moduler
+    },
+    { id: 53, titel: "Hardcore Week", desc: "Trænede over 5 gange på én uge", check: (s) => s.maxInWeek > 5 },
+    { id: 54, titel: "All-Rounder", desc: "Har kørt både styrke, løb og badminton", check: (s) => s.strengthCount > 0 && s.runCount > 0 && s.total > 0 }
+];
 
         function visSide(id, btn) {
             document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
@@ -1351,126 +1362,168 @@ function beregnBadgeData() {
                 db.ref('h2h_global').once('value', h2hSnap => {
                     const allH2H = h2hSnap.val() || {};
                     db.ref('speed_records/' + uid).once('value', speedSnap => {
-                        
-                        // 1. HENT SPEED REKORD
-                        const val = speedSnap.val();
-                        let myMaxSpeed = 0;
-                        if (val) {
-                            myMaxSpeed = (typeof val === 'object') ? (val.max || 0) : val;
-                        }
-
-                        // 2. FORBERED TÆLLERE
-                        const attDates = [];
-                        const attTimes = [];
-                        let mins = 0;
-                        let attendedSessionIds = new Set(); 
-
-                        let hasMalaysia = false;
-                        let hasDenmarkOpen = false;
-                        let hasIsland = false;
-                        let strengthCount = 0;
-                        let runCount = 0;
-
-                        // 3. GENNEMGÅ FREMMØDE (Unik tælling)
-                        Object.keys(allA).forEach(tId => {
-                            if (allA[tId] && allA[tId][uid] && allA[tId][uid].status === 'Kommer') {
-                                const tData = allT[tId];
-                                
-                                if (tData && !attendedSessionIds.has(tId)) {
-                                    attendedSessionIds.add(tId); 
-                                    
-                                    attDates.push(tData.date);
-                                    attTimes.push(tData.time || "17:00");
-                                    mins += parseInt(tData.duration || 90);
-
-                                    const cat = (tData.category || "").toLowerCase();
-                                    const typ = (tData.type || "").toLowerCase();
-
-                                    if (cat.includes("malaysia") || typ.includes("malaysia")) hasMalaysia = true;
-                                    if (cat.includes("denmark open") || typ.includes("denmark open")) hasDenmarkOpen = true;
-                                    if (cat.includes("styrke") || typ.includes("styrke")) strengthCount++;
-                                    if (cat.includes("løb") || typ.includes("løb")) runCount++;
+                        // NYT: Hent fysiske tests for Cooper-badges
+                        db.ref('fysiske_tests').once('value', testSnap => {
+                            const allTests = testSnap.val() || {};
+                            
+                            // 1. FIND BEDSTE COOPER RESULTAT
+                            let maxCooper = 0;
+                            Object.values(allTests).forEach(t => {
+                                if (t.uid === uid && t.testType === "cooper") {
+                                    const score = parseFloat(t.score);
+                                    if (score > maxCooper) maxCooper = score;
                                 }
+                            });
+
+                            // 2. HENT SPEED REKORD
+                            const speedVal = speedSnap.val();
+                            let myMaxSpeed = 0;
+                            if (speedVal) {
+                                myMaxSpeed = (typeof speedVal === 'object') ? (speedVal.max || 0) : speedVal;
                             }
-                        });
 
-                        // 4. BEREGN UGE-STATISTIK (Weekly badges)
-                        const uniqueDates = [...new Set(attDates)].sort();
-                        const weekCounts = {};
-                        uniqueDates.forEach(d => {
-                            const wk = getUgeNr(new Date(d));
-                            weekCounts[wk] = (weekCounts[wk] || 0) + 1;
-                        });
-                        const maxInWeek = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
+                            // 3. FORBERED TÆLLERE
+                            const attDates = [];
+                            const attTimes = [];
+                            let mins = 0;
+                            let attendedSessionIds = new Set(); 
+                            let hasMalaysia = false;
+                            let hasMalaysiaRace = false;
+                            let hasDenmarkOpen = false;
+                            let strengthCount = 0;
+                            let runCount = 0;
 
-                        // 5. COMEBACK KID LOGIK
-                        let hasComeback = false;
-                        Object.values(allH2H).forEach(group => {
-                            Object.values(group).forEach(m => {
-                                if ((m.p1 === uid || m.p2 === uid) && m.winner === uid) {
-                                    const sets = m.score ? m.score.split(',') : [];
-                                    if (sets.length >= 2) {
-                                        const s1 = sets[0].trim().split('-');
-                                        const p1S = parseInt(s1[0]), p2S = parseInt(s1[1]);
-                                        if (m.p1 === uid && p1S < p2S) hasComeback = true;
-                                        if (m.p2 === uid && p2S < p1S) hasComeback = true;
+                            // 4. GENNEMGÅ FREMMØDE (Unik tælling)
+                            Object.keys(allA).forEach(tId => {
+                                if (allA[tId] && allA[tId][uid] && allA[tId][uid].status === 'Kommer') {
+                                    const tData = allT[tId];
+                                    
+                                    if (tData && !attendedSessionIds.has(tId)) {
+                                        attendedSessionIds.add(tId); 
+                                        
+                                        attDates.push(tData.date);
+                                        attTimes.push(tData.time || "17:00");
+                                        mins += parseInt(tData.duration || 90);
+
+                                        const cat = (tData.category || "").toLowerCase();
+                                        const typ = (tData.type || "").toLowerCase();
+
+                                        // Tjekker specifikt for Malaysia
+                                        if (cat.includes("malaysia løb") || cat.includes("5")) {
+                                            hasMalaysiaRace = true;
+                                        } else if (cat.includes("malaysia")) {
+                                            hasMalaysia = true; 
+                                        }
+
+                                        if (cat.includes("denmark open") || typ.includes("denmark open")) hasDenmarkOpen = true;
+                                        if (cat.includes("styrke") || typ.includes("styrke")) strengthCount++;
+                                        if (cat.includes("løb") || typ.includes("løb")) runCount++;
                                     }
                                 }
                             });
-                        });
 
-                        // 6. SAML ALT I STATS OBJEKTET
-                        const stats = {
-                            total: attendedSessionIds.size,
-                            mins: mins,
-                            hasMalaysia: hasMalaysia,
-                            hasDenmarkOpen: hasDenmarkOpen,
-                            hasIsland: hasIsland,
-                            strengthCount: strengthCount,
-                            runCount: runCount,
-                            maxInWeek: maxInWeek,
-                            time_early: attTimes.some(t => t && parseInt(t.split(':')[0]) < 8),
-                            time_late: attTimes.some(t => t && parseInt(t.split(':')[0]) >= 20),
-                            day_double: Object.values(attDates.reduce((a,c)=>{a[c]=(a[c]||0)+1; return a},{})).some(v => v >= 2),
-                            mot10Count: Object.values(allE).filter(e => parseInt(e.mot) === 10).length,
-                            hasComeback: hasComeback,
-                            topSpeed: myMaxSpeed
-                        };
+                            // 5. BEREGN UGE-STATISTIK
+                            const uniqueDates = [...new Set(attDates)].sort();
+                            const weekCounts = {};
+                            uniqueDates.forEach(d => {
+                                const wk = getUgeNr(new Date(d));
+                                weekCounts[wk] = (weekCounts[wk] || 0) + 1;
+                            });
+                            const maxInWeek = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
 
-                        // 7. OPDATER SKÆRM OG TEGN BADGES
-                        console.log("Stats er nu:", stats);
-                        
-                        if (document.getElementById('stat-sessions')) {
-                            document.getElementById('stat-sessions').innerText = stats.total;
-                        }
-                        if (document.getElementById('stat-minutes')) {
-                            document.getElementById('stat-minutes').innerText = stats.mins;
-                        }
+                            // 6. COMEBACK KID LOGIK
+                            let hasComeback = false;
+                            Object.values(allH2H).forEach(group => {
+                                Object.values(group).forEach(m => {
+                                    if ((m.p1 === uid || m.p2 === uid) && m.winner === uid) {
+                                        const sets = m.score ? m.score.split(',') : [];
+                                        if (sets.length >= 2) {
+                                            const s1 = sets[0].trim().split('-');
+                                            const p1S = parseInt(s1[0]), p2S = parseInt(s1[1]);
+                                            if (m.p1 === uid && p1S < p2S) hasComeback = true;
+                                            if (m.p2 === uid && p2S < p1S) hasComeback = true;
+                                        }
+                                    }
+                                });
+                            });
 
-                        tegnBadges(stats);
+                            // 7. SAML ALT I STATS OBJEKTET (Inkl. Cooper)
+                            const stats = {
+                                total: attendedSessionIds.size,
+                                mins: mins,
+                                hasMalaysia: hasMalaysia,
+                                hasMalaysiaRace: hasMalaysiaRace,
+                                hasDenmarkOpen: hasDenmarkOpen,
+                                strengthCount: strengthCount,
+                                runCount: runCount,
+                                maxInWeek: maxInWeek,
+                                time_early: attTimes.some(t => t && parseInt(t.split(':')[0]) < 8),
+                                time_late: attTimes.some(t => t && parseInt(t.split(':')[0]) >= 20),
+                                day_double: Object.values(attDates.reduce((a,c)=>{a[c]=(a[c]||0)+1; return a},{})).some(v => v >= 2),
+                                mot10Count: Object.values(allE).filter(e => parseInt(e.mot) === 10).length,
+                                hasComeback: hasComeback,
+                                topSpeed: myMaxSpeed,
+                                maxCooper: maxCooper // Her sender vi Cooper-resultatet videre
+                            };
 
+                            // 8. OPDATER SKÆRM OG TEGN
+                            console.log("Stats opdateret med Cooper:", stats);
+                            
+                            if (document.getElementById('stat-sessions')) {
+                                document.getElementById('stat-sessions').innerText = stats.total;
+                            }
+                            if (document.getElementById('stat-minutes')) {
+                                document.getElementById('stat-minutes').innerText = stats.mins;
+                            }
+
+                            tegnBadges(stats);
+
+                        }); // Lukker fysiske_tests
                     }); // Lukker speed
                 }); // Lukker h2h
             }); // Lukker evalueringer
         }); // Lukker attendance
     }); // Lukker trainings
 }
-        function tegnBadges(stats) {
+ function tegnBadges(stats) {
     const container = document.getElementById('badge-container'); 
     container.innerHTML = "";
     let uc = 0;
-    const uid = firebase.auth().currentUser.uid; // Vi skal bruge brugerens ID
+    const uid = firebase.auth().currentUser.uid;
+
+    // Hjælpefunktion til at beregne level ud fra XP (Samme logik som din profil)
+    const getLevel = (xp) => {
+        if (!xp || xp < 500) return 1;
+        if (xp < 1500) return 2;
+        if (xp < 3000) return 3;
+        if (xp < 5000) return 4;
+        return Math.floor(xp / 1500) + 1; // Eksempel på din dynamiske logik
+    };
 
     udfordringer.forEach(u => {
         const win = u.check(stats); 
         if(win) {
             uc++;
-            // NYT: Tjek i databasen om vi allerede har givet XP for dette badge
             db.ref('users/' + uid + '/badges/' + u.titel).once('value', snap => {
                 if (!snap.val()) {
-                    // Hvis badget IKKE findes i databasen endnu:
-                    db.ref('users/' + uid + '/badges/' + u.titel).set(true); // Gem det
-                    db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + 50); // GIV 50 XP
+                    db.ref('users/' + uid + '/badges/' + u.titel).set(true); 
+                    
+                    // TRANSACTION: Her tjekker vi for Level Up
+                    db.ref('xp_points/' + uid).transaction(currentXP => {
+                        const oldXP = currentXP || 0;
+                        const newXP = oldXP + 50;
+                        
+                        const oldLevel = getLevel(oldXP);
+                        const newLevel = getLevel(newXP);
+                        
+                        if (newLevel > oldLevel) {
+                            visLevelToast(newLevel); // Råber "Level Up!"
+                        }
+                        
+                        return newXP;
+                    });
+                    
+                    visBadgeToast(u.titel);
                     console.log("BOOM! 50 XP givet for: " + u.titel);
                 }
             });
@@ -1482,7 +1535,9 @@ function beregnBadgeData() {
         container.appendChild(box);
     });
     
-    document.getElementById('stat-unlocked').innerText = uc + "/35";
+    if (document.getElementById('stat-unlocked')) {
+        document.getElementById('stat-unlocked').innerText = uc + "/" + udfordringer.length;
+    }
 }
 
         function hentAlleSpillere() {
@@ -1964,6 +2019,30 @@ function startChatLytter() {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
     });
+}
+
+function visBadgeToast(titel) {
+    const toast = document.createElement('div');
+    toast.className = 'badge-toast';
+    toast.innerHTML = `<span>🏆</span> NYT BADGE LÅST OP: ${titel} (+50 XP)`;
+    document.body.appendChild(toast);
+    
+    // Fjern den fra HTML'en igen efter 4 sekunder
+    setTimeout(() => {
+        toast.remove();
+    }, 4000);
+
+    function visLevelToast(nytLevel) {
+    const toast = document.createElement('div');
+    toast.className = 'level-toast';
+    toast.innerHTML = `<div>⭐ LEVEL UP ⭐</div><div style="font-size: 40px;">${nytLevel}</div>`;
+    document.body.appendChild(toast);
+    
+    // En lille festlig lyd kunne også tilføjes her hvis du har en fil
+    setTimeout(() => {
+        if(toast) toast.remove();
+    }, 5000);
+}
 }
     </script>
 </body>
