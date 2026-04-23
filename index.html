@@ -305,19 +305,54 @@
     <div id="avatar-gallery" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
         </div>
 </div>
-            <div class="kort">
-                <h3>Mål</h3>
-                <textarea id="p-goalS" placeholder="Sæson mål"></textarea>
-                <textarea id="p-goal5" placeholder="5-års mål"></textarea>
-                <button onclick="gemMaal()" style="background:var(--player-action); color:white;">GEM MÅL</button>
-            </div>
+            <div class="kort" style="text-align: left;">
+    <h3>🏆 Udviklingsplan & Info</h3>
+    
+    <label><b>Klub:</b></label>
+    <input type="text" id="p-klub" placeholder="Din klub">
+
+    <label><b>Række/Niveau:</b></label>
+    <input type="text" id="p-niveau" placeholder="F.eks. U15 Mester">
+
+    <label><b>Styrker på banen (op til 5):</b></label>
+    <textarea id="p-styrker" placeholder="1. ... 2. ... 3. ..."></textarea>
+
+    <label><b>Svagheder på banen (op til 5):</b></label>
+    <textarea id="p-svagheder" placeholder="Hvad vil du gerne mindske?"></textarea>
+
+    <label><b>Emner jeg ønsker at forbedre:</b></label>
+    <textarea id="p-forbedre" placeholder="Hvad skal vi fokusere på?"></textarea>
+
+    <label><b>Spillestil (Nu / Ønsket):</b></label>
+    <textarea id="p-stil-nu" placeholder="Hvordan spiller du i dag?"></textarea>
+    <textarea id="p-stil-fremtid" placeholder="Hvordan vil du gerne spille?"></textarea>
+
+    <label><b>Mentalt (Før / Under / Efter kamp):</b></label>
+    <textarea id="p-mental" placeholder="Beskriv din mentale tilstand i kampens faser..."></textarea>
+
+    <label><b>Fysisk (Generelt / Benarbejde / Styrke):</b></label>
+    <textarea id="p-fysisk" placeholder="Hvordan har du det fysisk på banen?"></textarea>
+
+    <label><b>Er du begyndt på styrketræning?</b></label>
+    <input type="text" id="p-styrke-status" placeholder="Ja/Nej/Lidt">
+
+    <label><b>Målsætning (Sæson / 5 år):</b></label>
+    <textarea id="p-maal-s" placeholder="Mål for denne sæson"></textarea>
+    <textarea id="p-maal-5" placeholder="Hvor er du om 5 år?"></textarea>
+
+    <div style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">
+        <h4>👕 RSL T-shirt Bestilling</h4>
+        <label>Størrelse:</label>
+        <input type="text" id="p-rsl-str" placeholder="F.eks. Medium">
+        <label>Navn på ryg:</label>
+        <input type="text" id="p-rsl-navn" placeholder="Navn på trøjen">
+    </div>
+
+    <button onclick="gemUdvidetProfil()" style="background:var(--player-action); color:white; width: 100%; margin-top: 15px; padding: 12px; border-radius: 8px; font-weight: bold;">GEM MIN PROFIL</button>
+</div>
             <button onclick="firebase.auth().signOut()" style="background:#ef4444; color:white;">Log ud</button>
             <div class="kort">
-    <h3>Vælg din Avatar</h3>
-    <p style="font-size: 11px; color: var(--text-dim);">Nye låses op hver 7. level!</p>
-    <div id="avatar-gallery" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
-        </div>
-</div>
+    </div>
         </div>
 
         <div id="side-traener" class="hidden">
@@ -505,26 +540,58 @@
         check: (s) => s.total >= 1 && s.topSpeed > 0 && s.maxCooper > 0 && s.mot10Count >= 0 // Kræver nu data fra alle moduler
     },
     { id: 53, titel: "Hardcore Week", desc: "Trænede over 5 gange på én uge", check: (s) => s.maxInWeek > 5 },
-    { id: 54, titel: "All-Rounder", desc: "Har kørt både styrke, løb og badminton", check: (s) => s.strengthCount > 0 && s.runCount > 0 && s.total > 0 }
+    { id: 54, titel: "All-Rounder", desc: "Har kørt både styrke, løb og badminton", check: (s) => s.strengthCount > 0 && s.runCount > 0 && s.total > 0 },
+
+    // --- 55-60: ELITE & LEGEND ---
+    { id: 55, titel: "Early Bird Pro", desc: "Træn før kl. 08:00 (5 gange)", check: (s) => s.time_early_count >= 5 },
+    { id: 56, titel: "Night Owl Pro", desc: "Træn efter kl. 20:00 (5 gange)", check: (s) => s.time_late_count >= 5 },
+    { id: 57, titel: "Weekend Warrior", desc: "Trænet 10 gange i en weekend", check: (s) => s.weekend_count >= 10 },
+    { id: 58, titel: "Century Eval", desc: "Har rundet 100 evalueringer", check: (s) => s.evalCount >= 100 },
+    { id: 59, titel: "Iron Lung", desc: "Gennemført 5 Cooper-tests", check: (s) => s.cooper_count >= 5 },
+    { id: 60, titel: "SmashPro Legend", desc: "100+ træninger & Ambassadør status", check: (s) => s.total >= 100 && s.topSpeed > 0 && s.maxCooper > 0 && s.evalCount >= 1 },
+
+    // --- 61-63: DE HEMMELIGE (Viser kun navn når vundet) ---
+    { 
+        id: 61, 
+        titel: (s) => (s.streak7Days ? "The Machine" : "???"), 
+        desc: (s) => (s.streak7Days ? "Trænet 7 dage i træk" : "Hemmelig udfordring"), 
+        check: (s) => s.streak7Days 
+    },
+    { 
+        id: 62, 
+        titel: (s) => (s.topSpeed >= 300 && s.maxCooper >= 3000 ? "Elite Athlete" : "???"), 
+        desc: (s) => (s.topSpeed >= 300 && s.maxCooper >= 3000 ? "Over 300 km/t & 3000m løb" : "Hemmelig udfordring"), 
+        check: (s) => s.topSpeed >= 300 && s.maxCooper >= 3000 
+    },
+    { 
+        id: 63, 
+        titel: (s) => (s.isNightOwl ? "Dedicated Fan" : "???"), 
+        desc: (s) => (s.isNightOwl ? "Tjekket badges midt om natten" : "Hemmelig udfordring"), 
+        check: (s) => s.isNightOwl 
+    }
 ];
 
-        function visSide(id, btn) {
-            document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            if(id==='side-profil') {
-            setTimeout(function() { 
-        hentProfilData(firebase.auth().currentUser.uid, 'p');
-        tegnAvatarGalleri(); 
-    }, 200);
+ function visSide(id, btn) {
+    document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+
+    if(id==='side-profil') {
+        setTimeout(function() { 
+            const uid = firebase.auth().currentUser.uid;
+            hentProfilData(uid, 'p');
+            hentProfilDetaljer(); // <--- TILFØJ DENNE LINJE HER
+            tegnAvatarGalleri(); 
+        }, 200);
+    }
+
+    if(id==='side-achievements') beregnBadgeData();
+    if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); loadDrills(); }
+    if(id==='side-kalender') tegnKalender();
+    if(id==='side-speed') opdaterLeaderboard();
+    window.scrollTo(0,0);
 }
-            if(id==='side-achievements') beregnBadgeData();
-            if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); loadDrills(); }
-            if(id==='side-kalender') tegnKalender();
-            if(id==='side-speed') opdaterLeaderboard();
-            window.scrollTo(0,0);
-        }
 
 // --- 1. MODUL VISNING (Fuldstændig kode med Bip-test opdatering) ---
 function visAnalyseVærktøj(toolId) {
@@ -1315,40 +1382,123 @@ function overstyr(tId, uId, s) {
     } 
 }
 
-        function hentProfilData(uid, prefix) {
-            db.ref('users/'+uid).once('value', s => { 
-                const u=s.val(); 
-                if(prefix==='p'){ document.getElementById('p-goalS').value=u.goalSeason||""; document.getElementById('p-goal5').value=u.goal5year||""; }
-                else { document.getElementById('sd-goals').innerHTML=`<p><b>Sæson:</b><br>${u.goalSeason||'-'}</p><p><b>5-års:</b><br>${u.goal5year||'-'}</p>`; }
-            });
-            db.ref('evaluations/'+uid).on('value', snap => {
-                const data = snap.val() || {}; tegnGraf(data, prefix+'-chart');
-                const evs = Object.values(data);
-                if(evs.length > 0) {
-                    let m=0, c=0, f=0; const s10 = evs.slice(-10);
-                    s10.forEach(e => { m+=parseInt(e.mot); c+=parseInt(e.conc||5); f+=parseInt(e.frisk); });
-                    document.getElementById(prefix+'-avgM').innerText = (m/s10.length).toFixed(1);
-                    document.getElementById(prefix+'-avgC').innerText = (c/s10.length).toFixed(1);
-                    document.getElementById(prefix+'-avgF').innerText = (f/s10.length).toFixed(1);
+function hentProfilData(uid, prefix) {
+    // 1. Hent de grundlæggende detaljer
+    db.ref('users/' + uid).once('value', s => {
+        const u = s.val() || {};
+        
+        // Hent de udvidede profil-detaljer (Både til spiller og træner)
+        db.ref('users/' + uid + '/profil_detaljer').once('value', detSnap => {
+            const d = detSnap.val() || {};
+            
+            if (prefix === 'p') {
+                // SPILERENS EGEN PROFIL (Fyld input-felter)
+                const felter = {
+                    'p-klub': d.klub, 'p-niveau': d.niveau, 'p-styrker': d.styrker,
+                    'p-svagheder': d.svagheder, 'p-forbedre': d.forbedre,
+                    'p-spillestil-nu': d.spillestilNu, 'p-spillestil-frem': d.spillestilFrem,
+                    'p-mental-før': d.mentalFør, 'p-mental-under': d.mentalUnder,
+                    'p-mental-efter': d.mentalEfter, 'p-fysisk-status': d.fysiskStatus,
+                    'p-benarbejde': d.benarbejde, 'p-styrke-beskrivelse': d.styrkeBeskrivelse,
+                    'p-styrke-status': d.styrkeStatus, 'p-maal-sæson': d.maalSæson,
+                    'p-maal-5aar': d.maal5Aar, 'p-rsl-str': d.rslStr, 'p-rsl-navn': d.rslNavn
+                };
+                for (let id in felter) {
+                    let el = document.getElementById(id);
+                    if (el) el.value = felter[id] || "";
                 }
-            });
-            db.ref('trainings').once('value', tSnap => {
-                const total = Object.keys(tSnap.val()||{}).length;
-                db.ref('attendance').once('value', aSnap => {
-                    let p=0; const att = aSnap.val() || {};
-                    Object.values(att).forEach(t => { if(t[uid] && t[uid].status==='Kommer') p++; });
-                    document.getElementById(prefix+'-pct').innerText = (total>0?Math.round((p/total)*100):0)+"%";
-                });
-            });
-        }
+            } else {
+                // TRÆNERENS VISNING (Vis som overskuelig tekst)
+                const target = document.getElementById('sd-goals');
+                if (target) {
+                    target.innerHTML = `
+                        <div style="text-align:left; font-size:0.85em; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; line-height: 1.4;">
+                            <h4 style="margin:0 0 10px 0; color:var(--player-accent);">🏸 UDVIKLINGSPLAN</h4>
+                            <p><b>Klub/Niveau:</b> ${d.klub || '-'} / ${d.niveau || '-'}</p>
+                            <p><b>Styrker:</b> ${d.styrker || '-'}</p>
+                            <p><b>Svagheder:</b> ${d.svagheder || '-'}</p>
+                            <p><b>Ønsker forbedring:</b> ${d.forbedre || '-'}</p>
+                            <hr style="opacity:0.2; margin:10px 0;">
+                            <p><b>Spillestil Nu:</b> ${d.spillestilNu || '-'}</p>
+                            <p><b>Spillestil Drøm:</b> ${d.spillestilFrem || '-'}</p>
+                            <hr style="opacity:0.2; margin:10px 0;">
+                            <p><b>Mentalt (Før/Under/Efter):</b><br>
+                               <small>Før: ${d.mentalFør || '-'}<br>Under: ${d.mentalUnder || '-'}<br>Efter: ${d.mentalEfter || '-'}</small></p>
+                            <hr style="opacity:0.2; margin:10px 0;">
+                            <p><b>Fysisk form:</b> ${d.fysiskStatus || '-'}</p>
+                            <p><b>Benarbejde:</b> ${d.benarbejde || '-'}</p>
+                            <p><b>Styrke/Træning:</b> ${d.styrkeBeskrivelse || '-'} (${d.styrkeStatus || '-'})</p>
+                            <hr style="opacity:0.2; margin:10px 0;">
+                            <p><b>Mål Sæson:</b> ${d.maalSæson || '-'}</p>
+                            <p><b>Mål 5 år:</b> ${d.maal5Aar || '-'}</p>
+                            <div style="margin-top:10px; padding-top:10px; border-top: 2px dashed rgba(255,255,255,0.1);">
+                                <b>👕 RSL:</b> ${d.rslStr || '-'} (Navn: ${d.rslNavn || '-'})
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    });
 
-        function tegnGraf(data, el) {
-            const dArray = [['Dato','Mot','Konc','Krop']];
-            Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).slice(-10).forEach(e => dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5), parseInt(e.frisk)]));
-            if(dArray.length <= 1) return;
-            const chart = new google.visualization.LineChart(document.getElementById(el));
-            chart.draw(google.visualization.arrayToDataTable(dArray), { backgroundColor:'transparent', colors:['#00ff66','#3b82f6','#ef4444'], legend:'none', chartArea:{width:'90%', height:'70%'}, vAxis:{minValue:1, maxValue:10, gridlines:{color:'#334155'}}});
+    // 2. Hent evalueringer til grafer og gennemsnit
+    db.ref('evaluations/' + uid).on('value', snap => {
+        const data = snap.val() || {};
+        const chartEl = document.getElementById(prefix + '-chart');
+        if (chartEl) tegnGraf(data, prefix + '-chart');
+        
+        const evs = Object.values(data);
+        if (evs.length > 0) {
+            let m = 0, c = 0, f = 0;
+            const s10 = evs.slice(-10);
+            s10.forEach(e => {
+                m += parseInt(e.mot);
+                c += parseInt(e.conc || 5);
+                f += parseInt(e.frisk);
+            });
+            const avgM = document.getElementById(prefix + '-avgM');
+            const avgC = document.getElementById(prefix + '-avgC');
+            const avgF = document.getElementById(prefix + '-avgF');
+            
+            if (avgM) avgM.innerText = (m / s10.length).toFixed(1);
+            if (avgC) avgC.innerText = (c / s10.length).toFixed(1);
+            if (avgF) avgF.innerText = (f / s10.length).toFixed(1);
         }
+    });
+
+    // 3. Hent fremmødeprocent
+    db.ref('trainings').once('value', tSnap => {
+        const total = Object.keys(tSnap.val() || {}).length;
+        db.ref('attendance').once('value', aSnap => {
+            let p = 0;
+            const att = aSnap.val() || {};
+            Object.values(att).forEach(t => {
+                if (t[uid] && t[uid].status === 'Kommer') p++;
+            });
+            const pctEl = document.getElementById(prefix + '-pct');
+            if (pctEl) pctEl.innerText = (total > 0 ? Math.round((p / total) * 100) : 0) + "%";
+        });
+    });
+}
+
+function tegnGraf(data, el) {
+    const dArray = [['Dato','Mot','Konc','Krop']];
+    Object.values(data).sort((a,b)=>a.timestamp-b.timestamp).slice(-10).forEach(e => {
+        dArray.push([e.dato.substring(5), parseInt(e.mot), parseInt(e.conc||5), parseInt(e.frisk)]);
+    });
+    if(dArray.length <= 1) return;
+    const target = document.getElementById(el);
+    if (target) {
+        const chart = new google.visualization.LineChart(target);
+        chart.draw(google.visualization.arrayToDataTable(dArray), { 
+            backgroundColor:'transparent', 
+            colors:['#00ff66','#3b82f6','#ef4444'], 
+            legend:'none', 
+            chartArea:{width:'90%', height:'70%'}, 
+            vAxis:{minValue:1, maxValue:10, gridlines:{color:'#334155'}}
+        });
+    }
+}
 
 function beregnBadgeData() {
     const uid = firebase.auth().currentUser.uid;
@@ -1362,14 +1512,15 @@ function beregnBadgeData() {
                 db.ref('h2h_global').once('value', h2hSnap => {
                     const allH2H = h2hSnap.val() || {};
                     db.ref('speed_records/' + uid).once('value', speedSnap => {
-                        // NYT: Hent fysiske tests for Cooper-badges
                         db.ref('fysiske_tests').once('value', testSnap => {
                             const allTests = testSnap.val() || {};
                             
-                            // 1. FIND BEDSTE COOPER RESULTAT
+                            // 1. FIND BEDSTE COOPER RESULTAT OG ANTAL TEST
                             let maxCooper = 0;
+                            let cooperCount = 0;
                             Object.values(allTests).forEach(t => {
                                 if (t.uid === uid && t.testType === "cooper") {
+                                    cooperCount++; // Tæller antal gennemførte tests
                                     const score = parseFloat(t.score);
                                     if (score > maxCooper) maxCooper = score;
                                 }
@@ -1393,6 +1544,11 @@ function beregnBadgeData() {
                             let strengthCount = 0;
                             let runCount = 0;
 
+                            // NYE TÆLLERE TIL ELITE BADGES
+                            let earlyCount = 0;
+                            let lateCount = 0;
+                            let weekendCount = 0;
+
                             // 4. GENNEMGÅ FREMMØDE (Unik tælling)
                             Object.keys(allA).forEach(tId => {
                                 if (allA[tId] && allA[tId][uid] && allA[tId][uid].status === 'Kommer') {
@@ -1404,6 +1560,15 @@ function beregnBadgeData() {
                                         attDates.push(tData.date);
                                         attTimes.push(tData.time || "17:00");
                                         mins += parseInt(tData.duration || 90);
+
+                                        // Tæller tidspunkter (Pro badges)
+                                        const hour = parseInt((tData.time || "17:00").split(':')[0]);
+                                        if (hour < 8) earlyCount++;
+                                        if (hour >= 20) lateCount++;
+
+                                        // Tæller weekender (Weekend Warrior)
+                                        const d = new Date(tData.date);
+                                        if (d.getDay() === 0 || d.getDay() === 6) weekendCount++;
 
                                         const cat = (tData.category || "").toLowerCase();
                                         const typ = (tData.type || "").toLowerCase();
@@ -1423,15 +1588,34 @@ function beregnBadgeData() {
                             });
 
                             // 5. BEREGN UGE-STATISTIK
-                            const uniqueDates = [...new Set(attDates)].sort();
+                            const uniqueDatesSorted = [...new Set(attDates)].sort((a,b) => new Date(a) - new Date(b));
                             const weekCounts = {};
-                            uniqueDates.forEach(d => {
+                            uniqueDatesSorted.forEach(d => {
                                 const wk = getUgeNr(new Date(d));
                                 weekCounts[wk] = (weekCounts[wk] || 0) + 1;
                             });
                             const maxInWeek = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
 
-                            // 6. COMEBACK KID LOGIK
+                            // 6. LOGIK FOR 7 DAGE I TRÆK (HEMMELIGT BADGE)
+                            let streak7Days = false;
+                            let currentStreak = 1;
+                            for (let i = 1; i < uniqueDatesSorted.length; i++) {
+                                const d1 = new Date(uniqueDatesSorted[i-1]);
+                                const d2 = new Date(uniqueDatesSorted[i]);
+                                const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
+                                if (diff === 1) {
+                                    currentStreak++;
+                                    if (currentStreak >= 7) streak7Days = true;
+                                } else {
+                                    currentStreak = 1;
+                                }
+                            }
+
+                            // 7. NATTE-TJEK (HEMMELIGT BADGE - Tjekker om klokken er nu)
+                            const nowHour = new Date().getHours();
+                            const isNightOwl = (nowHour >= 0 && nowHour <= 3);
+
+                            // 8. COMEBACK KID LOGIK
                             let hasComeback = false;
                             Object.values(allH2H).forEach(group => {
                                 Object.values(group).forEach(m => {
@@ -1447,7 +1631,7 @@ function beregnBadgeData() {
                                 });
                             });
 
-                            // 7. SAML ALT I STATS OBJEKTET (Inkl. Cooper)
+                            // 9. SAML ALT I STATS OBJEKTET
                             const stats = {
                                 total: attendedSessionIds.size,
                                 mins: mins,
@@ -1457,17 +1641,24 @@ function beregnBadgeData() {
                                 strengthCount: strengthCount,
                                 runCount: runCount,
                                 maxInWeek: maxInWeek,
+                                time_early_count: earlyCount,
+                                time_late_count: lateCount,
+                                weekend_count: weekendCount,
+                                cooper_count: cooperCount,
+                                evalCount: Object.values(allE).length,
                                 time_early: attTimes.some(t => t && parseInt(t.split(':')[0]) < 8),
                                 time_late: attTimes.some(t => t && parseInt(t.split(':')[0]) >= 20),
                                 day_double: Object.values(attDates.reduce((a,c)=>{a[c]=(a[c]||0)+1; return a},{})).some(v => v >= 2),
                                 mot10Count: Object.values(allE).filter(e => parseInt(e.mot) === 10).length,
                                 hasComeback: hasComeback,
                                 topSpeed: myMaxSpeed,
-                                maxCooper: maxCooper // Her sender vi Cooper-resultatet videre
+                                maxCooper: maxCooper,
+                                streak7Days: streak7Days,
+                                isNightOwl: isNightOwl
                             };
 
-                            // 8. OPDATER SKÆRM OG TEGN
-                            console.log("Stats opdateret med Cooper:", stats);
+                            // 10. OPDATER SKÆRM OG TEGN
+                            console.log("Stats opdateret med de nyeste tællere:", stats);
                             
                             if (document.getElementById('stat-sessions')) {
                                 document.getElementById('stat-sessions').innerText = stats.total;
@@ -1485,30 +1676,37 @@ function beregnBadgeData() {
         }); // Lukker attendance
     }); // Lukker trainings
 }
- function tegnBadges(stats) {
+
+function tegnBadges(stats) {
     const container = document.getElementById('badge-container'); 
     container.innerHTML = "";
     let uc = 0;
     const uid = firebase.auth().currentUser.uid;
 
-    // Hjælpefunktion til at beregne level ud fra XP (Samme logik som din profil)
+    // Hjælpefunktion til at beregne level ud fra XP
     const getLevel = (xp) => {
         if (!xp || xp < 500) return 1;
         if (xp < 1500) return 2;
         if (xp < 3000) return 3;
         if (xp < 5000) return 4;
-        return Math.floor(xp / 1500) + 1; // Eksempel på din dynamiske logik
+        return Math.floor(xp / 1500) + 1;
     };
 
     udfordringer.forEach(u => {
         const win = u.check(stats); 
+        
+        // --- NY LOGIK TIL TITEL OG BESKRIVELSE ---
+        // Dette tjekker om det er en funktion (hemmelig) eller almindelig tekst
+        const aktuelTitel = typeof u.titel === 'function' ? u.titel(stats) : u.titel;
+        const aktuelDesc = typeof u.desc === 'function' ? u.desc(stats) : u.desc;
+
         if(win) {
             uc++;
-            db.ref('users/' + uid + '/badges/' + u.titel).once('value', snap => {
+            // Vi bruger aktuelTitel her, så databasen gemmer det rigtige navn
+            db.ref('users/' + uid + '/badges/' + aktuelTitel).once('value', snap => {
                 if (!snap.val()) {
-                    db.ref('users/' + uid + '/badges/' + u.titel).set(true); 
+                    db.ref('users/' + uid + '/badges/' + aktuelTitel).set(true); 
                     
-                    // TRANSACTION: Her tjekker vi for Level Up
                     db.ref('xp_points/' + uid).transaction(currentXP => {
                         const oldXP = currentXP || 0;
                         const newXP = oldXP + 50;
@@ -1517,21 +1715,26 @@ function beregnBadgeData() {
                         const newLevel = getLevel(newXP);
                         
                         if (newLevel > oldLevel) {
-                            visLevelToast(newLevel); // Råber "Level Up!"
+                            visLevelToast(newLevel);
                         }
                         
                         return newXP;
                     });
                     
-                    visBadgeToast(u.titel);
-                    console.log("BOOM! 50 XP givet for: " + u.titel);
+                    visBadgeToast(aktuelTitel);
+                    console.log("BOOM! 50 XP givet for: " + aktuelTitel);
                 }
             });
         }
 
+        // --- TEGN BADGE PÅ SKÆRMEN ---
         const box = document.createElement('div'); 
         box.className = `badge-box ${win ? 'unlocked' : ''}`;
-        box.innerHTML = `<div class="badge-icon">${win ? '🏆' : '🔒'}</div><b>${u.titel}</b><small>${u.desc}</small>`;
+        box.innerHTML = `
+            <div class="badge-icon">${win ? '🏆' : '🔒'}</div>
+            <b>${aktuelTitel}</b>
+            <small>${aktuelDesc}</small>
+        `;
         container.appendChild(box);
     });
     
@@ -1610,10 +1813,33 @@ function beregnBadgeData() {
             });
         }
 
-        function gemMaal() { 
-            const u = firebase.auth().currentUser;
-            db.ref('users/'+u.uid).update({ goalSeason: document.getElementById('p-goalS').value, goal5year: document.getElementById('p-goal5').value }).then(()=>alert("Mål gemt!")); 
-        }
+async function gemUdvidetProfil() {
+    const uid = firebase.auth().currentUser.uid;
+    const data = {
+        klub: document.getElementById('p-klub').value,
+        niveau: document.getElementById('p-niveau').value,
+        styrker: document.getElementById('p-styrker').value,
+        svagheder: document.getElementById('p-svagheder').value,
+        forbedre: document.getElementById('p-forbedre').value,
+        stilNu: document.getElementById('p-stil-nu').value,
+        stilFremtid: document.getElementById('p-stil-fremtid').value,
+        mental: document.getElementById('p-mental').value,
+        fysisk: document.getElementById('p-fysisk').value,
+        styrkeStatus: document.getElementById('p-styrke-status').value,
+        maalSæson: document.getElementById('p-maal-s').value,
+        maal5Aar: document.getElementById('p-maal-5').value,
+        rslStr: document.getElementById('p-rsl-str').value,
+        rslNavn: document.getElementById('p-rsl-navn').value,
+        sidstOpdateret: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    try {
+        await db.ref('users/' + uid + '/profil_detaljer').set(data);
+        alert("✅ Din profil er nu opdateret og gemt!");
+    } catch (e) {
+        alert("Kunne ikke gemme: " + e.message);
+    }
+}
 
         function hentEvalueringSide() {
             db.ref('evaluations/'+firebase.auth().currentUser.uid).on('value', snap => {
@@ -2004,19 +2230,34 @@ function startChatLytter() {
             messagesDiv.appendChild(div);
         });
 
-        // 3. NEON RØD NOTIFIKATION
+// 3. NEON RØD NOTIFIKATION + APP ICON BADGE
         if (welcomeText) {
             if (erLukket && nyeBeskeder > 0) {
+                // Den røde tekst inde i appen
                 welcomeText.style.color = '#ff0044';
                 welcomeText.style.textShadow = '0 0 15px #ff0044';
+                
+                // NYT: Sæt den røde prik på selve mobil-ikonet ude på skrivebordet
+                if (navigator.setAppBadge) {
+                    navigator.setAppBadge(nyeBeskeder).catch(err => console.log("Badge error:", err));
+                }
+                
             } else if (erLukket) {
                 welcomeText.style.color = 'var(--primary)';
                 welcomeText.style.textShadow = 'none';
+                
+                // Fjern prikken på mobil-ikonet hvis der ikke er nye beskeder
+                if (navigator.clearAppBadge) {
+                    navigator.clearAppBadge();
+                }
             }
         }
-
-        if (varIBunden && !markørIndsat) {
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        // Når chatten åbnes, skal vi også huske at nulstille ikonet
+        if (!erLukket) {
+            if (navigator.clearAppBadge) {
+                navigator.clearAppBadge();
+            }
         }
     });
 }
@@ -2043,6 +2284,33 @@ function visBadgeToast(titel) {
         if(toast) toast.remove();
     }, 5000);
 }
+}
+
+const messaging = firebase.messaging();
+
+async function aktiverNotifikationer() {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.log("Ingen tilladelse givet.");
+            return;
+        }
+
+        const messaging = firebase.messaging();
+        // Din VAPID nøgle er indsat herunder:
+        const token = await messaging.getToken({ 
+            vapidKey: 'BOzXXid9AiGbbvP7-wlNR7pOC-w2x81FAWvTK07-syLRkZuhsOUyrimfYwjgta26M4MBxw4ZZI33achQE2S5p1Q' 
+        });
+        
+        if (token) {
+            const uid = firebase.auth().currentUser.uid;
+            // Gemmer den unikke adresse (token) på spilleren i databasen
+            await firebase.database().ref('users/' + uid + '/fcmToken').set(token);
+            console.log("FCM Token gemt!");
+        }
+    } catch (err) {
+        console.error("Fejl ved aktivering af push:", err);
+    }
 }
     </script>
 </body>
