@@ -22,6 +22,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
 <style>
         :root { 
             --primary: #00ff66; --bg: #0b0e14; --sidebar: #12161f; --card: #1c222d; 
@@ -577,11 +578,15 @@
     document.querySelectorAll('.main-content > div').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
 
-    if(id==='side-profil') {
+   if(id==='side-profil') {
         setTimeout(function() { 
             const uid = firebase.auth().currentUser.uid;
             hentProfilData(uid, 'p');
-            hentProfilDetaljer(); // <--- TILFØJ DENNE LINJE HER
+            
+            // Vi fjerner denne linje fordi den fejler og stopper alt andet:
+            // hentProfilDetaljer(); 
+
+            // Nu kan denne her endelig få lov at køre!
             tegnAvatarGalleri(); 
         }, 200);
     }
@@ -1939,47 +1944,70 @@ db.ref('xp_points/' + uid).on('value', function(snap) {
 
 function tegnAvatarGalleri() {
     const galleri = document.getElementById('avatar-gallery');
+    if (!galleri) return;
     galleri.innerHTML = "";
     
-    // Her er dine 10 badminton avatars (links til ikoner)
     const avatars = [
-        "https://i.postimg.cc/V6HYHNy1/1775387387465.png", // Start 1
-        "https://i.postimg.cc/2ybzpfmN/1775387372153.png", // Start 2
-        "https://i.postimg.cc/jjcqPXZj/1775395491456.png", // Start 3
-        "https://i.postimg.cc/fLbzK9rB/1775395048213.png",   // Level 7
-        "https://i.postimg.cc/J0D1wW8S/1775387383294.png",   // Level 14
-        "https://i.postimg.cc/SsKSrMvW/1775395052692.png", // Level 21
-        "https://i.postimg.cc/W48pgnX1/1775395488012.png", // Level 28
-        "https://i.postimg.cc/bJvyTtBm/1775395046945.png", // Level 35
-        "https://i.postimg.cc/k45JcbpG/1775395060598.png", // Level 42
-        "https://i.postimg.cc/C1KhNqQP/1775395043337.png",  // Level 49
-        "https://i.postimg.cc/1tY9Yzxx/1775387398920.png", // Level 60
-        "https://i.postimg.cc/wvBqVmGX/1775395050774.png", // Level 75
+        "https://i.postimg.cc/V6HYHNy1/1775387387465.png",
+        "https://i.postimg.cc/2ybzpfmN/1775387372153.png",
+        "https://i.postimg.cc/jjcqPXZj/1775395491456.png",
+        "https://i.postimg.cc/fLbzK9rB/1775395048213.png",
+        "https://i.postimg.cc/J0D1wW8S/1775387383294.png",
+        "https://i.postimg.cc/SsKSrMvW/1775395052692.png",
+        "https://i.postimg.cc/W48pgnX1/1775395488012.png",
+        "https://i.postimg.cc/bJvyTtBm/1775395046945.png",
+        "https://i.postimg.cc/k45JcbpG/1775395060598.png",
+        "https://i.postimg.cc/C1KhNqQP/1775395043337.png",
+        "https://i.postimg.cc/1tY9Yzxx/1775387398920.png",
+        "https://i.postimg.cc/wvBqVmGX/1775395050774.png",
     ];
 
-    db.ref('xp_points/' + firebase.auth().currentUser.uid).once('value', function(snap) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    // --- 1. TEGN AVATARER (Nu med firebase.database() i stedet for db) ---
+    firebase.database().ref('xp_points/' + user.uid).once('value', function(snap) {
         const xp = snap.val() || 0;
         const level = Math.floor(xp / 100) + 1;
 
         avatars.forEach(function(url, index) {
-            // Beregn hvilket level der kræves (3 første er gratis, derefter +7 pr. stk)
             const krævetLevel = index < 3 ? 1 : (index - 2) * 7;
             const erLaast = level < krævetLevel;
             
             const img = document.createElement('img');
             img.src = url;
             img.className = 'av-item ' + (erLaast ? 'locked' : '');
+            img.style.width = "100%"; // Sikrer de passer i dit grid
+            img.style.borderRadius = "50%";
             img.title = erLaast ? "Kræver Level " + krævetLevel : "Vælg Avatar";
             
             if (!erLaast) {
+                img.style.cursor = "pointer";
                 img.onclick = function() {
-                    db.ref('users/' + firebase.auth().currentUser.uid + '/photoURL').set(url);
-                    alert("Ny Avatar valgt!");
+                    firebase.database().ref('users/' + user.uid + '/photoURL').set(url);
+                    alert("Ny Avatar valgt! 🏸");
                 };
+            } else {
+                img.style.filter = "grayscale(1) opacity(0.4)";
             }
             galleri.appendChild(img);
         });
     });
+
+    // --- 2. HENT NOTIFIKATION TOKEN (Android Fix) ---
+    const messaging = firebase.messaging();
+    // Her skal du indsætte din VAPID key fra Firebase Console
+    messaging.getToken({ vapidKey: 'BOzXXid9AiGbbvP7-wlNR7pOC-w2x81FAWvTK07-syLRkZuhsOUyrimfYwjgta26M4MBxw4ZZI33achQE2S5p1Q' })
+        .then((currentToken) => {
+            if (currentToken) {
+                firebase.database().ref('users/' + user.uid).update({
+                    fcmToken: currentToken
+                });
+                console.log("Token opdateret i databasen.");
+            }
+        }).catch((err) => {
+            console.log('Notifikation fejl (måske mangler tilladelse): ', err);
+        });
 }
 
 // --- GLOBALE VARIABLER ---
