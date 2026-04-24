@@ -1945,7 +1945,10 @@ db.ref('xp_points/' + uid).on('value', function(snap) {
 
 function tegnAvatarGalleri() {
     const galleri = document.getElementById('avatar-gallery');
-    if (!galleri) return;
+    if (!galleri) {
+        console.log("Fejl: Kunne ikke finde 'avatar-gallery' elementet i HTML");
+        return;
+    }
     galleri.innerHTML = "";
     
     const avatars = [
@@ -1964,12 +1967,16 @@ function tegnAvatarGalleri() {
     ];
 
     const user = firebase.auth().currentUser;
-    if (!user) return;
+    if (!user) {
+        console.log("Fejl: Ingen bruger er logget ind");
+        return;
+    }
 
     // --- 1. TEGN AVATARER (Nu med firebase.database() i stedet for db) ---
     firebase.database().ref('xp_points/' + user.uid).once('value', function(snap) {
         const xp = snap.val() || 0;
         const level = Math.floor(xp / 100) + 1;
+        console.log("Bruger XP hentet:", xp, "Level:", level);
 
         avatars.forEach(function(url, index) {
             const krævetLevel = index < 3 ? 1 : (index - 2) * 7;
@@ -1978,7 +1985,7 @@ function tegnAvatarGalleri() {
             const img = document.createElement('img');
             img.src = url;
             img.className = 'av-item ' + (erLaast ? 'locked' : '');
-            img.style.width = "100%"; // Sikrer de passer i dit grid
+            img.style.width = "100%"; 
             img.style.borderRadius = "50%";
             img.title = erLaast ? "Kræver Level " + krævetLevel : "Vælg Avatar";
             
@@ -1996,18 +2003,24 @@ function tegnAvatarGalleri() {
     });
 
     // --- 2. HENT NOTIFIKATION TOKEN (Android Fix) ---
+    console.log("Forsøger at hente fcmToken nu...");
     const messaging = firebase.messaging();
-    // Her skal du indsætte din VAPID key fra Firebase Console
+    
+    // VAPID key herunder er din unikke kode fra Firebase
     messaging.getToken({ vapidKey: 'BOzXXid9AiGbbvP7-wlNR7pOC-w2x81FAWvTK07-syLRkZuhsOUyrimfYwjgta26M4MBxw4ZZI33achQE2S5p1Q' })
         .then((currentToken) => {
             if (currentToken) {
+                console.log("Success! Token modtaget:", currentToken);
                 firebase.database().ref('users/' + user.uid).update({
                     fcmToken: currentToken
+                }).then(() => {
+                    console.log("Token er nu gemt i din Realtime Database.");
                 });
-                console.log("Token opdateret i databasen.");
+            } else {
+                console.log('Intet token modtaget. Brugeren skal give tilladelse i browseren.');
             }
         }).catch((err) => {
-            console.log('Notifikation fejl (måske mangler tilladelse): ', err);
+            console.log('Fejl ved hentning af token:', err);
         });
 }
 
