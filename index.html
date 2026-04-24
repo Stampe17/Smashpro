@@ -2002,22 +2002,30 @@ function tegnAvatarGalleri() {
         });
     });
 
-    // --- 2. HENT NOTIFIKATION TOKEN (Android Fix) ---
+// --- 2. HENT NOTIFIKATION TOKEN ---
     console.log("Forsøger at hente fcmToken nu...");
     const messaging = firebase.messaging();
     
-    // VAPID key herunder er din unikke kode fra Firebase
     messaging.getToken({ vapidKey: 'BOzXXid9AiGbbvP7-wlNR7pOC-w2x81FAWvTK07-syLRkZuhsOUyrimfYwjgta26M4MBxw4ZZI33achQE2S5p1Q' })
         .then((currentToken) => {
             if (currentToken) {
                 console.log("Success! Token modtaget:", currentToken);
-                firebase.database().ref('users/' + user.uid).update({
+                
+                // Vi bruger firebase.database() direkte for at være 100% sikre
+                const mineData = firebase.database().ref('users/' + user.uid);
+                
+                mineData.update({
                     fcmToken: currentToken
-                }).then(() => {
-                    console.log("Token er nu gemt i din Realtime Database.");
+                })
+                .then(() => {
+                    console.log("FEDT! Token er nu bekræftet gemt i Firebase under:", user.uid);
+                })
+                .catch((dbFejl) => {
+                    console.log("DATABASE FEJL: Kunne ikke skrive token til Firebase:", dbFejl);
                 });
+
             } else {
-                console.log('Intet token modtaget. Brugeren skal give tilladelse i browseren.');
+                console.log('Intet token modtaget. Brugeren skal give tilladelse.');
             }
         }).catch((err) => {
             console.log('Fejl ved hentning af token:', err);
