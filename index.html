@@ -2037,9 +2037,11 @@ let sidsteSetTimestamp = localStorage.getItem('sidsteChatSet') || 0;
 let valgtSvarId = null;
 
 // --- 1. ÅBN/LUK CHAT ---
+// --- 1. ÅBN/LUK CHAT (Nu med Firebase-synkronisering) ---
 function toggleChat() {
     const overlay = document.getElementById('chat-overlay');
     const welcomeText = document.getElementById('user-welcome');
+    const user = firebase.auth().currentUser;
     
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
@@ -2054,9 +2056,21 @@ function toggleChat() {
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
             
+            // Vi venter 2 sekunder med at markere som læst, 
+            // så spilleren rent faktisk når at se de nye beskeder
             setTimeout(() => {
-                sidsteSetTimestamp = Date.now();
-                localStorage.setItem('sidsteChatSet', sidsteSetTimestamp);
+                if (user) {
+                    const nuværendeTid = Date.now();
+                    
+                    // GEM I FIREBASE (Så det virker på tværs af enheder og brugere)
+                    firebase.database().ref('users/' + user.uid + '/sidsteChatSet').set(nuværendeTid)
+                    .then(() => {
+                        console.log("Chat-status opdateret i skyen");
+                        // Vi opdaterer også den lokale variabel, så koden ved det med det samme
+                        sidsteSetTimestamp = nuværendeTid; 
+                    });
+                }
+
                 if (welcomeText) {
                     welcomeText.style.color = 'var(--primary)';
                     welcomeText.style.textShadow = 'none';
@@ -2070,55 +2084,34 @@ function toggleChat() {
     }
 }
 
-// --- 2. NY HJERTE-LOGIK (TOGGLE & SE NAVNE) ---
+// --- 2. HJERTE-LOGIK (Uændret, men sikret) ---
 function håndterHjerte(msgId, hjerteData) {
     const user = firebase.auth().currentUser;
     if (!user) return;
     const uid = user.uid;
     
-    // Vi starter med en standard, hvis alt fejler
     let mitNavn = "Spiller";
 
-    // 1. Tjek det globale bruger-objekt
     if (window.curUser && window.curUser.name) {
         mitNavn = window.curUser.name;
-    } 
-    // 2. Tjek Firebase profil
-    else if (user.displayName) {
+    } else if (user.displayName) {
         mitNavn = user.displayName;
-    } 
-    // 3. Tjek Velkomst-teksten (vi kigger efter elementet 'user-welcome')
-    else if (document.getElementById('user-welcome')) {
+    } else if (document.getElementById('user-welcome')) {
         let txt = document.getElementById('user-welcome').innerText;
-        // Vi fjerner "Hej", "Velkommen", "!" og mellemrum
         mitNavn = txt.replace(/Hej|Velkommen|!/gi, "").trim();
-    }
-    // 4. Sidste udvej: Find en besked i chatten, som denne bruger har skrevet, og snup navnet derfra
-    else {
-        const mineBeskeder = document.querySelectorAll(`[data-id]`);
-        for (let msg of mineBeskeder) {
-            // Vi leder efter en besked-boble hvor navnet står i toppen
-            // (Dette virker fordi vi lige har tegnet chatten)
-            const infoHeader = msg.querySelector('div b');
-            if (infoHeader && msg.classList.contains('owner')) {
-                mitNavn = infoHeader.innerText;
-                break;
-            }
-        }
     }
 
     let likes = hjerteData || {};
 
     if (likes[uid]) {
-        db.ref(`global_chat/${msgId}/likes/${uid}`).remove();
+        firebase.database().ref(`global_chat/${msgId}/likes/${uid}`).remove();
     } else {
-        db.ref(`global_chat/${msgId}/likes/${uid}`).set(mitNavn);
+        firebase.database().ref(`global_chat/${msgId}/likes/${uid}`).set(mitNavn);
     }
 }
 
 function visHvemDerHarLiket(likes) {
     if (!likes) return;
-    // Vi tager alle navnene fra objektet og sætter dem sammen med komma
     const navne = Object.values(likes).join(", ");
     alert("Liket af: " + navne);
 }
@@ -2189,126 +2182,136 @@ function tjekEnter(e) { if (e.key === 'Enter') sendBesked(); }
 
 // --- 5. CHAT-LYTTER (ALT FLETTE SAMMEN) ---
 function startChatLytter() {
-    db.ref('global_chat').limitToLast(30).on('value', snap => {
-        const messagesDiv = document.getElementById('chat-messages');
-        const welcomeText = document.getElementById('user-welcome');
-        const chatOverlay = document.getElementById('chat-overlay');
-        
-        const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
-        const currentUid = firebase.auth().currentUser?.uid;
-        
-        if (!messagesDiv) return;
-        
-        const varIBunden = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 100;
-        
-        messagesDiv.innerHTML = "";
-        let nyeBeskeder = 0;
-        let markørIndsat = false;
+    const user = firebase.auth().currentUser;
+    if (!user) return;
 
-        snap.forEach(child => {
-            const m = child.val();
-            const id = child.key;
-            const erMin = currentUid && m.uid === currentUid;
+    // 1. HENT FØRST BRUGERENS PERSONLIGE TIDSSTEMPEL FRA FIREBASE
+    firebase.database().ref('users/' + user.uid + '/sidsteChatSet').on('value', userSnap => {
+        const mitSidsteSet = userSnap.val() || 0;
+        
+        // Vi opdaterer den globale variabel så andre funktioner er med
+        sidsteSetTimestamp = mitSidsteSet;
+
+        // 2. LYT DEREFTER PÅ CHATTEN
+        db.ref('global_chat').limitToLast(30).on('value', snap => {
+            const messagesDiv = document.getElementById('chat-messages');
+            const welcomeText = document.getElementById('user-welcome');
+            const chatOverlay = document.getElementById('chat-overlay');
             
-            const likes = m.likes || {};
-            const antalLikes = Object.keys(likes).length;
-            const harJegLiket = currentUid && likes[currentUid];
+            if (!messagesDiv) return;
 
-            // 1. DEN RØDE LINJE
-            if (m.timestamp > sidsteSetTimestamp && !erMin) {
-                if (!markørIndsat) {
-                    const marker = document.createElement('div');
-                    marker.style.cssText = "display:flex; align-items:center; justify-content:center; margin:30px 0; width:100%;";
-                    marker.innerHTML = `
-                        <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
-                        <span style="padding:0 15px; color:#ff0044 !important; font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:2px; text-shadow: 0 0 8px rgba(255,0,68,0.6);">
-                            Nye beskeder herfra
+            const erLukket = !chatOverlay || chatOverlay.classList.contains('hidden');
+            const currentUid = user.uid;
+            
+            // Gem scroll-position før vi tømmer div'en
+            const varIBunden = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 100;
+            
+            messagesDiv.innerHTML = "";
+            let nyeBeskederTilMig = 0;
+            let markørIndsat = false;
+
+            snap.forEach(child => {
+                const m = child.val();
+                const id = child.key;
+                const erMin = currentUid && m.uid === currentUid;
+                
+                const likes = m.likes || {};
+                const antalLikes = Object.keys(likes).length;
+                const harJegLiket = currentUid && likes[currentUid];
+
+                // --- 1. DEN RØDE LINJE (Baseret på Firebase-tid) ---
+                if (m.timestamp > mitSidsteSet && !erMin) {
+                    if (!markørIndsat) {
+                        const marker = document.createElement('div');
+                        marker.className = "chat-unread-marker"; // Klasse til scroll-logik
+                        marker.style.cssText = "display:flex; align-items:center; justify-content:center; margin:30px 0; width:100%;";
+                        marker.innerHTML = `
+                            <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
+                            <span style="padding:0 15px; color:#ff0044 !important; font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:2px; text-shadow: 0 0 8px rgba(255,0,68,0.6);">
+                                Nye beskeder herfra
+                            </span>
+                            <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
+                        `;
+                        messagesDiv.appendChild(marker);
+                        markørIndsat = true;
+                    }
+                    nyeBeskederTilMig++;
+                }
+
+                // --- 2. GENERER TIDSSTEMPEL ---
+                let tidsStempel = "";
+                if (m.timestamp) {
+                    const d = new Date(m.timestamp);
+                    tidsStempel = d.toLocaleDateString('da-DK', {day:'2-digit', month:'2-digit'}) + 
+                                  " kl. " + d.getHours().toString().padStart(2,'0') + ":" + 
+                                  d.getMinutes().toString().padStart(2,'0');
+                }
+
+                // --- 3. TEGN BESKED-BOBLEN ---
+                const div = document.createElement('div');
+                div.setAttribute('data-id', id);
+                
+                let baseStyle = `display: flex; flex-direction: column; max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 15px; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position:relative;`;
+
+                if (erMin) {
+                    div.style.cssText = baseStyle + `align-self: flex-end; background: #00ff66; color: black; border-bottom-right-radius: 4px; margin-left: auto;`;
+                    div.classList.add('owner');
+                } else {
+                    div.style.cssText = baseStyle + `align-self: flex-start; background: #2a2a2a; color: white; border-bottom-left-radius: 4px; margin-right: auto;`;
+                }
+                
+                let citatHTML = m.svarTekst ? `<div style="background:rgba(0,0,0,0.1); padding:5px 8px; border-radius:8px; font-size:10px; margin-bottom:6px; border-left:2px solid #666; font-style:italic;">${m.svarNavn}: ${m.svarTekst}</div>` : "";
+                
+                let hjerteBadge = antalLikes > 0 ? `
+                    <div onclick='visHvemDerHarLiket(${JSON.stringify(likes)})' 
+                         style="position:absolute; bottom:-10px; ${erMin?'left':'right'}:10px; background:#444; border-radius:10px; padding:2px 8px; font-size:10px; color:white; border:1px solid ${harJegLiket ? '#ff0044' : '#555'}; cursor:pointer; z-index:10;">
+                        ${harJegLiket ? '❤️' : '🤍'} ${antalLikes}
+                    </div>` : "";
+
+                div.innerHTML = `
+                    <div style="font-size: 9px; font-weight: bold; opacity: 0.7; margin-bottom: 4px; text-transform: uppercase;">
+                        <b>${m.name}</b> • ${tidsStempel}
+                    </div>
+                    ${citatHTML}
+                    <div class="sp-msg-text-content" style="font-size: 14px; line-height: 1.4; word-wrap: break-word;">
+                        ${m.text}
+                    </div>
+                    <div style="display:flex; gap:12px; margin-top:8px; opacity:0.4; font-size:10px; font-weight:bold;">
+                        <span onclick="forberedSvar('${id}', '${m.name}', '${m.text}')" style="cursor:pointer;">SVAR</span>
+                        <span onclick='håndterHjerte("${id}", ${JSON.stringify(likes)})' 
+                              style="cursor:pointer; color: ${harJegLiket ? '#ff0044' : 'inherit'};">
+                            ${harJegLiket ? '❤️ LIKET' : '❤️ LIKE'}
                         </span>
-                        <div style="flex:1; border-bottom:2px solid #ff0044;"></div>
-                    `;
-                    messagesDiv.appendChild(marker);
-                    markørIndsat = true;
+                    </div>
+                    ${hjerteBadge}
+                `;
+                messagesDiv.appendChild(div);
+            });
+
+            // --- 4. NEON RØD NOTIFIKATION + APP ICON BADGE ---
+            if (welcomeText) {
+                if (erLukket && nyeBeskederTilMig > 0) {
+                    welcomeText.style.color = '#ff0044';
+                    welcomeText.style.textShadow = '0 0 15px #ff0044';
+                    
+                    if (navigator.setAppBadge) {
+                        navigator.setAppBadge(nyeBeskederTilMig).catch(err => {});
+                    }
+                } else {
+                    // Hvis chatten er åben ELLER der ingen nye beskeder er
+                    if (!erLukket || nyeBeskederTilMig === 0) {
+                        welcomeText.style.color = 'var(--primary)';
+                        welcomeText.style.textShadow = 'none';
+                        if (navigator.clearAppBadge) navigator.clearAppBadge();
+                    }
                 }
-                nyeBeskeder++;
-            }
-
-            let tidsStempel = "";
-            if (m.timestamp) {
-                const d = new Date(m.timestamp);
-                tidsStempel = d.toLocaleDateString('da-DK', {day:'2-digit', month:'2-digit'}) + 
-                              " kl. " + d.getHours().toString().padStart(2,'0') + ":" + 
-                              d.getMinutes().toString().padStart(2,'0');
-            }
-
-            const div = document.createElement('div');
-            div.setAttribute('data-id', id);
-            
-            let baseStyle = `display: flex; flex-direction: column; max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 15px; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position:relative;`;
-
-            if (erMin) {
-                div.style.cssText = baseStyle + `align-self: flex-end; background: #00ff66; color: black; border-bottom-right-radius: 4px; margin-left: auto;`;
-            } else {
-                div.style.cssText = baseStyle + `align-self: flex-start; background: #2a2a2a; color: white; border-bottom-left-radius: 4px; margin-right: auto;`;
             }
             
-            let citatHTML = m.svarTekst ? `<div style="background:rgba(0,0,0,0.1); padding:5px 8px; border-radius:8px; font-size:10px; margin-bottom:6px; border-left:2px solid #666; font-style:italic;">${m.svarNavn}: ${m.svarTekst}</div>` : "";
-            
-            // Hjerte-badge: Nu med JSON.stringify for at sende listen over navne med til klik-funktionen
-            let hjerteBadge = antalLikes > 0 ? `
-                <div onclick='visHvemDerHarLiket(${JSON.stringify(likes)})' 
-                     style="position:absolute; bottom:-10px; ${erMin?'left':'right'}:10px; background:#444; border-radius:10px; padding:2px 8px; font-size:10px; color:white; border:1px solid ${harJegLiket ? '#ff0044' : '#555'}; cursor:pointer; z-index:10;">
-                    ${harJegLiket ? '❤️' : '🤍'} ${antalLikes}
-                </div>` : "";
-
-            div.innerHTML = `
-                <div style="font-size: 9px; font-weight: bold; opacity: 0.7; margin-bottom: 4px; text-transform: uppercase;">
-                    <b>${m.name}</b> • ${tidsStempel}
-                </div>
-                ${citatHTML}
-                <div class="sp-msg-text-content" style="font-size: 14px; line-height: 1.4; word-wrap: break-word;">
-                    ${m.text}
-                </div>
-                <div style="display:flex; gap:12px; margin-top:8px; opacity:0.4; font-size:10px; font-weight:bold;">
-                    <span onclick="forberedSvar('${id}', '${m.name}', '${m.text}')" style="cursor:pointer;">SVAR</span>
-                    <span onclick='håndterHjerte("${id}", ${JSON.stringify(likes)})' 
-                          style="cursor:pointer; color: ${harJegLiket ? '#ff0044' : 'inherit'};">
-                        ${harJegLiket ? '❤️ LIKET' : '❤️ LIKE'}
-                    </span>
-                </div>
-                ${hjerteBadge}
-            `;
-            messagesDiv.appendChild(div);
+            // Auto-scroll til bunden hvis man allerede var i bunden
+            if (varIBunden && !markørIndsat) {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
         });
-
-// 3. NEON RØD NOTIFIKATION + APP ICON BADGE
-        if (welcomeText) {
-            if (erLukket && nyeBeskeder > 0) {
-                // Den røde tekst inde i appen
-                welcomeText.style.color = '#ff0044';
-                welcomeText.style.textShadow = '0 0 15px #ff0044';
-                
-                // NYT: Sæt den røde prik på selve mobil-ikonet ude på skrivebordet
-                if (navigator.setAppBadge) {
-                    navigator.setAppBadge(nyeBeskeder).catch(err => console.log("Badge error:", err));
-                }
-                
-            } else if (erLukket) {
-                welcomeText.style.color = 'var(--primary)';
-                welcomeText.style.textShadow = 'none';
-                
-                // Fjern prikken på mobil-ikonet hvis der ikke er nye beskeder
-                if (navigator.clearAppBadge) {
-                    navigator.clearAppBadge();
-                }
-            }
-        }
-        
-        // Når chatten åbnes, skal vi også huske at nulstille ikonet
-        if (!erLukket) {
-            if (navigator.clearAppBadge) {
-                navigator.clearAppBadge();
-            }
-        }
     });
 }
 
