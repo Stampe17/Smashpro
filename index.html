@@ -969,22 +969,37 @@ firebase.auth().onAuthStateChanged(function(user) {
             var u = snap.val(); 
             if(!u) return;
             
-            curRole = u.role; // Gemmer rollen ('traener' eller 'spiller')
+            curRole = u.role; 
             document.getElementById('user-welcome').innerText = "Hej " + u.name + "!";
             
-            // TJEK ROLLE: Vis/skjul træner-menuen
             const erTraener = (u.role === 'traener');
             document.getElementById('traener-tab').classList.toggle('hidden', !erTraener);
             
-            // NYT: Find din "Opret" knap og skjul den for spillere
-            const opretKnap = document.getElementById('opret-traening-knap'); // Tjek om dit ID er dette
+            const opretKnap = document.getElementById('opret-traening-knap'); 
             if(opretKnap) {
                 opretKnap.style.display = erTraener ? 'block' : 'none';
             }
             
             opdaterDashboard();
-            // --- HER STARTER VI CHATTEN ---
             startChatLytter();
+
+            // --- NYT: HENT NOTIFIKATION TOKEN AUTOMATISK VED LOGIN ---
+            const messaging = firebase.messaging();
+            messaging.getToken({ vapidKey: 'BOzXXid9AiGbbvP7-wlNR7pOC-w2x81FAWvTK07-syLRkZuhsOUyrimfYwjgta26M4MBxw4ZZI33achQE2S5p1Q' })
+                .then((currentToken) => {
+                    if (currentToken) {
+                        // Gem tokenet direkte under brugeren
+                        db.ref('users/' + user.uid).update({
+                            fcmToken: currentToken
+                        }).then(() => {
+                            console.log("Token gemt automatisk i databasen!");
+                        });
+                    } else {
+                        console.log("Intet token modtaget. Tjek tilladelser.");
+                    }
+                }).catch((err) => {
+                    console.log("Fejl ved automatisk token-hentning:", err);
+                });
         });
     } else {
         document.getElementById('login-skærm').classList.remove('hidden');
