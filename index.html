@@ -152,7 +152,7 @@
 </head>
 <body>
 
-    <div id="login-skærm" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
+<div id="login-skærm" style="position:fixed; width:100%; height:100%; background:var(--bg); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
         <div class="kort" style="max-width:350px;">
             <h2 style="text-align:center;">🟢 SmashPro Elite</h2>
             <input type="email" id="email" placeholder="E-mail">
@@ -167,23 +167,28 @@
 <div id="side-hjem">
     <div class="kort" style="background: linear-gradient(45deg, #1c222d, #0b0e14);">
         <div class="dash-header">
-<img id="user-img" class="profile-pic" 
-     onclick="visSide('side-profil', document.querySelector('[onclick*=\'side-profil\']')); setTimeout(function(){ document.getElementById('avatar-sektion').scrollIntoView({behavior: 'smooth'}); }, 300);">
+            <img id="user-img" class="profile-pic" 
+                 onclick="visSide('side-profil', document.querySelector('[onclick*=\'side-profil\']')); setTimeout(function(){ document.getElementById('avatar-sektion').scrollIntoView({behavior: 'smooth'}); }, 300);">
             <input type="file" id="img-upload" class="hidden" accept="image/*" onchange="uploadImage(this)">
             
-           <div style="flex:1; cursor:pointer;" onclick="toggleChat()">
-    <span class="rank-tag" id="user-rank">Nybegynder</span>
-    <h2 id="user-welcome" style="margin:2px 0; color:var(--primary); display: flex; align-items: center;">
-    Hej! <span id="chat-notif-top" class="dot-notif hidden"></span>
-</h2>
-    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
-        <span id="user-level">Level 1</span>
-        <span id="xp-text">0 / 100 XP</span>
-    </div>
-    <div class="xp-container"><div class="xp-bar" id="xp-bar"></div></div>
-</div>
+            <div style="flex:1; cursor:pointer;" onclick="toggleChat()">
+                <h2 id="user-welcome" style="margin:0; color:var(--primary); display: flex; align-items: center; font-size: 20px;">
+                    Hej! <span id="chat-notif-top" class="dot-notif hidden"></span>
+                </h2>
+                
+                <div style="margin-bottom: 5px;">
+                    <span class="rank-tag" id="user-rank" style="font-size: 11px;">Nybegynder</span>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+                    <span id="user-level">Level 1</span>
+                    <span id="xp-text">0 / 100 XP</span>
+                </div>
+                <div class="xp-container"><div class="xp-bar" id="xp-bar"></div></div>
+            </div>
         </div>
     </div>
+    
     <h4 style="text-align:left; margin-bottom:10px;">Kommende Træninger</h4>
     <div id="next-sessions-list"></div>
 </div>
@@ -237,33 +242,51 @@
     </button>
     
     <h2>Speed Analyzer</h2>
-    ...
-            <div class="kort">
-                <h2 style="margin:0;">⚡ Speed Analyzer</h2>
-                <input type="file" id="videoInput" accept="video/*">
-                <video id="v" controls playsinline></video>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button onclick="setStart()" style="background:#4caf50; color:white; flex:1;">1. HIT</button>
-                    <button onclick="setEnd()" style="background:#f44336; color:white; flex:1;">2. LAND</button>
-                </div>
-                <div style="margin-top:10px; text-align:left;">
-                    <label style="font-size:12px;">Afstand (meter):</label>
-                    <input type="number" id="dist" value="6.7" step="0.1">
-                </div>
-                <button onclick="calculateSpeed()" style="background:#2196f3; color:white; width:100%; margin-top:10px;">BEREGN & GEM PB</button>
-                <div id="result-speed" class="hidden" style="margin-top:20px; padding:15px; background:#2a2a2a; border-radius:10px; text-align:center;">
-                    <div id="speedDisplay" style="font-size:40px; color:var(--primary); font-weight:bold;">0 km/t</div>
-                    <p id="pb-msg" style="color:var(--primary); font-size:12px; font-weight:bold;"></p>
-                </div>
-            </div>
-            <div class="kort">
-                <h3>🏆 Leaderboard</h3>
-                <table id="leaderboardBody">
-                    <thead><tr><th>#</th><th>Spiller</th><th style="text-align:right;">Max</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+
+    <div class="kort">
+        <h2 style="margin:0;">⚡ Speed Analyzer</h2>
+        <input type="file" id="videoInput" accept="video/*">
+        <video id="v" controls playsinline></video>
+
+        <div style="display:flex; justify-content:center; gap:5px; margin: 10px 0;">
+            <button type="button" onclick="spole(-0.5)" style="background:#444; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">-0.5s</button>
+            <button type="button" onclick="spole(-0.033)" style="background:#666; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;"> < </button>
+            <span style="align-self:center; font-size:11px; color:#aaa; margin:0 5px;">JUSTÉR</span>
+            <button type="button" onclick="spole(0.033)" style="background:#666; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;"> > </button>
+            <button type="button" onclick="spole(0.5)" style="background:#444; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">+0.5s</button>
         </div>
+
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="isSlowMo" style="width:20px; height:20px;">
+            <label for="isSlowMo" style="font-size: 13px; color: white;">Videoen er optaget i <b>Slowmotion</b></label>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button onclick="setStart()" style="background:#4caf50; color:white; flex:1;">1. HIT</button>
+            <button onclick="setEnd()" style="background:#f44336; color:white; flex:1;">2. LAND</button>
+        </div>
+
+        <div style="margin-top:10px; text-align:left;">
+            <label style="font-size:12px;">Afstand (meter):</label>
+            <input type="number" id="dist" value="6.7" step="0.1">
+        </div>
+
+        <button onclick="calculateSpeed()" style="background:#2196f3; color:white; width:100%; margin-top:10px;">BEREGN & GEM PB</button>
+        
+        <div id="result-speed" class="hidden" style="margin-top:20px; padding:15px; background:#2a2a2a; border-radius:10px; text-align:center;">
+            <div id="speedDisplay" style="font-size:40px; color:var(--primary); font-weight:bold;">0 km/t</div>
+            <p id="pb-msg" style="color:var(--primary); font-size:12px; font-weight:bold;"></p>
+        </div>
+    </div>
+
+    <div class="kort">
+        <h3>🏆 Leaderboard</h3>
+        <table id="leaderboardBody">
+            <thead><tr><th>#</th><th>Spiller</th><th style="text-align:right;">Max</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 
         <div id="side-evaluering" class="hidden">
             <h2>Evaluering</h2>
@@ -570,7 +593,44 @@
         titel: (s) => (s.isNightOwl ? "Dedicated Fan" : "???"), 
         desc: (s) => (s.isNightOwl ? "Tjekket badges midt om natten" : "Hemmelig udfordring"), 
         check: (s) => s.isNightOwl 
-    }
+    },
+
+    // --- 64-68: MILEPÆLE (ANTAL SEJRE) ---
+    { id: 64, titel: "Isen er brudt 🧊", desc: "Vind din første kamp", check: (s) => s.wins >= 1 },
+    { id: 65, titel: "Serie-vinder 📈", desc: "Vind 10 kampe", check: (s) => s.wins >= 10 },
+    { id: 66, titel: "Kvartfinalist 🏆", desc: "Vind 15 kampe", check: (s) => s.wins >= 15 },
+    { id: 67, titel: "Sæson-stjerne ⭐", desc: "Vind 25 kampe", check: (s) => s.wins >= 25 },
+    { id: 68, titel: "Hall of Fame 👑", desc: "Vind 50 kampe", check: (s) => s.wins >= 50 },
+
+    // --- 69-71: DOMINANS (HEMMELIGE) ---
+    { id: 69, titel: "Muren 🧱", desc: "Hold modstanderen under 20 point samlet", check: (s) => s.match_under20 },
+    { 
+        id: 70, 
+        titel: (s) => (s.match_under10 ? "Total Dominans 🔥" : "???"), 
+        desc: (s) => (s.match_under10 ? "Hold modstanderen under 10 point samlet" : "Hemmelig udfordring"), 
+        check: (s) => s.match_under10 
+    },
+    { 
+        id: 71, 
+        titel: (s) => (s.perfect_set ? "Det Perfekte Sæt 🎯" : "???"), 
+        desc: (s) => (s.perfect_set ? "Vind et sæt 21-0" : "Hemmelig udfordring"), 
+        check: (s) => s.perfect_set 
+    },
+
+    // --- 72-76: UDHOLDENHED & DRAMA ---
+    { id: 72, titel: "Maraton-manden 🏃‍♂️", desc: "Vind en kamp i 3 sæt", check: (s) => s.win_3sets },
+    { id: 73, titel: "Kort proces ⚡", desc: "Vind en kamp i 2 sæt", check: (s) => s.win_2sets },
+    { 
+        id: 74, 
+        titel: (s) => (s.clutch_30 ? "Nervepirrende 😱" : "???"), 
+        desc: (s) => (s.clutch_30 ? "Vind et sæt 30-29" : "Hemmelig udfordring"), 
+        check: (s) => s.clutch_30 
+    },
+    { id: 75, titel: "Point-maskinen 🔢", desc: "Over 100 point totalt i kampe", check: (s) => s.total_match_points >= 100 },
+    { id: 76, titel: "Uendelig duel ♾️", desc: "Over 120 point totalt i kampe", check: (s) => s.total_match_points >= 120 },
+
+    // --- 77: LÆRING ---
+    { id: 77, titel: "Lærestregen 🎓", desc: "Tab en kamp efter at have vundet 1. sæt", check: (s) => s.lost_after_first }
 ];
 
  function visSide(id, btn) {
@@ -1005,18 +1065,52 @@ firebase.auth().onAuthStateChanged(function(user) {
         document.getElementById('login-skærm').classList.remove('hidden');
     }
 });
-        // Speed Logic
+// --- Speed Logic (Opdateret med Slowmo & Spole-funktion) ---
         const v = document.getElementById('v');
-        document.getElementById('videoInput').addEventListener('change', function() { v.src = URL.createObjectURL(this.files[0]); });
-        function setStart() { startTime = v.currentTime; alert("HIT!"); }
-        function setEnd() { endTime = v.currentTime; alert("LAND!"); }
+        
+        // Håndterer video-upload
+        document.getElementById('videoInput').addEventListener('change', function() { 
+            v.src = URL.createObjectURL(this.files[0]); 
+        });
+
+        // Funktion til at spole frame-by-frame
+        function spole(sekunder) {
+            if (!v.src) return;
+            v.pause(); // Vi pauser videoen, så man kan finjustere
+            v.currentTime += sekunder;
+        }
+
+        function setStart() { 
+            startTime = v.currentTime; 
+            // Vi bruger en lille tekst-besked i stedet for alert, så det ikke afbryder
+            document.getElementById('pb-msg').innerText = "HIT markeret ved " + startTime.toFixed(2) + "s";
+        }
+
+        function setEnd() { 
+            endTime = v.currentTime; 
+            document.getElementById('pb-msg').innerText = "LAND markeret ved " + endTime.toFixed(2) + "s";
+        }
+
         function calculateSpeed() {
             const dist = parseFloat(document.getElementById('dist').value);
-            const dur = endTime - startTime;
-            if (dur <= 0) return alert("Fejl i markering!");
+            const isSlowMo = document.getElementById('isSlowMo').checked; // Tjekker fluebenet
+            
+            let dur = endTime - startTime;
+            
+            if (dur <= 0) return alert("Fejl: Marker venligst HIT før LAND!");
+
+            // Hvis videoen er i slowmotion (typisk 1/8 hastighed), 
+            // skal vi dividere tiden med 8 for at få den rigtige varighed.
+            if (isSlowMo) {
+                dur = dur / 8; 
+            }
+
+            // Beregn km/t: (meter / sekunder) * 3.6 * 2.0 (faktor for topspeed)
             const max = Math.round((dist / dur) * 3.6 * 2.0);
+            
             document.getElementById('result-speed').classList.remove('hidden');
             document.getElementById('speedDisplay').innerText = max + " km/t";
+            
             gemSpeed(max);
         }
         function gemSpeed(speed) {
@@ -1522,7 +1616,9 @@ function tegnGraf(data, el) {
 }
 
 function beregnBadgeData() {
-    const uid = firebase.auth().currentUser.uid;
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const uid = user.uid;
     
     db.ref('trainings').once('value', tSnap => {
         const allT = tSnap.val() || {};
@@ -1536,70 +1632,54 @@ function beregnBadgeData() {
                         db.ref('fysiske_tests').once('value', testSnap => {
                             const allTests = testSnap.val() || {};
                             
-                            // 1. FIND BEDSTE COOPER RESULTAT OG ANTAL TEST
+                            // 1. COOPER & FYSISKE TESTS
                             let maxCooper = 0;
                             let cooperCount = 0;
                             Object.values(allTests).forEach(t => {
                                 if (t.uid === uid && t.testType === "cooper") {
-                                    cooperCount++; // Tæller antal gennemførte tests
+                                    cooperCount++;
                                     const score = parseFloat(t.score);
                                     if (score > maxCooper) maxCooper = score;
                                 }
                             });
 
-                            // 2. HENT SPEED REKORD
+                            // 2. SPEED REKORD
                             const speedVal = speedSnap.val();
                             let myMaxSpeed = 0;
                             if (speedVal) {
                                 myMaxSpeed = (typeof speedVal === 'object') ? (speedVal.max || 0) : speedVal;
                             }
 
-                            // 3. FORBERED TÆLLERE
+                            // 3. FREMMØDE, TIDSPUNKTER & KATEGORIER
                             const attDates = [];
                             const attTimes = [];
                             let mins = 0;
                             let attendedSessionIds = new Set(); 
-                            let hasMalaysia = false;
-                            let hasMalaysiaRace = false;
-                            let hasDenmarkOpen = false;
-                            let strengthCount = 0;
-                            let runCount = 0;
+                            let hasMalaysia = false, hasMalaysiaRace = false, hasDenmarkOpen = false;
+                            let strengthCount = 0, runCount = 0;
+                            let earlyCount = 0, lateCount = 0, weekendCount = 0;
 
-                            // NYE TÆLLERE TIL ELITE BADGES
-                            let earlyCount = 0;
-                            let lateCount = 0;
-                            let weekendCount = 0;
-
-                            // 4. GENNEMGÅ FREMMØDE (Unik tælling)
                             Object.keys(allA).forEach(tId => {
                                 if (allA[tId] && allA[tId][uid] && allA[tId][uid].status === 'Kommer') {
                                     const tData = allT[tId];
-                                    
                                     if (tData && !attendedSessionIds.has(tId)) {
                                         attendedSessionIds.add(tId); 
-                                        
                                         attDates.push(tData.date);
                                         attTimes.push(tData.time || "17:00");
                                         mins += parseInt(tData.duration || 90);
 
-                                        // Tæller tidspunkter (Pro badges)
                                         const hour = parseInt((tData.time || "17:00").split(':')[0]);
                                         if (hour < 8) earlyCount++;
                                         if (hour >= 20) lateCount++;
 
-                                        // Tæller weekender (Weekend Warrior)
                                         const d = new Date(tData.date);
                                         if (d.getDay() === 0 || d.getDay() === 6) weekendCount++;
 
                                         const cat = (tData.category || "").toLowerCase();
                                         const typ = (tData.type || "").toLowerCase();
 
-                                        // Tjekker specifikt for Malaysia
-                                        if (cat.includes("malaysia løb") || cat.includes("5")) {
-                                            hasMalaysiaRace = true;
-                                        } else if (cat.includes("malaysia")) {
-                                            hasMalaysia = true; 
-                                        }
+                                        if (cat.includes("malaysia løb") || cat.includes("5")) hasMalaysiaRace = true;
+                                        else if (cat.includes("malaysia")) hasMalaysia = true; 
 
                                         if (cat.includes("denmark open") || typ.includes("denmark open")) hasDenmarkOpen = true;
                                         if (cat.includes("styrke") || typ.includes("styrke")) strengthCount++;
@@ -1608,7 +1688,71 @@ function beregnBadgeData() {
                                 }
                             });
 
-                            // 5. BEREGN UGE-STATISTIK
+// 4. NY KAMP-LOGIK (Milepæle, Dominans, Drama & Læring) - FULD OPDATERING
+let wins = 0;
+let match_under20 = false, match_under10 = false, perfect_set = false;
+let win_3sets = false, win_2sets = false, clutch_30 = false;
+let total_match_points = 0, lost_after_first = false, hasComeback = false;
+
+Object.values(allH2H).forEach(group => {
+    Object.values(group).forEach(m => {
+        const isP1 = (m.p1 === uid);
+        const isP2 = (m.p2 === uid);
+        if (!isP1 && !isP2) return; 
+
+        // Konverterer til tal og sikrer at tomme sæt tæller som 0
+        const s1p1 = Number(m.s1_p1) || 0;
+        const s1p2 = Number(m.s1_p2) || 0;
+        const s2p1 = Number(m.s2_p1) || 0;
+        const s2p2 = Number(m.s2_p2) || 0;
+        const s3p1 = Number(m.s3_p1) || 0;
+        const s3p2 = Number(m.s3_p2) || 0;
+
+        // Beregn samlet score for kampen
+        const mineP = isP1 ? (s1p1 + s2p1 + s3p1) : (s1p2 + s2p2 + s3p2);
+        const modP = isP1 ? (s1p2 + s2p2 + s3p2) : (s1p1 + s2p1 + s3p1);
+        
+        total_match_points += mineP;
+
+        const vandtJeg = (m.winner === uid);
+        if (vandtJeg) {
+            wins++;
+            
+            // DOMINANS-TJEK (Nu uden "modP > 0" spærring)
+            // Hvis du vinder 21-0, 21-0, er modP = 0, og begge disse bliver nu true!
+            if (modP < 20) match_under20 = true;
+            if (modP < 10) match_under10 = true;
+            
+            // Vandt i 2 eller 3 sæt? (Tjekker om der er point i sæt 3)
+            if (s3p1 > 0 || s3p2 > 0) win_3sets = true; 
+            else win_2sets = true;
+        }
+
+        // Sæt-specifikke tjek (21-0 og 30-29)
+        const sets = [ [s1p1, s1p2], [s2p1, s2p2], [s3p1, s3p2] ];
+        sets.forEach(s => {
+            const [p1, p2] = s;
+            // Det Perfekte Sæt (Vundet 21-0)
+            if ((isP1 && p1 === 21 && p2 === 0) || (isP2 && p2 === 21 && p1 === 0)) {
+                perfect_set = true;
+            }
+            
+            // Nervepirrende (Vundet 30-29)
+            if (vandtJeg) {
+                if ((isP1 && p1 === 30 && p2 === 29) || (isP2 && p2 === 30 && p1 === 29)) {
+                    clutch_30 = true;
+                }
+            }
+        });
+
+        // Læring & Mentalitet
+        const vandtFørsteSaet = isP1 ? (s1p1 > s1p2) : (s1p2 > s1p1);
+        if (vandtFørsteSaet && !vandtJeg) lost_after_first = true;
+        if (!vandtFørsteSaet && vandtJeg) hasComeback = true;
+    });
+});
+
+                            // 5. UGE-STATISTIK & STREAKS
                             const uniqueDatesSorted = [...new Set(attDates)].sort((a,b) => new Date(a) - new Date(b));
                             const weekCounts = {};
                             uniqueDatesSorted.forEach(d => {
@@ -1617,51 +1761,25 @@ function beregnBadgeData() {
                             });
                             const maxInWeek = Object.values(weekCounts).length > 0 ? Math.max(...Object.values(weekCounts)) : 0;
 
-                            // 6. LOGIK FOR 7 DAGE I TRÆK (HEMMELIGT BADGE)
-                            let streak7Days = false;
-                            let currentStreak = 1;
+                            let streak7Days = false, currentStreak = 1;
                             for (let i = 1; i < uniqueDatesSorted.length; i++) {
-                                const d1 = new Date(uniqueDatesSorted[i-1]);
-                                const d2 = new Date(uniqueDatesSorted[i]);
-                                const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
-                                if (diff === 1) {
-                                    currentStreak++;
-                                    if (currentStreak >= 7) streak7Days = true;
-                                } else {
-                                    currentStreak = 1;
-                                }
+                                const d1 = new Date(uniqueDatesSorted[i-1]), d2 = new Date(uniqueDatesSorted[i]);
+                                if ((d2 - d1) / (1000*60*60*24) === 1) {
+                                    currentStreak++; if (currentStreak >= 7) streak7Days = true;
+                                } else currentStreak = 1;
                             }
 
-                            // 7. NATTE-TJEK (HEMMELIGT BADGE - Tjekker om klokken er nu)
+                            // 6. NATTE-TJEK & MOTIVATION
                             const nowHour = new Date().getHours();
                             const isNightOwl = (nowHour >= 0 && nowHour <= 3);
+                            const mot10Count = Object.values(allE).filter(e => parseInt(e.mot) === 10).length;
 
-                            // 8. COMEBACK KID LOGIK
-                            let hasComeback = false;
-                            Object.values(allH2H).forEach(group => {
-                                Object.values(group).forEach(m => {
-                                    if ((m.p1 === uid || m.p2 === uid) && m.winner === uid) {
-                                        const sets = m.score ? m.score.split(',') : [];
-                                        if (sets.length >= 2) {
-                                            const s1 = sets[0].trim().split('-');
-                                            const p1S = parseInt(s1[0]), p2S = parseInt(s1[1]);
-                                            if (m.p1 === uid && p1S < p2S) hasComeback = true;
-                                            if (m.p2 === uid && p2S < p1S) hasComeback = true;
-                                        }
-                                    }
-                                });
-                            });
-
-                            // 9. SAML ALT I STATS OBJEKTET
+                            // 7. SAML ALT I STATS-OBJEKTET
                             const stats = {
                                 total: attendedSessionIds.size,
                                 mins: mins,
-                                hasMalaysia: hasMalaysia,
-                                hasMalaysiaRace: hasMalaysiaRace,
-                                hasDenmarkOpen: hasDenmarkOpen,
-                                strengthCount: strengthCount,
-                                runCount: runCount,
-                                maxInWeek: maxInWeek,
+                                hasMalaysia, hasMalaysiaRace, hasDenmarkOpen,
+                                strengthCount, runCount, maxInWeek,
                                 time_early_count: earlyCount,
                                 time_late_count: lateCount,
                                 weekend_count: weekendCount,
@@ -1670,23 +1788,19 @@ function beregnBadgeData() {
                                 time_early: attTimes.some(t => t && parseInt(t.split(':')[0]) < 8),
                                 time_late: attTimes.some(t => t && parseInt(t.split(':')[0]) >= 20),
                                 day_double: Object.values(attDates.reduce((a,c)=>{a[c]=(a[c]||0)+1; return a},{})).some(v => v >= 2),
-                                mot10Count: Object.values(allE).filter(e => parseInt(e.mot) === 10).length,
-                                hasComeback: hasComeback,
+                                mot10Count: mot10Count,
                                 topSpeed: myMaxSpeed,
                                 maxCooper: maxCooper,
-                                streak7Days: streak7Days,
-                                isNightOwl: isNightOwl
+                                streak7Days, isNightOwl,
+                                // MATCH STATS
+                                wins, match_under20, match_under10, perfect_set,
+                                win_3sets, win_2sets, clutch_30,
+                                total_match_points, lost_after_first, hasComeback
                             };
 
-                            // 10. OPDATER SKÆRM OG TEGN
-                            console.log("Stats opdateret med de nyeste tællere:", stats);
-                            
-                            if (document.getElementById('stat-sessions')) {
-                                document.getElementById('stat-sessions').innerText = stats.total;
-                            }
-                            if (document.getElementById('stat-minutes')) {
-                                document.getElementById('stat-minutes').innerText = stats.mins;
-                            }
+                            // 8. OPDATER VISNING
+                            if (document.getElementById('stat-sessions')) document.getElementById('stat-sessions').innerText = stats.total;
+                            if (document.getElementById('stat-minutes')) document.getElementById('stat-minutes').innerText = stats.mins;
 
                             tegnBadges(stats);
 
