@@ -68,7 +68,6 @@
     <div class="sub-btn" onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.2);">← Retur</div>
     <div class="sub-btn active" onclick="visSub('ranking', this)">Rangliste</div>
     <div class="sub-btn" onclick="visSub('h2h', this)">H2H</div>
-    <div class="sub-btn" onclick="visSub('tactic', this)">Taktik</div>
     <div id="traener-menu" class="sub-btn hidden" onclick="visSub('generator', this)">Kamprunder</div>
     <div id="turnering-menu" class="sub-btn hidden" onclick="visSub('turnering', this)"> Turnering</div>
 </div>
@@ -98,23 +97,28 @@
             <button onclick="openModal('modal-add-h2h')">+ REGISTRER EKSTERN KAMP</button>
         </div>
 
-        <div id="section-tactic" class="hidden">
-            <div class="kort">
-                <h3>🧠 Strategi Generator</h3>
-                <select id="tactic-weakness">
-                    <option value="backhand">Svag baghånd</option>
-                    <option value="speed">Langsomme fødder</option>
-                    <option value="net">Dårlig ved nettet</option>
-                    <option value="mental">Mister fokus let</option>
-                    <option value="stamina">Dårlig kondition</option>
-                </select>
-                <button onclick="generateGamePlan()">FÅ GAME PLAN</button>
-                <div id="tactic-result" class="hidden" style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
-                    <b style="color:var(--primary);">Din Plan:</b>
-                    <p id="tactic-text" style="font-style:italic; font-size:14px;"></p>
-                </div>
-            </div>
+<div id="side-taktik" class="hidden">
+
+    <div class="kort">
+        <h3>🧠 Strategi Generator</h3>
+        <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 15px;">Vælg modstanderens svaghed for at få en taktisk gameplan.</p>
+        
+        <select id="tactic-weakness" style="width:100%; padding:10px; background:#1c222d; border:1px solid #333; color:white; border-radius:8px; margin-bottom:15px;">
+            <option value="backhand">Svag baghånd</option>
+            <option value="speed">Langsomme fødder</option>
+            <option value="net">Dårlig ved nettet</option>
+            <option value="mental">Mister fokus let</option>
+            <option value="stamina">Dårlig kondition</option>
+        </select>
+        
+        <button onclick="generateGamePlan()" style="background:var(--primary); color:white; width:100%; padding:12px; border-radius:8px; font-weight:bold; border:none;">FÅ GAME PLAN</button>
+        
+        <div id="tactic-result" class="hidden" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+            <b style="color:var(--primary);">Din Plan:</b>
+            <p id="tactic-text" style="font-style:italic; font-size:14px; color: white; line-height: 1.5;"></p>
         </div>
+    </div>
+</div>
 
         <div id="section-generator" class="hidden">
             <div class="kort">
@@ -738,6 +742,36 @@ function resetTournament() {
     document.getElementById('results-section').style.display = 'none';
     tp = []; rounds = []; currentRoundIdx = 0;
 }
+
+window.addEventListener('load', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sub = urlParams.get('sub');
+    
+    if (sub === 'tactic') {
+        // 1. Skjul alle de normale match-sektioner
+        const sektioner = ['section-ranking', 'section-h2h', 'section-generator', 'section-turnering'];
+        sektioner.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+
+        // 2. Vis taktik-sektionen
+        const tacticSection = document.getElementById('side-taktik');
+        if (tacticSection) tacticSection.classList.remove('hidden');
+
+        // 3. SKJUL de knapper der ikke skal bruges (Rangliste, H2H, Turnering)
+        // Vi beholder kun "Retur" knappen
+        const buttons = document.querySelectorAll('.sub-btn');
+        buttons.forEach(btn => {
+            // Hvis knappen indeholder teksten "Rangliste", "H2H" eller "Turnering", skjul den
+            if (btn.innerText.includes('Rangliste') || 
+                btn.innerText.includes('H2H') || 
+                btn.innerText.includes('Turnering')) {
+                btn.style.display = 'none'; 
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>
