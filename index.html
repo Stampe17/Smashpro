@@ -509,6 +509,136 @@
 
         google.charts.load('current', {'packages':['corechart']});
 
+function smashBesked(titel, besked, handling) {
+    const eksisterende = document.getElementById('custom-alert');
+    if (eksisterende) eksisterende.remove();
+
+    const box = document.createElement('div');
+    box.id = 'custom-alert';
+    
+    // Vi bruger cssText for at sikre, at !important bliver anvendt korrekt på alt
+    box.style.cssText = `
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        background: #1c222d !important;
+        border: 2px solid #00ff73 !important;
+        border-radius: 15px !important;
+        padding: 20px !important; /* Lidt mindre padding */
+        z-index: 9999999 !important; 
+        text-align: center !important;
+        color: white !important;
+        box-shadow: 0 0 100px rgba(0,0,0,0.9) !important;
+        
+        /* Her er magien: */
+        width: 300px !important;      /* Fast bredde på computer */
+        max-width: 85% !important;    /* Men aldrig bredere end 85% af skærmen (godt for mobil) */
+        
+        font-family: sans-serif !important;
+        white-space: pre-wrap !important;
+        display: block !important;
+    `;
+
+    box.innerHTML = `
+        <h3 style="margin:0 0 15px 0; color:#00ff73; font-size: 22px; font-weight: bold;">${titel}</h3>
+        <p style="margin-bottom:20px; line-height:1.4; font-size: 16px; color: white;">${besked}</p>
+        <button id="alert-ok-btn" style="
+            background: #00ff73 !important;
+            color: #12161d !important;
+            border: none !important;
+            padding: 12px 30px !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            font-weight: bold !important;
+            width: 100% !important;
+            font-size: 18px !important;
+            display: block !important;
+        ">OK</button>
+    `;
+
+    // Tjek om chat-overlayet er synligt
+    const chatOverlay = document.getElementById('chat-overlay');
+    
+    if (chatOverlay && !chatOverlay.classList.contains('hidden')) {
+        // Hvis chatten er åben, putter vi boksen IND i chatten
+        chatOverlay.appendChild(box);
+    } else {
+        // Ellers lægger vi den direkte på body
+        document.body.appendChild(box);
+    }
+
+    document.getElementById('alert-ok-btn').onclick = function() {
+        box.remove();
+        if (handling) handling();
+    };
+}
+
+function smashInput(titel, label, placeholder, handling) {
+    const eksisterende = document.getElementById('custom-input-box');
+    if (eksisterende) eksisterende.remove();
+
+    const box = document.createElement('div');
+    box.id = 'custom-input-box';
+    
+    box.style.cssText = `
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        background: #1c222d !important;
+        border: 2px solid #00ff73 !important;
+        border-radius: 15px !important;
+        padding: 25px !important;
+        z-index: 10000000 !important; 
+        text-align: center !important;
+        color: white !important;
+        box-shadow: 0 0 100px rgba(0,0,0,0.9) !important;
+        width: 300px !important;
+        max-width: 85% !important;
+        font-family: sans-serif !important;
+    `;
+
+    box.innerHTML = `
+        <h3 style="margin:0 0 10px 0; color:#00ff73; font-size: 20px;">${titel}</h3>
+        <p style="margin-bottom:15px; font-size: 14px; color: #ccc;">${label}</p>
+        <input type="text" id="smash-input-field" placeholder="${placeholder}" style="
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #444; 
+            background: #0b0e14; 
+            color: white; 
+            font-size: 16px;
+            box-sizing: border-box;
+        ">
+        <div style="display: flex; gap: 10px;">
+            <button id="input-cancel-btn" style="flex:1; background: #333; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">Annuller</button>
+            <button id="input-save-btn" style="flex:2; background: #00ff73; color: #12161d; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">OK</button>
+        </div>
+    `;
+
+    document.body.appendChild(box);
+    
+    const felt = document.getElementById('smash-input-field');
+    felt.focus(); // Sætter cursoren i feltet med det samme
+
+    // Ved klik på OK
+    document.getElementById('input-save-btn').onclick = function() {
+        const værdi = felt.value.trim();
+        if (værdi) {
+            box.remove();
+            handling(værdi); // Sender svaret tilbage til din funktion
+        }
+    };
+
+    // Ved klik på Annuller
+    document.getElementById('input-cancel-btn').onclick = function() {
+        box.remove();
+    };
+}
+
     const udfordringer = [
     // --- 1-15: TRÆNINGSANTAL ---
     { id: 1, titel: "First Step", desc: "1 træning", check: (s) => s.total >= 1 },
@@ -928,11 +1058,17 @@ function opdaterAltVedSkift() {
 
 async function gemFysiskResultat() {
     const type = document.getElementById('test-type').value;
-    const resultat = parseFloat(document.getElementById('test-input').value);
+    const resultat = document.getElementById('test-input').value;
     const køn = document.getElementById('user-gender').value;
     const alder = parseInt(document.getElementById('user-age').value);
     
-    if (!resultat) { alert("Indtast venligst et resultat"); return; }
+    // --- 1. Tjek for input (Fejlbesked) ---
+    if (!resultat || resultat === "") { 
+        smashBesked("Systemet siger:", "Hov! Du glemte at indtaste dit resultat. Prøv lige igen. 🏃‍♂️"); 
+        return; 
+    }
+
+    const valideretResultat = parseFloat(resultat);
     const user = firebase.auth().currentUser;
     if (!user) return;
 
@@ -942,59 +1078,81 @@ async function gemFysiskResultat() {
         let kondital = null;
         let niveau = "";
 
+        // --- Beregninger ---
         if (type === "cooper") {
-            kondital = (resultat - 504.9) / 44.73;
+            kondital = (valideretResultat - 504.9) / 44.73;
             niveau = beregnNiveau(kondital, køn, alder);
         } 
         else if (type === "bip") {
-            kondital = 3.46 * resultat + 12.2;
+            kondital = 3.46 * valideretResultat + 12.2;
             niveau = beregnNiveau(kondital, køn, alder);
         } 
         else if (type === "agility") {
-            const tid = resultat;
+            const tid = valideretResultat;
             const erDreng = (køn === "dreng");
-
             if (erDreng) {
                 if (tid < 9.5) niveau = "Fremragende";
                 else if (tid <= 10.5) niveau = "God";
                 else if (tid <= 11.5) niveau = "Middel";
                 else niveau = "Under middel";
-            } else { // Pige
+            } else { 
                 if (tid < 10.5) niveau = "Fremragende";
                 else if (tid <= 11.5) niveau = "God";
                 else if (tid <= 12.5) niveau = "Middel";
                 else niveau = "Under middel";
             }
         }
-else if (type === "jump") {
-    const hojde = resultat;
-    const erDreng = (køn === "dreng");
-
-    if (erDreng) {
-        if (hojde > 65) niveau = "Fremragende";
-        else if (hojde >= 50) niveau = "God";
-        else if (hojde >= 40) niveau = "Middel";
-        else niveau = "Under middel";
-    } else { // Pige
-        if (hojde > 50) niveau = "Fremragende";
-        else if (hojde >= 40) niveau = "God";
-        else if (hojde >= 30) niveau = "Middel";
-        else niveau = "Under middel";
-    }
-}
+        else if (type === "jump") {
+            const hojde = valideretResultat;
+            const erDreng = (køn === "dreng");
+            if (erDreng) {
+                if (hojde > 65) niveau = "Fremragende";
+                else if (hojde >= 50) niveau = "God";
+                else if (hojde >= 40) niveau = "Middel";
+                else niveau = "Under middel";
+            } else { 
+                if (hojde > 50) niveau = "Fremragende";
+                else if (hojde >= 40) niveau = "God";
+                else if (hojde >= 30) niveau = "Middel";
+                else niveau = "Under middel";
+            }
+        }
         else { kondital = null; niveau = ""; }
 
         const data = {
-            uid: user.uid, navn: afsenderNavn, testType: type, score: resultat,
-            kondital: kondital ? kondital.toFixed(1) : null, niveau: niveau,
-            køn: køn, alder: alder, timestamp: firebase.database.ServerValue.TIMESTAMP
+            uid: user.uid, 
+            navn: afsenderNavn, 
+            testType: type, 
+            score: valideretResultat,
+            kondital: kondital ? kondital.toFixed(1) : null, 
+            niveau: niveau,
+            køn: køn, 
+            alder: alder, 
+            timestamp: firebase.database.ServerValue.TIMESTAMP
         };
 
+        // Gem til databasen
         await db.ref('fysiske_tests').push(data);
-        alert(`🏆 RESULTAT GEMT!\nNiveau: ${niveau || 'Gemt'}\nKondital: ${data.kondital || 'N/A'}`);
+
+        // --- 2. DEN NYE PERSONLIGE BOKS ---
+        let beskedTekst = `Stærkt! Dit resultat for ${type.toUpperCase()} er nu gemt i din profil. 💪`;
+        
+        if (niveau) {
+            beskedTekst += `\n\nNiveau: ${niveau}`;
+        }
+        if (kondital) {
+            beskedTekst += `\nKondital: ${kondital.toFixed(1)}`;
+        }
+
+        smashBesked("Kasper siger:", beskedTekst);
+
+        // Nulstil felt og skift side
         document.getElementById('test-input').value = ""; 
         skiftVisning('leaderboard');
-    } catch (e) { alert("Fejl: " + e.message); }
+
+    } catch (e) { 
+        smashBesked("Systemet siger:", "Fejl: " + e.message); 
+    }
 }
 
 function hentOgVisTestLeaderboard(testType) {
@@ -1112,12 +1270,16 @@ firebase.auth().onAuthStateChanged(function(user) {
         }
 
         function calculateSpeed() {
-            const dist = parseFloat(document.getElementById('dist').value);
-            const isSlowMo = document.getElementById('isSlowMo').checked; // Tjekker fluebenet
-            
-            let dur = endTime - startTime;
-            
-            if (dur <= 0) return alert("Fejl: Marker venligst HIT før LAND!");
+    const dist = parseFloat(document.getElementById('dist').value);
+    const isSlowMo = document.getElementById('isSlowMo').checked;
+    
+    let dur = endTime - startTime;
+    
+    // --- FEJL: Manglende markeringer ---
+    if (dur <= 0) {
+        smashBesked("Systemet siger:", "Hov! Du skal markere HIT (hvor ketsjeren rammer) før LAND (hvor bolden rammer jorden). 🏸");
+        return;
+    }
 
             // Hvis videoen er i slowmotion (typisk 1/8 hastighed), 
             // skal vi dividere tiden med 8 for at få den rigtige varighed.
@@ -1134,19 +1296,36 @@ firebase.auth().onAuthStateChanged(function(user) {
             gemSpeed(max);
         }
         function gemSpeed(speed) {
-            const u = firebase.auth().currentUser;
-            db.ref('users/'+u.uid+'/name').once('value', s => {
-                const name = s.val();
-                db.ref('speed_records/'+u.uid).once('value', rs => {
-                    const pb = rs.val() ? rs.val().max : 0;
-                    if(speed > pb) {
-                        db.ref('speed_records/'+u.uid).set({name: name, max: speed, pro: false});
-                        document.getElementById('pb-msg').innerText = "NY PERSONLIG REKORD!";
-                    } else document.getElementById('pb-msg').innerText = "Din PB: " + pb + " km/t";
-                    opdaterLeaderboard();
-                });
-            });
-        }
+    const u = firebase.auth().currentUser;
+    db.ref('users/'+u.uid+'/name').once('value', s => {
+        const name = s.val();
+        db.ref('speed_records/'+u.uid).once('value', rs => {
+            const pb = rs.val() ? rs.val().max : 0;
+            
+            if(speed > pb) {
+                // NY REKORD
+                db.ref('speed_records/'+u.uid).set({name: name, max: speed, pro: false});
+                document.getElementById('pb-msg').innerText = "NY PERSONLIG REKORD!";
+                
+                // FLOT REKORD-BESKED
+                smashBesked(
+                    "Kasper siger:", 
+                    `EKSTREMT! 🔥\nNy personlig rekord: ${speed} km/t!\nDu har lige overgået dig selv. Stærkt arbejdet!`
+                );
+            } else {
+                // ALMINDELIGT SMASH
+                document.getElementById('pb-msg').innerText = "Din PB: " + pb + " km/t";
+                
+                // OPBACKENDE BESKED
+                smashBesked(
+                    "Kasper siger:", 
+                    `Solidt smash! 🏸\nDin fart blev målt til ${speed} km/t.\n\n(Din rekord er stadig ${pb} km/t - du er tæt på!)`
+                );
+            }
+            opdaterLeaderboard();
+        });
+    });
+}
         function opdaterLeaderboard() {
             const pros = [{name:"Axelsen (Pro)", max:419, pro:true}, {name:"Pieler Kolding (Pro)", max:426, pro:true}, {name:"Marín (Pro)", max:353, pro:true}];
             db.ref('speed_records').once('value', snap => {
@@ -1291,54 +1470,65 @@ function visSessionsForDag(dato, keys, all) {
     document.getElementById('day-sessions').classList.remove('hidden');
 }
 
-// --- OPDATERET OPRETTELSE MED XP OG KATEGORIER ---
 function opretSessionDialog(dato) {
-    const n = prompt("Navn på session?"); if(!n) return;
-    const t = prompt("Tid?", "17:00");
-    const d = prompt("Minutter?", "90");
-    const uid = firebase.auth().currentUser.uid;
-
-    db.ref('users/' + uid + '/role').once('value').then(snap => {
-        const rolle = snap.val();
-        let sessionType = (rolle === 'traener') ? 'faelles' : 'privat';
-        let subType = "Badminton"; // Standard
-
-        // Bevarer kategorivælgeren for trænere (vigtigt for badges)
-        if (rolle === 'traener') {
-            const valg = prompt("Vælg kategori:\n1: Badminton\n2: Styrke\n3: Løb\n4: Malaysia Badminton\n5: Malaysia Løb\n6: Denmark Open", "1");
-            const typer = {
-                "1": "Badminton",
-                "2": "Styrke",
-                "3": "Løb",
-                "4": "Malaysia Badminton",
-                "5": "Malaysia Løb",
-                "6": "Denmark Open"
-            };
-            subType = typer[valg] || "Badminton";
-        }
-
-        // Gemmer træningen
-        db.ref('trainings').push({
-            date: dato,
-            title: n,
-            time: t,
-            duration: d,
-            spillerUid: uid,
-            type: sessionType,
-            category: subType 
-        }).then(() => {
-            // Vi har fjernet XP-tildelingen herfra for at undgå snyd.
-            // Spilleren får nu i stedet 25 XP (10+15) via gemEval funktionen bagefter.
-            if (sessionType === 'privat') {
-                alert("Træning oprettet! Husk at evaluere sessionen bagefter for at få dine 25 XP 🚀");
-            } else {
-                alert("Træning oprettet!");
-            }
-
-            if(typeof tegnKalender === "function") tegnKalender();
-        }).catch(err => alert("Fejl: " + err.message));
+    // 1. Spørg om Navn
+    smashInput("Ny Session", "Hvad skal træningen hedde?", "F.eks. Tekniktræning", function(n) {
+        
+        // 2. Spørg om Tid
+        smashInput("Tidspunkt", "Hvornår starter I?", "17:00", function(t) {
+            
+            // 3. Spørg om Varighed
+            smashInput("Varighed", "Hvor mange minutter?", "90", function(d) {
+                
+                // Nu starter vi Firebase-logikken
+                const uid = firebase.auth().currentUser.uid;
+                db.ref('users/' + uid + '/role').once('value').then(snap => {
+                    const rolle = snap.val();
+                    let sessionType = (rolle === 'traener') ? 'faelles' : 'privat';
+                    
+                    if (rolle === 'traener') {
+                        // 4. Hvis træner, spørg om kategori (vi bruger smashInput igen her)
+                        const katTekst = "1: Badminton, 2: Styrke, 3: Løb, 4: Malaysia Badminton, 5: Malaysia Løb, 6: Denmark Open";
+                        smashInput("Vælg kategori", katTekst, "1", function(valg) {
+                            const typer = {
+                                "1": "Badminton", "2": "Styrke", "3": "Løb",
+                                "4": "Malaysia Badminton", "5": "Malaysia Løb", "6": "Denmark Open"
+                            };
+                            const subType = typer[valg] || "Badminton";
+                            faktiskGemSession(dato, n, t, d, uid, sessionType, subType);
+                        });
+                    } else {
+                        // Hvis privat spiller, kør direkte til gem
+                        faktiskGemSession(dato, n, t, d, uid, sessionType, "Badminton");
+                    }
+                });
+            });
+        });
     });
 }
+
+// Hjælpefunktion der udfører selve Firebase-arbejdet
+function faktiskGemSession(dato, n, t, d, uid, sessionType, subType) {
+    db.ref('trainings').push({
+        date: dato,
+        title: n,
+        time: t,
+        duration: d,
+        spillerUid: uid,
+        type: sessionType,
+        category: subType 
+    }).then(() => {
+        if (sessionType === 'privat') {
+            smashBesked("Kasper siger:", "Fedt! Din private træning er oprettet. 🚀\n\nHusk at evaluere bagefter for at få dine 25 XP!");
+        } else {
+            smashBesked("Kasper siger:", "Træning oprettet! Kom så i gang! 💪");
+        }
+        if(typeof tegnKalender === "function") tegnKalender();
+    }).catch(err => {
+        smashBesked("Systemet siger:", "Hov! Der skete en fejl: " + err.message);
+    });
+}
+
 
  function visSessionModal(id) {
     selT = id; 
@@ -1399,41 +1589,47 @@ function gemEval() {
         trainingId: evalTId 
     }).then(() => {
         
-        // 2. Find ud af hvilken type træning det var (Fælles eller Privat)
+        // 2. Find ud af hvilken type træning det var
         db.ref('trainings/' + evalTId).once('value', snap => {
             const t = snap.val();
-            let samletXP = 10; // Basis point for selve evalueringen
+            let samletXP = 10; // Basis point
 
-            // Hvis det er spillerens egen private træning, lægger vi 15 point oveni (i alt 25)
             if (t && t.type === 'privat' && t.spillerUid === uid) {
                 samletXP = 25; 
             }
 
-            // 3. Giv point med snyde-sikring (så de kun får point én gang pr. træning)
+            // 3. Giv point med snyde-sikring
             const logRef = db.ref('xp_log/' + uid + '/' + evalTId + '_eval');
             logRef.once('value', logSnap => {
                 if (!logSnap.val()) {
-                    // Giv XP via transaction (sikker opdatering)
                     db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + samletXP);
                     
-                    // Sæt "kvittering" i loggen
                     logRef.set({
                         dato: new Date().toISOString(),
                         type: 'evaluering_point'
                     });
                     
-                    alert("Flot! Du har optjent " + samletXP + " XP! 🚀");
+                    smashBesked(
+                        "Kasper siger:", 
+                        `STÆRKT! 💪\nDu har netop optjent ${samletXP} XP for din indsats!\n\nDin udvikling er i fuld gang. 🚀`,
+                        function() {
+                            visSide('side-hjem', document.querySelector('.tab-item'));
+                        }
+                    );
                 } else {
-                    alert("Evaluering gemt!");
+                    smashBesked(
+                        "Træneren siger:", 
+                        "Din evaluering er opdateret og gemt! 📝",
+                        function() {
+                            visSide('side-hjem', document.querySelector('.tab-item'));
+                        }
+                    );
                 }
-                
-                // Gå tilbage til forsiden
-                visSide('side-hjem', document.querySelector('.tab-item'));
             });
-        });
+        }); // <--- DENNE HER MANGLEDE (lukker once('value', snap...))
 
     }).catch(err => {
-        alert("Der skete en fejl: " + err.message);
+        smashBesked("Systemet siger:", "Der skete en fejl: " + err.message + " 🛠️");
     }); 
 }
 
@@ -1447,34 +1643,44 @@ function gemEval() {
     const type = document.getElementById('modal-session').dataset.type;
 
     db.ref('users/' + uid).once('value', snap => {
-        const brugerNavn = snap.val().name;
+    const brugerNavn = snap.val() ? snap.val().name : "Spiller";
 
-        // 1. Gem status i attendance (ligesom før)
-        db.ref('attendance/' + id + '/' + uid).set({
-            status: s,
-            name: brugerNavn
-        }).then(() => {
-            
-            // 2. XP LOGIK: Kun hvis man trykker 'Kommer'
-            if (s === 'Kommer') {
-                if (type === 'faelles') {
-                    // Tjek om der allerede er givet point for denne træning
-                    const xpRef = db.ref('xp_log/' + uid + '/' + id);
-                    xpRef.once('value', logSnap => {
-                        if (!logSnap.val()) {
-                            // Giv 25 XP
-                            db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + 25);
-                            // Lås loggen
-                            xpRef.set({ type: 'faelles_deltagelse', dato: new Date().toISOString() });
-                            alert("Tilmeldt! Du har optjent 25 XP 🏸");
-                        }
-                    });
-                } else if (type === 'privat') {
-                    // Besked til private træninger
-                    alert("Tilmeldt! Husk at evaluere bagefter for at få dine 25 XP 🚀");
-                }
+    // 1. Gem status i attendance
+    db.ref('attendance/' + id + '/' + uid).set({
+        status: s,
+        name: brugerNavn
+    }).then(() => {
+        
+        // 2. XP LOGIK: Kun hvis man trykker 'Kommer'
+        if (s === 'Kommer') {
+            if (type === 'faelles') {
+                // Tjek om der allerede er givet point for denne træning
+                const xpRef = db.ref('xp_log/' + uid + '/' + id);
+                xpRef.once('value', logSnap => {
+                    if (!logSnap.val()) {
+                        // Giv 25 XP
+                        db.ref('xp_points/' + uid).transaction(xp => (xp || 0) + 25);
+                        // Lås loggen
+                        xpRef.set({ type: 'faelles_deltagelse', dato: new Date().toISOString() });
+                        
+                        smashBesked("Kasper siger:", "Tilmeldt! Du har optjent 25 XP 🏸");
+                    } else {
+                        // Allerede tilmeldt før
+                        smashBesked("Systemet siger:", "Status opdateret!");
+                    }
+                });
+            } else if (type === 'privat') {
+                // Besked til private træninger
+                smashBesked("Kasper siger:", "Tilmeldt! 🚀\n\nHusk at evaluere bagefter for at få dine 25 XP!");
             }
-        });
+        } else {
+            // Hvis man trykker 'Afbud' eller andet
+            smashBesked("Systemet siger:", "Din status er opdateret.");
+        }
+
+    }).catch(err => {
+        smashBesked("Systemet siger:", "Fejl: " + err.message);
+    });
     });
 }
         function sletTræning() { if(confirm("Slet?")) db.ref('trainings/'+selT).remove().then(()=>lukModal()); }
@@ -1935,10 +2141,29 @@ function tegnBadges(stats) {
             document.getElementById('drill-sub-cat').classList.toggle('hidden', !needsSub);
         }
 
-        function saveDrill() {
-            const t = document.getElementById('drill-title').value, tx = document.getElementById('drill-text').value;
-            if(t && tx) db.ref('drills').push({ main:document.getElementById('drill-main-cat').value, sub:document.getElementById('drill-sub-cat').value, title:t, text:tx }).then(()=>alert("Gemt!"));
-        }
+  function saveDrill() {
+    const t = document.getElementById('drill-title').value;
+    const tx = document.getElementById('drill-text').value;
+    const mainCat = document.getElementById('drill-main-cat').value;
+    const subCat = document.getElementById('drill-sub-cat').value;
+
+    if (t && tx) {
+        db.ref('drills').push({ 
+            main: mainCat, 
+            sub: subCat, 
+            title: t, 
+            text: tx 
+        }).then(() => {
+            // Ryd felterne så man kan indtaste en ny øvelse med det samme
+            document.getElementById('drill-title').value = "";
+            document.getElementById('drill-text').value = "";
+            
+            smashBesked("Træneren siger:", "Øvelsen '" + t + "' er nu gemt i databasen. Godt for overblikket! 📚");
+        });
+    } else {
+        smashBesked("Systemet siger:", "Hov! Du skal både udfylde en titel og en beskrivelse af øvelsen. ✍️");
+    }
+}
 
         function loadDrills(filter = 'Alle') {
             db.ref('drills').on('value', snap => {
@@ -1990,9 +2215,15 @@ async function gemUdvidetProfil() {
 
     try {
         await db.ref('users/' + uid + '/profil_detaljer').set(data);
-        alert("✅ Din profil er nu opdateret og gemt!");
+        
+        // --- NY SUCCES BESKED ---
+        smashBesked(
+            "Træneren siger:", 
+            "Stærkt gået! ✅\n\nDin udvidede profil og dine mål er nu gemt. Det er det første skridt mod at blive en bedre spiller at kende sine styrker og svagheder! 💪"
+        );
     } catch (e) {
-        alert("Kunne ikke gemme: " + e.message);
+        // --- NY FEJL BESKED ---
+        smashBesked("Systemet siger:", "Hov! Kunne ikke gemme din profil: " + e.message + " 🛠️");
     }
 }
 
@@ -2116,38 +2347,73 @@ function tegnAvatarGalleri() {
     ];
 
     const user = firebase.auth().currentUser;
-    if (!user) {
-        console.log("Fejl: Ingen bruger er logget ind");
-        return;
-    }
+    if (!user) return;
 
-    // --- 1. TEGN AVATARER (Nu med firebase.database() i stedet for db) ---
+    // Vi henter XP, men vi bruger den samme logik som på din forside til at finde Level
     firebase.database().ref('xp_points/' + user.uid).once('value', function(snap) {
         const xp = snap.val() || 0;
-        const level = Math.floor(xp / 100) + 1;
-        console.log("Bruger XP hentet:", xp, "Level:", level);
+        
+        // --- NY PROGRESSIV LEVEL BEREGNING ---
+        // Denne skal matche din forside. Hvis du er i lvl 27, vil denne nu regne det rigtigt ud.
+        let tempXp = xp;
+        let level = 1;
+        while (tempXp >= (Math.floor((level - 1) / 10) + 1) * 100) {
+            tempXp -= (Math.floor((level - 1) / 10) + 1) * 100;
+            level++;
+        }
 
         avatars.forEach(function(url, index) {
-            const krævetLevel = index < 3 ? 1 : (index - 2) * 7;
+            // Logik: De første 3 er gratis (Level 1). Derefter +7 levels per avatar.
+            // Index 0,1,2 -> Lvl 1
+            // Index 3 -> Lvl 7, Index 4 -> Lvl 14... Index 10 -> Lvl 56, Index 11 -> Lvl 63
+            let krævetLevel = 1;
+            if (index >= 3) {
+                krævetLevel = (index - 2) * 7;
+            }
+            
             const erLaast = level < krævetLevel;
             
+            // Opret container til avatar og level-tekst
+            const container = document.createElement('div');
+            container.style.position = "relative";
+            container.style.textAlign = "center";
+
             const img = document.createElement('img');
             img.src = url;
             img.className = 'av-item ' + (erLaast ? 'locked' : '');
             img.style.width = "100%"; 
             img.style.borderRadius = "50%";
+            img.style.aspectRatio = "1/1";
+            img.style.objectFit = "cover";
             img.title = erLaast ? "Kræver Level " + krævetLevel : "Vælg Avatar";
             
             if (!erLaast) {
                 img.style.cursor = "pointer";
                 img.onclick = function() {
-                    firebase.database().ref('users/' + user.uid + '/photoURL').set(url);
-                    alert("Ny Avatar valgt! 🏸");
-                };
+    firebase.database().ref('users/' + user.uid + '/photoURL').set(url);
+    
+            smashBesked("Kasper siger:", "Stærkt! Din nye avatar er nu aktiveret. 🏸");
+};
             } else {
                 img.style.filter = "grayscale(1) opacity(0.4)";
+                
+                // Tilføj en lille "Lvl X" label oven på låste avatarer
+                const label = document.createElement('span');
+                label.innerText = "Lvl " + krævetLevel;
+                label.style.position = "absolute";
+                label.style.bottom = "0";
+                label.style.left = "50%";
+                label.style.transform = "translateX(-50%)";
+                label.style.fontSize = "10px";
+                label.style.background = "rgba(0,0,0,0.8)";
+                label.style.padding = "2px 4px";
+                label.style.borderRadius = "4px";
+                label.style.color = "white";
+                container.appendChild(label);
             }
-            galleri.appendChild(img);
+            
+            container.appendChild(img);
+            galleri.appendChild(container);
         });
     });
 
@@ -2260,9 +2526,47 @@ function håndterHjerte(msgId, hjerteData) {
 }
 
 function visHvemDerHarLiket(likes) {
-    if (!likes) return;
-    const navne = Object.values(likes).join(", ");
-    alert("Liket af: " + navne);
+    console.log("DEBUG - Likes indhold:", likes);
+    
+    if (!likes) {
+        console.log("Ingen likes data overhovedet");
+        return;
+    }
+
+    let liste = [];
+
+    // Tjek om det er et objekt (Firebase stil), et array eller en enkelt streng
+    try {
+        if (Array.isArray(likes)) {
+            liste = likes;
+        } else if (typeof likes === 'object') {
+            liste = Object.values(likes);
+        } else {
+            liste = [likes]; 
+        }
+    } catch (e) {
+        console.error("Fejl ved udlæsning af navne:", e);
+        liste = ["En SmashPro spiller"]; 
+    }
+
+    // Rens listen for tomme felter og dubletter, og saml til en pæn tekst
+    const unikkeNavne = [...new Set(liste.filter(n => n && typeof n === 'string'))];
+    const navneStreng = unikkeNavne.join(", ");
+
+    if (navneStreng.length === 0) {
+        console.log("Navne-listen blev tom efter filtrering");
+        return;
+    }
+
+    // Log for at bekræfte at vi når hertil
+    console.log("Viser smashBesked ovenpå chatten med navne:", navneStreng);
+    
+    // Vi kalder smashBesked. 
+    // HUSK: Sørg for at din smashBesked funktion har 'z-index: 20000' i sin style!
+    smashBesked(
+        "SmashPro High-fives! ❤️", 
+        "Denne besked er liket af:\n\n" + navneStreng
+    );
 }
 
 // --- 3. SVAR-LOGIK ---
