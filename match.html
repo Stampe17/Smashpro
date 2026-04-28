@@ -290,67 +290,106 @@ Spiller 4</textarea>
             });
         }
 
-        function saveKlubMatch() {
-            const oppId = document.getElementById('m-opp').value;
-            const iWon = document.getElementById('m-winner').value === 'me';
-            const s1 = document.getElementById('m-s1').value;
-            const s2 = document.getElementById('m-s2').value;
-            const s3 = document.getElementById('m-s3').value;
-            processMatchResult(curUser.uid, oppId, iWon, s1, s2, s3);
-            lukModal();
-        }
+function saveKlubMatch() {
+    console.log("Klubkamp indberetning startet...");
+    
+    // 1. Hent data
+    const oppId = document.getElementById('m-opp').value;
+    const winnerSelect = document.getElementById('m-winner').value;
+    const s1 = document.getElementById('m-s1').value;
+    const s2 = document.getElementById('m-s2').value;
+    const s3 = document.getElementById('m-s3').value;
+    
+    const user = firebase.auth().currentUser;
+    if (!user || !oppId) {
+        alert("Fejl: Kunne ikke finde modstander eller bruger.");
+        return;
+    }
+    const uid = user.uid;
 
-function processMatchResult(p1Id, p2Id, p1Won, s1, s2, s3) {
-            const scoreText = s1 + ", " + s2 + (s3 ? ", " + s3 : "");
-            
-            // --- NYT: Split score-tekst til tal (f.eks. "21-10" -> 21 og 10) ---
-            const p1_s1 = parseInt(s1.split('-')[0]) || 0;
-            const p2_s1 = parseInt(s1.split('-')[1]) || 0;
-            const p1_s2 = parseInt(s2.split('-')[0]) || 0;
-            const p2_s2 = parseInt(s2.split('-')[1]) || 0;
-            const p1_s3 = s3 ? (parseInt(s3.split('-')[0]) || 0) : 0;
-            const p2_s3 = s3 ? (parseInt(s3.split('-')[1]) || 0) : 0;
-            // -----------------------------------------------------------------
+    // 2. Lås knappen
+    const gemKnap = document.querySelector('#modal-add-match button');
+    if (gemKnap) {
+        gemKnap.disabled = true;
+        gemKnap.innerText = "Gemmer...";
+        gemKnap.style.opacity = "0.5";
+    }
 
-            const winP = s3 ? 3 : 5; 
-            const lossP = s3 ? 1 : 0;
-            const idx1 = rankingData.findIndex(function(u){return u.id === p1Id;});
-            const idx2 = rankingData.findIndex(function(u){return u.id === p2Id;});
-            
-            let bonus = 0;
+    // 3. Point logik
+    const p1Won = (winnerSelect === 'me');
+    const scoreText = s1 + ", " + s2 + (s3 ? ", " + s3 : "");
+    const gikI3Saet = (s3 && s3.trim() !== "" && s3 !== "0-0");
+
+    const winXP = gikI3Saet ? 25 : 30;
+    const lossXP = gikI3Saet ? 10 : 0;
+    const winP = gikI3Saet ? 3 : 5;
+    const lossP = gikI3Saet ? 1 : 0;
+
+    let bonus = 0;
+    try {
+        if (typeof rankingData !== 'undefined') {
+            const idx1 = rankingData.findIndex(u => u.id === uid);
+            const idx2 = rankingData.findIndex(u => u.id === oppId);
             if (p1Won && idx1 > idx2 && idx2 !== -1) bonus = (winP * (idx1 - idx2));
             if (!p1Won && idx2 > idx1 && idx1 !== -1) bonus = (winP * (idx2 - idx1));
-            
-            const wId = p1Won ? p1Id : p2Id; 
-            const lId = p1Won ? p2Id : p1Id;
-
-            // Opdater point og XP
-            db.ref('ranking_points/' + wId).transaction(function(p) { return (p || 0) + winP + bonus; });
-            db.ref('ranking_points/' + lId).transaction(function(p) { return (p || 0) + lossP; });
-            db.ref('xp_points/' + wId).transaction(function(x) { return (x || 0) + 50 + Math.round(bonus); });
-            db.ref('xp_points/' + lId).transaction(function(x) { return (x || 0) + 20; });
-            db.ref('match_counts/' + p1Id).transaction(function(c) { return (c || 0) + 1; });
-            db.ref('match_counts/' + p2Id).transaction(function(c) { return (c || 0) + 1; });
-            
-            // Gem badges (den gamle metode kan du beholde eller fjerne, da den nye beregner automatisk)
-            checkBadges(wId, lId, s1, s2, s3);
-
-            const key = p1Id < p2Id ? p1Id + "" + p2Id : p2Id + "" + p1Id;
-            
-            // --- OPDATERET: Gemmer nu både tekst og de rå tal til badges ---
-            db.ref('h2h_global/' + key).push({ 
-                p1: p1Id, 
-                p2: p2Id, 
-                winner: wId, 
-                score: scoreText, 
-                // Disse felter læses af din badge-beregner:
-                s1_p1: p1_s1, s1_p2: p2_s1,
-                s2_p1: p1_s2, s2_p2: p2_s2,
-                s3_p1: p1_s3, s3_p2: p2_s3,
-                timestamp: Date.now(), // God at have
-                date: new Date().toLocaleDateString() 
-            });
         }
+    } catch (e) { console.log("Ranking bonus sprang over", e); }
+
+    const wId = p1Won ? uid : oppId;
+    const lId = p1Won ? oppId : uid;
+
+    const optjenteXP = (uid === wId) ? (winXP + Math.round(bonus)) : (gikI3Saet ? 10 : 0);
+
+    // 4. GEM I DATABASE
+    db.ref('xp_points/' + uid).transaction(current => (current || 0) + optjenteXP);
+    db.ref('ranking_points/' + wId).transaction(p => (p || 0) + winP + bonus);
+    db.ref('ranking_points/' + lId).transaction(p => (p || 0) + lossP);
+
+    // HER ER DEN EKSTRA DEL: Opdaterer antal kampe (parantesen)
+    db.ref('match_counts/' + uid).transaction(c => (c || 0) + 1);
+    db.ref('match_counts/' + oppId).transaction(c => (c || 0) + 1);
+
+    const matchKey = uid < oppId ? uid + "_" + oppId : oppId + "_" + uid;
+    db.ref('h2h_global/' + matchKey).push({
+        p1: uid, p2: oppId, winner: wId, score: scoreText,
+        timestamp: Date.now(), date: new Date().toLocaleDateString()
+    }).then(() => {
+        // 5. BEKRÆFTELSE (Bruger alert som fallback for at undgå 'not defined' fejl)
+        const titel = (uid === wId) ? "SEJR REGISTRERET! 🏆" : "KAMP GEMT! 🏸";
+        const besked = "Resultatet er gemt. Du har fået " + optjenteXP + " XP!";
+
+        if (typeof smashBesked === 'function') {
+            smashBesked(titel, besked);
+        } else {
+            alert(titel + "\n\n" + besked);
+        }
+
+        setTimeout(() => {
+            // --- NYT: Nulstil indtastningsfelter her ---
+            document.getElementById('m-s1').value = "";
+            document.getElementById('m-s2').value = "";
+            document.getElementById('m-s3').value = "";
+            document.getElementById('m-winner').selectedIndex = 0;
+
+            if (typeof lukModal === 'function') lukModal();
+            
+            if (gemKnap) {
+                gemKnap.disabled = false;
+                gemKnap.innerText = "GEM & FÅ XP";
+                gemKnap.style.opacity = "1";
+            }
+            
+            if (typeof visSide === 'function') {
+                visSide('side-h2h');
+            } else {
+                console.log("visSide findes ikke i denne fil - bliver på siden.");
+            }
+        }, 1000);
+    }).catch((error) => {
+        alert("Der skete en fejl under lagring: " + error.message);
+        if (gemKnap) gemKnap.disabled = false;
+    });
+}
 
         function checkBadges(wId, lId, s1, s2, s3) {
             const pts = (s1 + "-" + s2 + "-" + (s3||"")).split("-");
