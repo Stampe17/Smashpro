@@ -2038,57 +2038,92 @@ Object.values(allH2H).forEach(group => {
     }); // Lukker trainings
 }
 
+// --- SAMLET BADGE LOGIK START ---
+
+// 1. Hjælpefunktion til Levels (vigtig for at undgå fejl)
+function getLevel(xp) {
+    if (!xp || xp < 500) return 1;
+    if (xp < 1500) return 2;
+    if (xp < 3000) return 3;
+    if (xp < 5000) return 4;
+    return Math.floor(xp / 1500) + 1;
+}
+
+// 2. Den centrale motor der tildeler point og viser besked
+function tildelBadgeMedBonus(badgeId, badgeNavn, badgeDesc) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const uid = user.uid;
+    
+    // Vi retter referencerne her
+    const badgeRef = db.ref('users/' + uid + '/badges/' + badgeId);
+    const xpRef = db.ref('xp_points/' + uid); // HER henter vi XP point
+
+    badgeRef.once('value').then(snap => {
+        // Tjek om de har badget i forvejen
+        if (snap.val() !== true) {
+            
+            // A. Gem badget
+            badgeRef.set(true);
+
+            // B. Giv 50 XP via transaction til den rigtige sti
+            xpRef.transaction(currentXP => {
+                const oldXP = currentXP || 0;
+                const newXP = oldXP + 50;
+                
+                // --- DIN SPECIFIKKE LEVEL BEREGNING ---
+                const beregnLevel = (totalXp) => {
+                    let tempXp = totalXp;
+                    let lvl = 1;
+                    while (tempXp >= (Math.floor((lvl - 1) / 10) + 1) * 100) {
+                        tempXp -= (Math.floor((lvl - 1) / 10) + 1) * 100;
+                        lvl++;
+                    }
+                    return lvl;
+                };
+
+                const oldLevel = beregnLevel(oldXP);
+                const newLevel = beregnLevel(newXP);
+                
+                if (newLevel > oldLevel) {
+                    setTimeout(() => {
+                        smashBesked("LEVEL UP! ⚡", "Kasper siger: Du er nu Level " + newLevel + "! Du bliver jo ustoppelig! 🏸");
+                    }, 2000);
+                }
+                return newXP;
+            });
+
+            // C. Vis den flotte SmashBesked
+            smashBesked(
+                "NYT BADGE LÅST OP! 🏆", 
+                "Stærkt gået! Du har netop vundet:\n\n⭐ " + badgeNavn + " ⭐\n\n" + (badgeDesc || "") + "\n\nDu har fået +50 XP i bonus!"
+            );
+            
+            console.log("Badge tildelt og 50 XP sendt til xp_points: " + badgeNavn);
+        }
+    });
+}
+
+// 3. Funktionen der tegner siden og tjekker for nye badges
 function tegnBadges(stats) {
     const container = document.getElementById('badge-container'); 
+    if (!container) return;
+    
     container.innerHTML = "";
     let uc = 0;
-    const uid = firebase.auth().currentUser.uid;
-
-    // Hjælpefunktion til at beregne level ud fra XP
-    const getLevel = (xp) => {
-        if (!xp || xp < 500) return 1;
-        if (xp < 1500) return 2;
-        if (xp < 3000) return 3;
-        if (xp < 5000) return 4;
-        return Math.floor(xp / 1500) + 1;
-    };
 
     udfordringer.forEach(u => {
         const win = u.check(stats); 
-        
-        // --- NY LOGIK TIL TITEL OG BESKRIVELSE ---
-        // Dette tjekker om det er en funktion (hemmelig) eller almindelig tekst
         const aktuelTitel = typeof u.titel === 'function' ? u.titel(stats) : u.titel;
         const aktuelDesc = typeof u.desc === 'function' ? u.desc(stats) : u.desc;
 
-        if(win) {
+        if (win) {
             uc++;
-            // Vi bruger aktuelTitel her, så databasen gemmer det rigtige navn
-            db.ref('users/' + uid + '/badges/' + aktuelTitel).once('value', snap => {
-                if (!snap.val()) {
-                    db.ref('users/' + uid + '/badges/' + aktuelTitel).set(true); 
-                    
-                    db.ref('xp_points/' + uid).transaction(currentXP => {
-                        const oldXP = currentXP || 0;
-                        const newXP = oldXP + 50;
-                        
-                        const oldLevel = getLevel(oldXP);
-                        const newLevel = getLevel(newXP);
-                        
-                        if (newLevel > oldLevel) {
-                            visLevelToast(newLevel);
-                        }
-                        
-                        return newXP;
-                    });
-                    
-                    visBadgeToast(aktuelTitel);
-                    console.log("BOOM! 50 XP givet for: " + aktuelTitel);
-                }
-            });
+            // Kalder tildelingen
+            tildelBadgeMedBonus(aktuelTitel, aktuelTitel, aktuelDesc);
         }
 
-        // --- TEGN BADGE PÅ SKÆRMEN ---
+        // Lav selve kortet til skærmen
         const box = document.createElement('div'); 
         box.className = `badge-box ${win ? 'unlocked' : ''}`;
         box.innerHTML = `
@@ -2099,8 +2134,9 @@ function tegnBadges(stats) {
         container.appendChild(box);
     });
     
-    if (document.getElementById('stat-unlocked')) {
-        document.getElementById('stat-unlocked').innerText = uc + "/" + udfordringer.length;
+    const statCounter = document.getElementById('stat-unlocked');
+    if (statCounter) {
+        statCounter.innerText = uc + "/" + udfordringer.length;
     }
 }
 
