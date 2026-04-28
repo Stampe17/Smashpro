@@ -247,11 +247,11 @@
             <small>Tjek din teknik i slowmotion</small>
         </div>
 
-        <div class="kort" onclick="visSide('side-udholdenhed')" style="text-align:center; cursor:pointer; border-bottom: 4px solid #f44336;">
-            <span style="font-size:40px;">🫁</span>
-            <h3>Udholdenhed</h3>
-            <small>Data fra dine Cooper-tests</small>
-        </div>
+<div class="kort" onclick="visSide('side-performance-hub')" style="text-align:center; cursor:pointer; border-bottom: 4px solid #00ff73;">
+    <span style="font-size:40px;">📈</span>
+    <h3>Performance Hub</h3>
+    <small>Træningstilstand & Stats</small>
+</div>
 
     </div>
 </div>
@@ -305,6 +305,52 @@
             <thead><tr><th>#</th><th>Spiller</th><th style="text-align:right;">Max</th></tr></thead>
             <tbody></tbody>
         </table>
+    </div>
+</div>
+
+<div id="side-performance-hub" class="side hidden" style="padding-bottom: 80px;">
+    <div style="padding: 20px; font-family: sans-serif; color: white;">
+        
+        <h2 style="text-align: center; color: #00ff73;">Performance Hub</h2>
+
+        <div id="barometer-card" style="background: #1c222d; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; text-align: center;">
+            <h3 style="margin-top: 0; font-size: 12px; color: #888; text-transform: uppercase;">Din Træningstilstand</h3>
+            <div id="barometer-status" style="font-size: 28px; font-weight: bold; margin: 10px 0;">BEREGNER...</div>
+            <p id="barometer-desc" style="font-size: 13px; color: #aaa;">Henter data fra de sidste 14 dage...</p>
+        </div>
+
+        <div id="fun-fact-box" style="background: linear-gradient(135deg, #00ff7322, #3498db22); border-radius: 12px; padding: 15px; margin-bottom: 25px; border-left: 5px solid #00ff73; min-height: 60px; display: flex; align-items: center; justify-content: center; text-align: center;">
+            <span id="fun-fact-text" style="font-style: italic;">Indlæser dagens guldkorn...</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+            
+            <div class="kort" onclick="visSide('side-hub-radar')" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #252a34; border-radius: 12px; border-left: 4px solid #f1c40f;">
+                <span style="font-size: 30px;">🎯</span>
+                <div>
+                    <h4 style="margin: 0;">Form-barometer</h4>
+                    <small style="color: #888;">Radar-graf over dine færdigheder</small>
+                </div>
+            </div>
+
+            <div class="kort" onclick="visSide('side-hub-linje')" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #252a34; border-radius: 12px; border-left: 4px solid #3498db;">
+                <span style="font-size: 30px;">📈</span>
+                <div>
+                    <h4 style="margin: 0;">Udviklings-kurven</h4>
+                    <small style="color: #888;">Se din fremgang over tid</small>
+                </div>
+            </div>
+
+            <div class="kort" onclick="visSide('side-hub-stats')" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #252a34; border-radius: 12px; border-left: 4px solid #9b59b6;">
+                <span style="font-size: 30px;">📊</span>
+                <div>
+                    <h4 style="margin: 0;">Aktivitet & Resultater</h4>
+                    <small style="color: #888;">Fordeling af træning og kampe</small>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 </div>
 
@@ -806,6 +852,7 @@ function smashInput(titel, label, placeholder, handling) {
     if(id==='side-traener') { hentAlleSpillere(); tegnHoldAnalyse(); loadDrills(); }
     if(id==='side-kalender') tegnKalender();
     if(id==='side-speed') opdaterLeaderboard();
+    if(id==='side-performance-hub') opdaterPerformanceHub();
     window.scrollTo(0,0);
 }
 
@@ -844,12 +891,20 @@ function visAnalyseVærktøj(toolId) {
                     <option value="bip">Bip-test (Level.Shuttle)</option>
                     <option value="5km">5 km løb (tid)</option>
                     <option value="10km">10 km løb (tid)</option>
+                    <option value="valgfri_run">Valgfri distance (Indtast km)</option>
                     <option value="agility">Agility T-Test (sekunder)</option>
                     <option value="jump">Vertical Jump (cm)</option>
                 </select>
 
                 <label id="input-label" style="display:block; font-size:11px; color:#888; margin-bottom:5px; font-weight:bold;">INDTAST METER</label>
-                <input type="number" id="test-input" placeholder="Eks. 2800" step="0.01" style="width: 100%; padding: 14px; margin-bottom: 25px; background: #000; color: white; border: 1px solid #444; border-radius: 10px; font-size: 18px; outline:none;">
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <input type="number" id="test-input" placeholder="Eks. 2800" step="0.01" style="flex: 2; padding: 14px; background: #000; color: white; border: 1px solid #444; border-radius: 10px; font-size: 18px; outline:none;">
+                    
+                    <div id="time-input-container" style="display:none; flex: 1;">
+                        <input type="number" id="test-time" placeholder="Min." style="width: 100%; padding: 14px; background: #000; color: white; border: 1px solid #444; border-radius: 10px; font-size: 18px; outline:none;">
+                    </div>
+                </div>
 
                 <button onclick="gemFysiskResultat()" style="width: 100%; padding: 16px; background: #00ff66; color: black; border: none; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer;">
                     GEM & OPDATER LEADERBOARD
@@ -971,6 +1026,12 @@ function opdaterAltVedSkift() {
     const kravTitel = document.querySelector('#krav-tabel-area h4');
     const kravHead = document.getElementById('krav-tabel-head');
     
+    // Hent tids-containeren vi lige har lavet i HTML-koden
+    const timeContainer = document.getElementById('time-input-container');
+    
+    // Som standard skjuler vi altid tidsfeltet
+    if (timeContainer) timeContainer.style.display = "none";
+
     if (type === "cooper") {
         label.innerText = "INDTAST METER"; 
         input.placeholder = "2800";
@@ -1023,6 +1084,14 @@ function opdaterAltVedSkift() {
             </tr>
         `;
 
+    } else if (type === "valgfri_run") {
+        label.innerText = "KM & TID (MIN)"; 
+        input.placeholder = "KM";
+        if (timeContainer) timeContainer.style.display = "block"; // VISER TIDSFELT
+        kravTitel.innerText = "MÅLSÆTNING: DIN EGEN RUTE";
+        kravHead.style.display = "none";
+        kravBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:15px; color:#aaa;">Her tæller alle kilometer! Indtast din distance for at nå Maraton-målet i Performance Hub. 🏃‍♂️</td></tr>`;
+
     } else if (type === "agility") {
         label.innerText = "INDTAST TID (SEKUNDER)"; input.placeholder = "f.eks. 10.20";
         kravTitel.innerText = "MÅLSÆTNING: AGILITY T-TEST (SEK)";
@@ -1059,10 +1128,10 @@ function opdaterAltVedSkift() {
 async function gemFysiskResultat() {
     const type = document.getElementById('test-type').value;
     const resultat = document.getElementById('test-input').value;
+    const tidInput = document.getElementById('test-time') ? document.getElementById('test-time').value : null;
     const køn = document.getElementById('user-gender').value;
     const alder = parseInt(document.getElementById('user-age').value);
     
-    // --- 1. Tjek for input (Fejlbesked) ---
     if (!resultat || resultat === "") { 
         smashBesked("Systemet siger:", "Hov! Du glemte at indtaste dit resultat. Prøv lige igen. 🏃‍♂️"); 
         return; 
@@ -1078,7 +1147,7 @@ async function gemFysiskResultat() {
         let kondital = null;
         let niveau = "";
 
-        // --- Beregninger ---
+        // --- BEREGNINGER ---
         if (type === "cooper") {
             kondital = (valideretResultat - 504.9) / 44.73;
             niveau = beregnNiveau(kondital, køn, alder);
@@ -1087,6 +1156,9 @@ async function gemFysiskResultat() {
             kondital = 3.46 * valideretResultat + 12.2;
             niveau = beregnNiveau(kondital, køn, alder);
         } 
+        else if (type === "valgfri_run") {
+            niveau = "Logget løb"; 
+        }
         else if (type === "agility") {
             const tid = valideretResultat;
             const erDreng = (køn === "dreng");
@@ -1117,38 +1189,43 @@ async function gemFysiskResultat() {
                 else niveau = "Under middel";
             }
         }
-        else { kondital = null; niveau = ""; }
 
         const data = {
             uid: user.uid, 
             navn: afsenderNavn, 
             testType: type, 
             score: valideretResultat,
+            result: valideretResultat, 
+            tid: tidInput ? parseFloat(tidInput) : null,
             kondital: kondital ? kondital.toFixed(1) : null, 
             niveau: niveau,
             køn: køn, 
             alder: alder, 
-            timestamp: firebase.database.ServerValue.TIMESTAMP
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            date: new Date().toLocaleDateString('da-DK')
         };
 
-        // Gem til databasen
+        // GEM DOBBELT: Både til gammel rangliste/badges og ny Performance Hub
         await db.ref('fysiske_tests').push(data);
+        await db.ref('physical_tests').push(data);
 
-        // --- 2. DEN NYE PERSONLIGE BOKS ---
-        let beskedTekst = `Stærkt! Dit resultat for ${type.toUpperCase()} er nu gemt i din profil. 💪`;
-        
-        if (niveau) {
-            beskedTekst += `\n\nNiveau: ${niveau}`;
-        }
-        if (kondital) {
-            beskedTekst += `\nKondital: ${kondital.toFixed(1)}`;
+        // --- BESKED TIL BRUGEREN ---
+        let beskedTekst = "";
+        if (type === "valgfri_run") {
+            beskedTekst = `Stærkt løbet! Du har logget ${valideretResultat} km. De er nu lagt til din måneds-total i Performance Hub! 🏃‍♂️💨`;
+        } else {
+            beskedTekst = `Stærkt! Dit resultat for ${type.toUpperCase()} er nu gemt i din profil. 💪`;
+            if (niveau) beskedTekst += `\n\nNiveau: ${niveau}`;
+            if (kondital) beskedTekst += `\nKondital: ${kondital.toFixed(1)}`;
         }
 
         smashBesked("Kasper siger:", beskedTekst);
 
-        // Nulstil felt og skift side
+        // Nulstil felter
         document.getElementById('test-input').value = ""; 
-        skiftVisning('leaderboard');
+        if(document.getElementById('test-time')) document.getElementById('test-time').value = "";
+        
+        opdaterAltVedSkift(); 
 
     } catch (e) { 
         smashBesked("Systemet siger:", "Fejl: " + e.message); 
@@ -1158,24 +1235,85 @@ async function gemFysiskResultat() {
 function hentOgVisTestLeaderboard(testType) {
     const container = document.getElementById('test-display-area');
     if (!container) return;
+
     db.ref('fysiske_tests').orderByChild('testType').equalTo(testType).once('value', snap => {
-        let bestResults = {};
-        const lavereErBedst = ["5km", "10km", "agility"].includes(testType);
+        let finalResults = {}; 
+        const nu = new Date();
+        const startMaaned = new Date(nu.getFullYear(), nu.getMonth(), 1).getTime();
+        const startAar = new Date(nu.getFullYear(), 0, 1).getTime();
+        
+        // Definitioner af logik
+        const erValgfri = (testType === "valgfri_run");
+        const erTidstest = ["5km", "10km", "agility"].includes(testType);
+        const erCooper = (testType === "cooper");
+
         snap.forEach(child => {
             const d = child.val();
-            if (!bestResults[d.uid] || (lavereErBedst ? d.score < bestResults[d.uid].score : d.score > bestResults[d.uid].score)) {
-                bestResults[d.uid] = d;
+            const uid = d.uid;
+
+            if (erValgfri) {
+                // LOGIK: Samlet distance for DENNE MÅNED
+                if (d.timestamp >= startMaaned) {
+                    if (!finalResults[uid]) {
+                        finalResults[uid] = { navn: d.navn, score: 0, køn: d.køn, uid: uid };
+                    }
+                    finalResults[uid].score += parseFloat(d.score || 0);
+                }
+            } 
+            else if (erTidstest) {
+                // LOGIK: Bedste tid (laveste tal) for HELE ÅRET
+                if (d.timestamp >= startAar) {
+                    if (!finalResults[uid] || d.score < finalResults[uid].score) {
+                        finalResults[uid] = d;
+                    }
+                }
+            }
+            else {
+                // LOGIK: Bedste resultat (højeste tal) - f.eks. Cooper distance eller Jump
+                // Vi tager de bedste fra HELE ÅRET
+                if (d.timestamp >= startAar) {
+                    if (!finalResults[uid] || d.score > finalResults[uid].score) {
+                        finalResults[uid] = d;
+                    }
+                }
             }
         });
-        let entries = Object.values(bestResults).sort((a, b) => lavereErBedst ? a.score - b.score : b.score - a.score);
-        container.innerHTML = `<div style="max-height:350px; overflow-y:auto; background:#111; border-radius:10px; border: 1px solid #222;">
-            ${entries.map((data, i) => `
-                <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #333; background:${data.uid === firebase.auth().currentUser.uid ? 'rgba(0,255,102,0.1)' : 'none'}">
-                    <span><b>${i+1}. ${data.navn}</b> (${data.køn === 'dreng' ? 'D' : 'P'})${data.niveau ? '<br><small style="color:#00ff66">'+data.niveau+'</small>' : ''}</span>
-                    <span style="text-align:right"><b>${data.score}</b>${data.kondital ? '<br><small>VO2: '+data.kondital+'</small>' : ''}</span>
-                </div>
-            `).join('') || '<p style="padding:20px; text-align:center;">Ingen resultater endnu.</p>'}
-        </div>`;
+
+        // Sortering: Laveste tid bedst for 5km/10km/Agility. Ellers højeste score bedst.
+        let entries = Object.values(finalResults).sort((a, b) => {
+            if (erTidstest) return a.score - b.score;
+            return b.score - a.score;
+        });
+
+        // Dynamisk overskrift og enhed
+        let overskrift = "TOPLISTE (I ÅR)";
+        if (erValgfri) overskrift = "SAMLET KM (DENNE MÅNED)";
+        
+        let enhed = "m"; // Standard for Cooper
+        if (erValgfri || testType === "5km" || testType === "10km") enhed = "min";
+        if (testType === "agility") enhed = "sek";
+        if (testType === "jump") enhed = "cm";
+        if (testType === "bip") enhed = "Lvl";
+
+        container.innerHTML = `
+            <div style="max-height:400px; overflow-y:auto; background:#111; border-radius:10px; border: 1px solid #222;">
+                <h4 style="padding:12px; color:#00ff66; margin:0; font-size:11px; text-align:center; border-bottom:1px solid #333; background:rgba(0,255,102,0.05);">
+                    ${overskrift}
+                </h4>
+                ${entries.map((data, i) => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #333; background:${data.uid === firebase.auth().currentUser.uid ? 'rgba(0,255,102,0.1)' : 'none'}">
+                        <span>
+                            <b>${i+1}. ${data.navn}</b> 
+                            <small style="color:#666; margin-left:3px;">(${data.køn === 'dreng' ? 'D' : 'P'})</small>
+                            ${data.niveau && !erValgfri ? '<br><small style="color:#00ff66">'+data.niveau+'</small>' : ''}
+                        </span>
+                        <span style="text-align:right">
+                            <b style="font-size:15px;">${data.score}</b> <small style="color:#888">${enhed}</small>
+                            ${data.kondital && erCooper ? '<br><small style="color:#888">VO2: '+data.kondital+'</small>' : ''}
+                        </span>
+                    </div>
+                `).join('') || '<p style="padding:20px; text-align:center; color:#666;">Ingen resultater fundet.</p>'}
+            </div>`;
     });
 }
 
@@ -2261,6 +2399,189 @@ async function gemUdvidetProfil() {
         // --- NY FEJL BESKED ---
         smashBesked("Systemet siger:", "Hov! Kunne ikke gemme din profil: " + e.message + " 🛠️");
     }
+}
+
+let performanceInterval; // Variabel til at styre timeren
+
+async function opdaterPerformanceHub() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const uid = user.uid;
+
+    // Ryd gammel interval hvis man går ind og ud af siden for at undgå "dobbelt-fart"
+    if (typeof performanceInterval !== 'undefined') clearInterval(performanceInterval);
+
+    // 1. HENT DATA (Træninger, Kampe og Fysiske tests)
+    const [trainingsSnap, matchesSnap, testsSnap] = await Promise.all([
+        db.ref('trainings').orderByChild('uid').equalTo(uid).once('value'),
+        db.ref('h2h_global').once('value'),
+        db.ref('fysiske_tests').orderByChild('uid').equalTo(uid).once('value')
+    ]);
+
+    const trainings = Object.values(trainingsSnap.val() || {});
+    const allMatches = Object.values(matchesSnap.val() || {});
+    const physicalTests = Object.values(testsSnap.val() || {});
+
+    // --- LOGIK: MATCH-TJEK (Win Streak) ---
+    const mineKampe = allMatches
+        .filter(m => m.p1 === uid || m.p2 === uid)
+        .sort((a, b) => b.timestamp - a.timestamp);
+
+    let winStreak = 0;
+    for (let m of mineKampe) {
+        if (m.winner === uid) winStreak++;
+        else if (m.winner) break; 
+    }
+
+    // --- LOGIK: MARATON-MÅLET (Samlet distance i denne måned) ---
+    const nu = new Date();
+    const startMaaned = new Date(nu.getFullYear(), nu.getMonth(), 1).getTime();
+    
+    let kmTotalDenneMaaned = 0;
+
+    physicalTests.forEach(t => {
+        // Vi tjekker om testen er fra denne måned
+        if (t.timestamp >= startMaaned) {
+            if (t.testType === 'valgfri_run' || t.testType === '5km' || t.testType === '10km') {
+                kmTotalDenneMaaned += parseFloat(t.score || 0);
+            } else if (t.testType === 'cooper') {
+                kmTotalDenneMaaned += (parseFloat(t.score || 0) / 1000); // Meter til km
+            }
+        }
+    });
+
+    const kmTilMaraton = Math.max(0, (42.2 - kmTotalDenneMaaned)).toFixed(1);
+
+    // --- LOGIK: STATISTIK (Win-rate %) ---
+    const vundneKampe = mineKampe.filter(m => m.winner === uid).length;
+    const winRate = mineKampe.length > 0 ? Math.round((vundneKampe / mineKampe.length) * 100) : 0;
+
+    // --- LOGIK: TRÆNINGS-MASKINEN (Daily Streak) ---
+    const traeningsDatoer = [...new Set(trainings.map(t => t.date))].sort((a, b) => new Date(b) - new Date(a));
+    let traeningsStreak = 0;
+    let tjekDato = new Date();
+    tjekDato.setHours(0,0,0,0);
+
+    for (let d of traeningsDatoer) {
+        let datoStr = new Date(d);
+        datoStr.setHours(0,0,0,0);
+        const diff = Math.floor((tjekDato - datoStr) / (1000 * 60 * 60 * 24));
+        if (diff <= 1) {
+            traeningsStreak++;
+            tjekDato = datoStr;
+        } else {
+            break;
+        }
+    }
+
+    // --- SAML DE 4 RIGTIGE FACTS ---
+    const facts = [
+        `Match-tjek: Du har vundet de sidste ${winStreak} kampe! ⚔️`,
+        `Maraton-målet: Du har løbet ${kmTotalDenneMaaned.toFixed(1)} km i denne måned – ${kmTilMaraton} km igen! 🏃‍♂️`,
+        `Statistik: Du vinder ${winRate}% af alle dine kampe! 🏸`,
+        `Trænings-maskinen: Du har logget træning ${traeningsStreak} dage i træk! 🔥`
+    ];
+
+    // --- ROTOR LOGIK (Skifter hver 10. sek) ---
+    let factIndex = 0;
+    const factEl = document.getElementById('fun-fact-text');
+    
+    const skiftFact = () => {
+        if (factEl) {
+            factEl.style.transition = "opacity 0.5s";
+            factEl.style.opacity = 0;
+            setTimeout(() => {
+                factEl.innerText = facts[factIndex];
+                factEl.style.opacity = 1;
+                factIndex = (factIndex + 1) % facts.length;
+            }, 500);
+        }
+    };
+
+    skiftFact(); // Vis den første med det samme
+    performanceInterval = setInterval(skiftFact, 10000);
+
+    // Husk at kalde barometeret til sidst
+    if (typeof beregnBarometer === 'function') {
+        beregnBarometer(trainings);
+    }
+}
+
+// Hjælpefunktion til barometer (for at holde koden ren)
+function beregnBarometer(trainings) {
+    const nu = Date.now();
+    const enUge = 7 * 24 * 60 * 60 * 1000;
+    
+    let denneUgeTP = 0;   // Træningspoint denne uge
+    let sidsteUgeTP = 0;  // Træningspoint sidste uge
+    let harLoeb = false;
+    let harStyrke = false;
+
+    trainings.forEach(t => {
+        const timestamp = new Date(t.date).getTime();
+        const minutter = parseInt(t.duration) || 0;
+        const type = (t.type || t.category || "").toLowerCase();
+        
+        // --- 1. Formlen: Træningspoint (TP) ---
+        let faktor = 1.0; // Standard (Styrke/Andet)
+        if (type.includes("løb") || type.includes("run")) {
+            faktor = 1.5;
+            harLoeb = true;
+        } else if (type.includes("badminton") || type.includes("kamp") || type.includes("træning")) {
+            faktor = 1.2;
+        } else if (type.includes("styrke") || type.includes("fitness")) {
+            faktor = 1.0;
+            harStyrke = true;
+        }
+
+        const point = minutter * faktor;
+
+        if (timestamp > nu - enUge) {
+            denneUgeTP += point;
+        } else if (timestamp > nu - (enUge * 2)) {
+            sidsteUgeTP += point;
+        }
+    });
+
+    const statusEl = document.getElementById('barometer-status');
+    const descEl = document.getElementById('barometer-desc');
+    if (!statusEl || !descEl) return;
+
+    // --- 2. Beregn Uge-Status Titel ---
+    let titel = "";
+    let farve = "";
+    if (denneUgeTP <= 100) {
+        titel = "Sofa-Strategen 🛋️";
+        farve = "#aaa";
+    } else if (denneUgeTP <= 250) {
+        titel = "Motionist-Magikeren 🪄";
+        farve = "#3498db";
+    } else if (denneUgeTP <= 450) {
+        titel = "Hverdags-Atleten 🏃‍♂️";
+        farve = "#00ff73";
+    } else {
+        titel = "Jernmanden 🔥";
+        farve = "#f1c40f";
+    }
+
+    // --- 3. Indsigt & Trend-tjek ---
+    let besked = `Du har optjent ${Math.round(denneUgeTP)} point i denne uge. `;
+    
+    // Tjek for overbelastning (+10% reglen)
+    if (denneUgeTP > sidsteUgeTP * 1.1 && sidsteUgeTP > 50) {
+        besked += "⚠️ Advarselslampen blinker! Du har øget din mængde med over 10%. Pas på skader.";
+        farve = "#f44336"; // Skift til rød ved fare
+    } else if (harLoeb && harStyrke) {
+        besked += "✅ Stærkt! Du varierer din træning med både løb og styrke. Det beskytter din krop.";
+    } else if (denneUgeTP >= sidsteUgeTP * 0.9) {
+        besked += "⚖️ Stabil indsats! Kontinuitet slår alt. Hold stilen.";
+    } else {
+        besked += "📉 Din indsats er faldende i forhold til sidste uge. Klar til en tur i hallen?";
+    }
+
+    statusEl.innerText = titel;
+    statusEl.style.color = farve;
+    descEl.innerText = besked;
 }
 
         function hentEvalueringSide() {
